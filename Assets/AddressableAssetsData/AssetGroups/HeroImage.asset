@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: HeroImage
+  m_EditorClassIdentifier: 
+  m_GroupName: HeroImage
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 0deaa6dabd77c764f95b5fd1f146ba01
+  m_SerializeEntries: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 3001c1269738c67419740f40ce3fc466, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 01bde322d787b004fa4128be0d2b3ae3, type: 2}
+    - {fileID: 11400000, guid: edef5262825b3b641b5df6bd0479ead8, type: 2}

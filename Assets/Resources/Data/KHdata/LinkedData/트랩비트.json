@@ -1,0 +1,24 @@
+{
+  "cardName": "트랩비트",
+  "cardDescription": "무작위 적에게 피해를 3줍니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 203,
+  "cost": 2,
+  "cardClass": 2,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 2,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 3,
+      "when": 0,
+      "area": 4,
+      "type": 1
+    }
+  ]
+}

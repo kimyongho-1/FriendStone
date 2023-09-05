@@ -1,0 +1,24 @@
+{
+  "cardName": "배아픈 사람",
+  "cardDescription": "도발, 죽을떄 : 무작위 적에게 피해를 2 줍니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 35,
+  "cost": 3,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 2,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 2,
+      "when": 1,
+      "area": 4,
+      "type": 1
+    }
+  ]
+}

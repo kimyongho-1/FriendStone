@@ -1,0 +1,27 @@
+{
+  "cardName": "강화에 미친 사람",
+  "cardDescription": "아군 하수인을 하나 지정해, +3/+3을 부여합니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 36,
+  "cost": 3,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 1,
+      "buffType": 2,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 3,
+      "buffHp": 3,
+      "drawCount": 0,
+      "when": 0,
+      "area": 5,
+      "type": 0
+    }
+  ]
+}

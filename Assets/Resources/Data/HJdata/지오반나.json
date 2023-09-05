@@ -1,0 +1,27 @@
+{
+  "cardName": "지오반나",
+  "cardDescription": "내 하수인들의 수 만큼, +1/+1을 얻습니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 10,
+  "cost": 6,
+  "cardClass": 0,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 0,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 1,
+      "buffHp": 1,
+      "drawCount": 0,
+      "when": 0,
+      "area": 5,
+      "type": 0
+    }
+  ]
+}

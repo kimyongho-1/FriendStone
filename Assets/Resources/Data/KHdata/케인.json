@@ -1,0 +1,43 @@
+{
+  "cardName": "케인",
+  "cardDescription": "내 영웅의 체력을 5회복하고, 상대 영웅에게 피해를 5줍니다, 카드를 5장 뽑습니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 32,
+  "cost": 5,
+  "cardClass": 2,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 0,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 5,
+      "when": 0,
+      "area": 3,
+      "type": 1
+    },
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 0,
+      "restoreAmount": 5,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    },
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 0,
+      "relatedCards": [],
+      "utillAmount": 5,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

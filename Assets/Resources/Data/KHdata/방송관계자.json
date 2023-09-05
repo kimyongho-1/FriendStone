@@ -1,0 +1,16 @@
+{
+  "att": 1,
+  "hp": 3,
+  "isTaunt": false,
+  "isCharge": false,
+  "cardName": "방송관계자",
+  "cardDescription": null,
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 22,
+  "cost": 1,
+  "cardClass": 2,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": []
+}

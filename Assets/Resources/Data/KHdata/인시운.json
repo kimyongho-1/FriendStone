@@ -1,0 +1,24 @@
+{
+  "cardName": "인시운",
+  "cardDescription": "낼떄 : 내게 피해를 2줍니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 23,
+  "cost": 2,
+  "cardClass": 2,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 0,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 2,
+      "when": 0,
+      "area": 6,
+      "type": 1
+    }
+  ]
+}

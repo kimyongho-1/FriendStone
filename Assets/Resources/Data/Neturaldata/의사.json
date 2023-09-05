@@ -1,0 +1,23 @@
+{
+  "cardName": "의사",
+  "cardDescription": "낼떄 : 모든 아군을 3치료합니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 40,
+  "cost": 5,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 1,
+      "restoreAmount": 3,
+      "when": 0,
+      "area": 7,
+      "type": 2
+    }
+  ]
+}

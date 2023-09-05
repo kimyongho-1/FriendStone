@@ -1,0 +1,24 @@
+{
+  "cardName": "방송국 앞 팬",
+  "cardDescription": "내게 피해를 3 줍니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 25,
+  "cost": 3,
+  "cardClass": 2,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 0,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 3,
+      "when": 0,
+      "area": 6,
+      "type": 1
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "cardName": "실기시험",
+  "cardDescription": "무작위 아군에게 +3/+3을 주고, 최종시험을 내 손으로 가져옵니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 122,
+  "cost": 4,
+  "cardClass": 1,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 2,
+      "buffType": 2,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 3,
+      "buffHp": 3,
+      "drawCount": 0,
+      "when": 0,
+      "area": 5,
+      "type": 0
+    },
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 2,
+      "relatedCards": [
+        123
+      ],
+      "utillAmount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

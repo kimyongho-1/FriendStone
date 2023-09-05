@@ -1,0 +1,23 @@
+{
+  "cardName": "감자탕",
+  "cardDescription": "내 영웅을 10 치료합니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 28,
+  "cost": 3,
+  "cardClass": 2,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 1,
+      "restoreAmount": 10,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    }
+  ]
+}

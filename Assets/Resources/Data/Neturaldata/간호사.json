@@ -1,0 +1,23 @@
+{
+  "cardName": "간호사",
+  "cardDescription": "낼떄 : 내 영웅을 3 치료합니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 37,
+  "cost": 2,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 0,
+      "restoreAmount": 3,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "Dic": {
+    "1": {
+      "path": "Data/HJdata/손멘",
+      "type": "minion"
+    },
+    "2": {
+      "path": "Data/HJdata/남팸",
+      "type": "minion"
+    },
+    "3": {
+      "path": "Data/HJdata/소주병",
+      "type": "weapon"
+    },
+    "4": {
+      "path": "Data/HJdata/소주먹이기",
+      "type": "spell"
+    },
+    "5": {
+      "path": "Data/HJdata/책임님",
+      "type": "minion"
+    },
+    "6": {
+      "path": "Data/HJdata/블핑 지수",
+      "type": "minion"
+    },
+    "7": {
+      "path": "Data/HJdata/야밤에 통화",
+      "type": "spell"
+    },
+    "8": {
+      "path": "Data/HJdata/등산",
+      "type": "spell"
+    },
+    "9": {
+      "path": "Data/HJdata/냉수한잔",
+      "type": "spell"
+    },
+    "10": {
+      "path": "Data/HJdata/지오반나",
+      "type": "minion"
+    },
+    "11": {
+      "path": "Data/HJdata/아.버.지",
+      "type": "minion"
+    },
+    "101": {
+      "path": "Data/HJdata/소주병 던지기",
+      "type": "spell"
+    },
+    "12": {
+      "path": "Data/HZdata/무면허라이더",
+      "type": "minion"
+    },
+    "13": {
+      "path": "Data/HZdata/성실한라이더",
+      "type": "minion"
+    },
+    "14": {
+      "path": "Data/HZdata/딸배헌터",
+      "type": "minion"
+    },
+    "15": {
+      "path": "Data/HZdata/공부",
+      "type": "spell"
+    },
+    "16": {
+      "path": "Data/HZdata/라이더 모집사",
+      "type": "minion"
+    },
+    "17": {
+      "path": "Data/HZdata/하사 김현조",
+      "type": "minion"
+    },
+    "18": {
+      "path": "Data/HZdata/예비군 통지서",
+      "type": "spell"
+    },
+    "19": {
+      "path": "Data/HZdata/전기 자전거",
+      "type": "weapon"
+    },
+    "20": {
+      "path": "Data/HZdata/도로의 무법자 라이더",
+      "type": "minion"
+    },
+    "21": {
+      "path": "Data/HZdata/시험공부",
+      "type": "spell"
+    },
+    "121": {
+      "path": "Data/HZdata/필기시험",
+      "type": "spell"
+    },
+    "122": {
+      "path": "Data/HZdata/실기시험",
+      "type": "spell"
+    },
+    "123": {
+      "path": "Data/HZdata/최종시험",
+      "type": "spell"
+    },
+    "124": {
+      "path": "Data/HZdata/Electric Knight KHZ",
+      "type": "minion"
+    },
+    "22": {
+      "path": "Data/KHdata/방송관계자",
+      "type": "minion"
+    },
+    "23": {
+      "path": "Data/KHdata/인시운",
+      "type": "minion"
+    },
+    "24": {
+      "path": "Data/KHdata/원랜디하기",
+      "type": "spell"
+    },
+    "25": {
+      "path": "Data/KHdata/방송국 앞 팬",
+      "type": "minion"
+    },
+    "26": {
+      "path": "Data/KHdata/폴드4",
+      "type": "weapon"
+    },
+    "27": {
+      "path": "Data/KHdata/디제이 프리모",
+      "type": "minion"
+    },
+    "28": {
+      "path": "Data/KHdata/감자탕",
+      "type": "spell"
+    },
+    "29": {
+      "path": "Data/KHdata/헬스장",
+      "type": "spell"
+    },
+    "30": {
+      "path": "Data/KHdata/인방보기",
+      "type": "spell"
+    },
+    "31": {
+      "path": "Data/KHdata/허니츄러스",
+      "type": "minion"
+    },
+    "32": {
+      "path": "Data/KHdata/케인",
+      "type": "minion"
+    },
+    "201": {
+      "path": "Data/KHdata/붐뱁비트",
+      "type": "spell"
+    },
+    "202": {
+      "path": "Data/KHdata/째즈비트",
+      "type": "spell"
+    },
+    "203": {
+      "path": "Data/KHdata/트랩비트",
+      "type": "spell"
+    },
+    "33": {
+      "path": "Data/Neturaldata/예비군 아저씨",
+      "type": "minion"
+    },
+    "34": {
+      "path": "Data/Neturaldata/이정용",
+      "type": "minion"
+    },
+    "35": {
+      "path": "Data/Neturaldata/배아픈 사람",
+      "type": "minion"
+    },
+    "36": {
+      "path": "Data/Neturaldata/강화에 미친 사람",
+      "type": "minion"
+    },
+    "37": {
+      "path": "Data/Neturaldata/간호사",
+      "type": "minion"
+    },
+    "38": {
+      "path": "Data/Neturaldata/메이드카페 누메짱",
+      "type": "minion"
+    },
+    "39": {
+      "path": "Data/Neturaldata/히딩크",
+      "type": "minion"
+    },
+    "40": {
+      "path": "Data/Neturaldata/의사",
+      "type": "minion"
+    },
+    "41": {
+      "path": "Data/Neturaldata/한입만",
+      "type": "minion"
+    },
+    "42": {
+      "path": "Data/Neturaldata/개발자 김용호",
+      "type": "minion"
+    },
+    "301": {
+      "path": "Data/Neturaldata/무료 마사지!",
+      "type": "spell"
+    },
+    "302": {
+      "path": "Data/Neturaldata/Delete키",
+      "type": "spell"
+    },
+    "303": {
+      "path": "Data/Neturaldata/치트키",
+      "type": "spell"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "att": 0,
+  "hp": 0,
+  "isTaunt": false,
+  "isCharge": false,
+  "cardName": "허니츄러스",
+  "cardDescription": "내게 피해를 4 줍니다.",
+  "cardIdNum": 31,
+  "cost": 4,
+  "cardClass": 2,
+  "cardType": 0,
+  "cardRarity": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 0,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 4,
+      "when": 0,
+      "area": 6,
+      "type": 1
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "cardName": "도로의 무법자 라이더",
+  "cardDescription": "죽을떄 : 무작위 적에게 피해를 4줍니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 20,
+  "cost": 4,
+  "cardClass": 1,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 2,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 4,
+      "when": 1,
+      "area": 4,
+      "type": 1
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "cardName": "메이드카페 누메짱",
+  "cardDescription": "낼떄 : 양 옆 하수인에게 +2/+2를 줍니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 38,
+  "cost": 4,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 2,
+      "buffExtraArea": 3,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 2,
+      "buffHp": 2,
+      "drawCount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 0
+    }
+  ]
+}

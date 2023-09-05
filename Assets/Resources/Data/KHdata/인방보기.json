@@ -1,0 +1,26 @@
+{
+  "cardName": "인방보기",
+  "cardDescription": "게임방송,버튜버방송,먹방 중 하나 고릅니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 30,
+  "cost": 2,
+  "cardClass": 2,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 1,
+      "relatedCards": [
+        24,
+        31,
+        28
+      ],
+      "utillAmount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

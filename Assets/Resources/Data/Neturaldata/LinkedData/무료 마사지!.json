@@ -1,0 +1,23 @@
+{
+  "cardName": "무료 마사지!",
+  "cardDescription": "내 영웅을 10 회복시킵니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 301,
+  "cost": 0,
+  "cardClass": 3,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 0,
+      "restoreAmount": 10,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    }
+  ]
+}

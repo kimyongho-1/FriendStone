@@ -1,0 +1,23 @@
+{
+  "cardName": "야밤에 통화",
+  "cardDescription": "지오반나를 내 손으로 가져옵니다.",
+  "cardIdNum": 7,
+  "cost": 0,
+  "cardClass": 0,
+  "cardType": 1,
+  "cardRarity": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 2,
+      "relatedCards": [
+        10
+      ],
+      "utillAmount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

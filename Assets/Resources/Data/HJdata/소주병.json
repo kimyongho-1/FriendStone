@@ -1,0 +1,14 @@
+{
+  "att": 3,
+  "durability": 1,
+  "cardName": "소주병",
+  "cardDescription": "크고 단단합니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 3,
+  "cost": 2,
+  "cardClass": 0,
+  "cardType": 2,
+  "associatedHandler": null,
+  "evtDatas": []
+}

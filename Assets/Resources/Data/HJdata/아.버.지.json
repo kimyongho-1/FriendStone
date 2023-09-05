@@ -1,0 +1,16 @@
+{
+  "att": 10,
+  "hp": 10,
+  "isTaunt": false,
+  "isCharge": true,
+  "cardName": "아.버.지",
+  "cardDescription": "도오오올지이이인",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 11,
+  "cost": 10,
+  "cardClass": 0,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": []
+}

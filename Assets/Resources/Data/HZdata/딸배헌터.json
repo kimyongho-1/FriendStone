@@ -1,0 +1,31 @@
+{
+  "cardName": "딸배헌터",
+  "cardDescription": "낼떄 : 라이더 카드들당 +1/+1을 얻습니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 14,
+  "cost": 4,
+  "cardClass": 1,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 2,
+      "buffExtraArea": 4,
+      "buffFX": 0,
+      "relatedIds": [
+        12,
+        13,
+        20
+      ],
+      "buffAtt": 1,
+      "buffHp": 1,
+      "drawCount": 0,
+      "when": 0,
+      "area": 1,
+      "type": 0
+    }
+  ]
+}

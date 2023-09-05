@@ -1,0 +1,29 @@
+{
+  "cardName": "하사 김현조",
+  "cardDescription": "필드의 하사 김현조 하나당 비용이 1씩 감소합니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 17,
+  "cost": 4,
+  "cardClass": 1,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 3,
+      "buffExtraArea": 4,
+      "buffFX": 0,
+      "relatedIds": [
+        17
+      ],
+      "buffAtt": 0,
+      "buffHp": 0,
+      "drawCount": 0,
+      "when": 2,
+      "area": 1,
+      "type": 0
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "cardName": "냉수한잔",
+  "cardDescription": "체력을 2 회복하고, 카드를 2장 뽑습니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 9,
+  "cost": 2,
+  "cardClass": 0,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 1,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 0,
+      "buffHp": 0,
+      "drawCount": 2,
+      "when": 0,
+      "area": 6,
+      "type": 0
+    },
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 0,
+      "restoreAmount": 2,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    }
+  ]
+}

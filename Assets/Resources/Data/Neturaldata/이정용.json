@@ -1,0 +1,45 @@
+{
+  "att": 0,
+  "hp": 0,
+  "isTaunt": false,
+  "isCharge": false,
+  "cardName": "이정용",
+  "cardDescription": "필드의 하수인당 비용이 1씩 감소하고, 낼떄 +1/+1을 얻습니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 34,
+  "cost": 10,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 3,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 0,
+      "buffHp": 0,
+      "drawCount": 0,
+      "when": 2,
+      "area": 1,
+      "type": 0
+    },
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 2,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 1,
+      "buffHp": 1,
+      "drawCount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 0
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "att": 2,
+  "hp": 1,
+  "isTaunt": false,
+  "isCharge": true,
+  "cardName": "남팸",
+  "cardDescription": "돌진",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 2,
+  "cost": 1,
+  "cardClass": 0,
+  "cardType": 0,
+  "associatedHandler": "",
+  "evtDatas": []
+}

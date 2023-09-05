@@ -1,0 +1,22 @@
+{
+  "cardName": "히딩크",
+  "cardDescription": "낼떄 : 양쪽 모두 카드를 2장 뽑습니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 39,
+  "cost": 4,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 0,
+      "relatedCards": [],
+      "utillAmount": 2,
+      "when": 0,
+      "area": 1,
+      "type": 3
+    }
+  ]
+}

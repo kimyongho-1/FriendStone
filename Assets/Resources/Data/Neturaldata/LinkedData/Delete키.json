@@ -1,0 +1,24 @@
+{
+  "cardName": "Delete키",
+  "cardDescription": "무작위 적 하수인을 처치합니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 302,
+  "cost": 0,
+  "cardClass": 3,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 2,
+      "attType": 1,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 0,
+      "when": 0,
+      "area": 2,
+      "type": 1
+    }
+  ]
+}

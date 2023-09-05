@@ -1,0 +1,24 @@
+{
+  "cardName": "소주병 던지기",
+  "cardDescription": "대상을 선택해 피해를 2 줍니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 101,
+  "cost": 1,
+  "cardClass": 0,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 1,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 1,
+      "attAmount": 2,
+      "when": 0,
+      "area": 4,
+      "type": 1
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "cardName": "책임님",
+  "cardDescription": "내 영웅의 체력을 5회복시킵니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 5,
+  "cost": 3,
+  "cardClass": 0,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 0,
+      "restoreAmount": 5,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    }
+  ]
+}

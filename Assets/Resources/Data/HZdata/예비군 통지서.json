@@ -1,0 +1,38 @@
+{
+  "cardName": "예비군 통지서",
+  "cardDescription": "하사 김현조 2장을 가져옵니다. 필드의 하사 김현조 1장당 비용이 1씩 감소합니다.",
+  "cardIdNum": 18,
+  "cost": 4,
+  "cardClass": 1,
+  "cardType": 1,
+  "cardRarity": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 0,
+      "buffType": 0,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 0,
+      "buffHp": 0,
+      "drawCount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 0
+    },
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 2,
+      "relatedCards": [
+        17,
+        17
+      ],
+      "utillAmount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

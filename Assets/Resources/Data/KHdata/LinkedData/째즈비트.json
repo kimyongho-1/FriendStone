@@ -1,0 +1,23 @@
+{
+  "cardName": "째즈비트",
+  "cardDescription": "내 영웅을 5 치료합니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 202,
+  "cost": 2,
+  "cardClass": 2,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "RestoreHandler, Assembly-CSharp",
+      "restoreTargeting": 0,
+      "restoreExtraArea": 0,
+      "restoreFX": 1,
+      "restoreAmount": 5,
+      "when": 0,
+      "area": 6,
+      "type": 2
+    }
+  ]
+}

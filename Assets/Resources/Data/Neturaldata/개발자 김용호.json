@@ -1,0 +1,26 @@
+{
+  "cardName": "개발자 김용호",
+  "cardDescription": "낼떄 : 사기 카드를 하나 발견합니다",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 42,
+  "cost": 10,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 1,
+      "relatedCards": [
+        301,
+        302,
+        303
+      ],
+      "utillAmount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

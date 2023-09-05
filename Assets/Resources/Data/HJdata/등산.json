@@ -1,0 +1,26 @@
+{
+  "cardName": "등산",
+  "cardDescription": "소주 마시기 3장을 내 손으로 가져옵니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 8,
+  "cost": 3,
+  "cardClass": 0,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 2,
+      "relatedCards": [
+        4,
+        4,
+        4
+      ],
+      "utillAmount": 0,
+      "when": 0,
+      "area": 0,
+      "type": 3
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "att": 4,
+  "durability": 2,
+  "cardName": "폴드4",
+  "cardDescription": "5가 가지고 싶어!",
+  "cardIdNum": 26,
+  "cost": 4,
+  "cardClass": 2,
+  "cardType": 2,
+  "cardRarity": 0,
+  "associatedHandler": null,
+  "evtDatas": []
+}

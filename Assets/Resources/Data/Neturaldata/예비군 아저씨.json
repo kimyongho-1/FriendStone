@@ -1,0 +1,16 @@
+{
+  "att": 1,
+  "hp": 2,
+  "isTaunt": true,
+  "isCharge": false,
+  "cardName": "예비군 아저씨",
+  "cardDescription": "도발",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 33,
+  "cost": 1,
+  "cardClass": 3,
+  "cardType": 0,
+  "associatedHandler": null,
+  "evtDatas": []
+}

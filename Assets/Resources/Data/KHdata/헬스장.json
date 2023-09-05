@@ -1,0 +1,38 @@
+{
+  "cardName": "헬스장",
+  "cardDescription": "내 영웅에게 피해를 5주고 , 무작위 아군에게 +4/+4를 줍니다.",
+  "dataPath": null,
+  "imagePath": null,
+  "cardIdNum": 29,
+  "cost": 5,
+  "cardClass": 2,
+  "cardType": 1,
+  "associatedHandler": null,
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 0,
+      "attType": 0,
+      "attExtraArea": 0,
+      "attFX": 0,
+      "attAmount": 5,
+      "when": 0,
+      "area": 6,
+      "type": 1
+    },
+    {
+      "$type": "BuffHandler, Assembly-CSharp",
+      "buffTargeting": 2,
+      "buffType": 2,
+      "buffExtraArea": 0,
+      "buffFX": 0,
+      "relatedIds": [],
+      "buffAtt": 4,
+      "buffHp": 4,
+      "drawCount": 0,
+      "when": 0,
+      "area": 5,
+      "type": 0
+    }
+  ]
+}
