@@ -121,6 +121,7 @@ public class NetworkManager
 
                 Debug.Log(each[2]);
                 string json = each[2];
+                // Php로 덱데이타 가져오기
                 List<DeckDataPrototype> prototypeList = JsonConvert.DeserializeObject<List<DeckDataPrototype>>(json);
                 for (int i = 0; i < prototypeList.Count; i++)
                 {
