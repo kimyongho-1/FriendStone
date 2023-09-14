@@ -48,7 +48,6 @@ public class UIpopupHolder: MonoBehaviour,IPointerEnterHandler, IPointerExitHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Enter");
         if (Co != null) { StopCoroutine(Co); Co = null; }
         Co = waitCo();
         StartCoroutine(Co);
@@ -56,7 +55,6 @@ public class UIpopupHolder: MonoBehaviour,IPointerEnterHandler, IPointerExitHand
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("Exit");
         GAME.Manager.UM.popup.gameObject.SetActive(false);
         if (Co != null) { StopCoroutine(Co); Co = null; }
     }

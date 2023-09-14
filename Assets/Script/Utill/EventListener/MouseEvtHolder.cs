@@ -4,22 +4,24 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using UnityEditor.SceneManagement;
 
 public class MouseEvtHolder : MonoBehaviour, IPointerDownHandler 
-    , IBeginDragHandler, IEndDragHandler, IDragHandler
+    , IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler ,IPointerExitHandler
 {
-    public Action<GameObject> mClickL, mClickR, mStartDrag, mEnter, mExit,mDrag, mEndDrag;
-
+    public Action<GameObject> mClickL, mClickR, mEnter, mExit;
+    public Action<Vector3> mStartDrag, mDrag, mEndDrag;
+    public Define.Sound sound, dragSound;
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (sound != Define.Sound.None)
+        { GAME.Manager.SM.PlaySound(sound); }
         
         switch (eventData.button)
         {
             case PointerEventData.InputButton.Left:
-                GAME.Manager.SM.PlayBtn(Define.Mouse.ClickL);
                 mClickL?.Invoke(this.gameObject);  break;
             case PointerEventData.InputButton.Right:
-                GAME.Manager.SM.PlayBtn(Define.Mouse.ClickR);
                 mClickR?.Invoke(this.gameObject); break;
             default: break;
         }
@@ -28,16 +30,30 @@ public class MouseEvtHolder : MonoBehaviour, IPointerDownHandler
   
     public void OnBeginDrag(PointerEventData eventData)
     {
-      //  Debug.Log("Begin Drag");
+        if (dragSound != Define.Sound.None)
+        { GAME.Manager.SM.PlaySound(dragSound); }
+        mStartDrag?.Invoke(default);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-     //   Debug.Log("End Drag");
+        mEndDrag?.Invoke(default); 
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-     //   Debug.Log("Dragging");
+        Vector3 newPosition = Camera.main.ScreenToWorldPoint
+            (new Vector3(Input.mousePosition.x, Input.mousePosition.y, +6.5f));
+        mDrag?.Invoke(newPosition);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        mEnter?.Invoke(this.gameObject);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        mExit?.Invoke(this.gameObject);
     }
 }

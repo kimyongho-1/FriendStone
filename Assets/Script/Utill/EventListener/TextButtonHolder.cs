@@ -27,7 +27,7 @@ public class TextButtonHolder : MonoBehaviour, IPointerDownHandler, IPointerClic
     }
     public void OnPointerDown(PointerEventData eventData)
     {
-        GAME.Manager.SM.PlayBtn(Define.Mouse.ClickL) ;
+        GAME.Manager.SM.PlaySound(Define.Sound.Click);
         tmp.color = pressedColor;
     }
 

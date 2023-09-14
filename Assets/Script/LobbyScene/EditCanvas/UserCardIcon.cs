@@ -15,8 +15,8 @@ public class UserCardIcon : MonoBehaviour
     private void Awake()
     {
         deckView = GetComponentInParent<DeckViewport>();
-        GAME.Manager.UM.BindEvent(deleteBtn.gameObject, RemoveCard, Define.Mouse.ClickL);
-        GAME.Manager.UM.BindEvent(this.gameObject, CallEnLargedCard, Define.Mouse.ClickR);
+        GAME.Manager.UM.BindEvent(deleteBtn.gameObject, RemoveCard, Define.Mouse.ClickL, Define.Sound.Click);
+        GAME.Manager.UM.BindEvent(this.gameObject, CallEnLargedCard, Define.Mouse.ClickR, Define.Sound.None);
         EnLargedCard = deckView.EnLargedCard;
     }
 

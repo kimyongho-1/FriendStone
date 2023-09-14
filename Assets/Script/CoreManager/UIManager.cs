@@ -46,13 +46,13 @@ public class UIManager
     }
 
     // 기타 ui요소에 마우스 작용시 이벤트 발생시키는 함수
-    public void BindEvent(GameObject go, Action<GameObject> func , Define.Mouse mouse)
+    public void BindEvent(GameObject go, Action<GameObject> func, Define.Mouse mouse, Define.Sound sound)
     {
         if (go.TryGetComponent<MouseEvtHolder>(out MouseEvtHolder meh) == false)
         {
             meh = go.AddComponent<MouseEvtHolder>();
         }
-
+        meh.sound = sound;
         switch (mouse) 
         {
             case Define.Mouse.ClickL:
@@ -63,6 +63,20 @@ public class UIManager
                 meh.mEnter = func; break;
             case Define.Mouse.Exit:
                 meh.mExit = func; break;
+        }
+    }
+    public void BindEvent(GameObject go, Action<Vector3> func, Define.Mouse mouse , Define.Sound sound = Define.Sound.None)
+    {
+        if (go.TryGetComponent<MouseEvtHolder>(out MouseEvtHolder meh) == false)
+        {
+            meh = go.AddComponent<MouseEvtHolder>();
+        }
+
+        if (sound != Define.Sound.None)
+        { meh.dragSound = sound; }
+        
+        switch (mouse)
+        {
             case Define.Mouse.StartDrag:
                 meh.mStartDrag = func; break;
             case Define.Mouse.Dragging:
@@ -70,5 +84,16 @@ public class UIManager
             case Define.Mouse.EndDrag:
                 meh.mEndDrag = func; break;
         }
+    }
+    // 게임씬에서, 카드들에 커서 일정시간 가져다 댈시 안내팝업창 호출 이벤트 연결
+    public void BindCardPopupEvent(GameObject go, Action func, float waitTime)
+    {
+        CardPopupEvtHolder cpeh = null; ;
+        if (go.TryGetComponent<CardPopupEvtHolder>(out CardPopupEvtHolder meh) == false)
+        {
+            cpeh = go.AddComponent<CardPopupEvtHolder>();
+        }
+        cpeh.func = func;
+        cpeh.time = waitTime;
     }
 }

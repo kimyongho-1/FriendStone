@@ -13,9 +13,9 @@ public class CharacterSelect :LobbyPopup
     {
         // 각 버튼과, 이미지 클릭시 호출할 이벤트함수 연결
         GAME.Manager.UM.BindTMPInteraction(backBtn, Color.yellow, Color.red, BackBtn);
-        GAME.Manager.UM.BindEvent(HJ.gameObject, StartMakeDeck, Define.Mouse.ClickL);
-        GAME.Manager.UM.BindEvent(HZ.gameObject, StartMakeDeck, Define.Mouse.ClickL);
-        GAME.Manager.UM.BindEvent(KH.gameObject, StartMakeDeck, Define.Mouse.ClickL);
+        GAME.Manager.UM.BindEvent(HJ.gameObject, StartMakeDeck, Define.Mouse.ClickL, Define.Sound.Click);
+        GAME.Manager.UM.BindEvent(HZ.gameObject, StartMakeDeck, Define.Mouse.ClickL, Define.Sound.Click);
+        GAME.Manager.UM.BindEvent(KH.gameObject, StartMakeDeck, Define.Mouse.ClickL, Define.Sound.Click);
 
         editCanvas = GetComponentInParent<EditCanvas>();
     }

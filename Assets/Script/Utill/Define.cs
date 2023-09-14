@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Define 
 {
+    public enum BodyType { Hero, Minion, Weapon, HeroSkill }
+
     #region 카드 정보 데이터
     // 카드 종류
     public enum cardType { minion, spell, weapon }
@@ -53,11 +55,22 @@ public class Define
 
     #endregion
 
+
     public enum Scene { Login, Lobby, InGame }
+
     #region UI 관련
     public enum Mouse { ClickL, ClickR, Enter, Exit , StartDrag , Dragging, EndDrag}
 
     // UI매니저의 안내팝업창 크기
     public enum PopupScale { Small, Medium, Big}
+
+    // InGameScene의 IGM에서 사용할 변수
+    public enum  Pos 
+    {
+        PlayerWeapon, PlayerSkill, PlayerInfo, PlayerHandCard, PlayerMinion,
+        EnemyWeapon, EnemySkill, EnemyInfo, EnemyHandCard, EnemyMinion,
+    }
     #endregion
+
+    public enum Sound { None, Pick, Click, Back , Ready ,Summon}
 }

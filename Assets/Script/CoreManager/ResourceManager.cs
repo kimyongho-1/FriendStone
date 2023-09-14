@@ -20,7 +20,7 @@ public class ResourceManager
     // 유저가 새로만들거나, 기존에 만든덱을 다시 로드할떄 모든 상황에서
     // 언제든지 접근해서 사용할수있도록 만든 유저의 모든 덱 List
     public List<DeckData> userDecks = new List<DeckData>();
-
+    public DeckData GameDeck;
     // 유저의 기존덱들 모두 가져오기
     public void LoadUsersDeck()
     { }

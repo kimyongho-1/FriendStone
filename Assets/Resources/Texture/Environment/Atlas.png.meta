@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: eda0101a37d8ec649b4d3246eae88372
+guid: 8d6bf0d352940bc4ab37aab859e8204d
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,190 +123,232 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CardPortraitSprites_3
+      name: Atlas_0
       rect:
         serializedVersion: 2
-        x: 15
-        y: 36
-        width: 813
-        height: 582
+        x: 35
+        y: 561
+        width: 194
+        height: 264
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: aa0f9deb06d2bac49be4bd3adcadbc67
-      internalID: 1989137226
+      spriteID: f7f305c5cc8a45d45862d3ed33d15c1b
+      internalID: -314040179
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_4
+      name: Atlas_1
       rect:
         serializedVersion: 2
-        x: 835
-        y: 586
-        width: 39
-        height: 48
+        x: 252
+        y: 582
+        width: 186
+        height: 238
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1051b3c57833a1b478d930a4850acee2
-      internalID: 1802802329
+      spriteID: 9a34d08611d9fa0458d7cd3c9bee1bd1
+      internalID: 1187975108
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_5
+      name: Atlas_2
       rect:
         serializedVersion: 2
-        x: 899
-        y: 574
-        width: 124
-        height: 71
+        x: 473
+        y: 620
+        width: 157
+        height: 178
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0ff9448266177e14db2725849a312e4e
-      internalID: -6746450
+      spriteID: 72920236e5e89774cadbc1105762c7ac
+      internalID: -616948580
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_6
+      name: Atlas_3
       rect:
         serializedVersion: 2
-        x: 874
-        y: 422
-        width: 144
-        height: 139
+        x: 637
+        y: 715
+        width: 85
+        height: 125
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fc5e3d7013a2c3742904a2f6aafcf4d3
-      internalID: 1092032914
+      spriteID: 0a38099eeefbcfc448764ba368532123
+      internalID: -588023092
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_7
+      name: Atlas_5
       rect:
         serializedVersion: 2
-        x: 848
-        y: 321
-        width: 81
-        height: 93
+        x: 443
+        y: 464
+        width: 136
+        height: 135
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3b79a044d304bac4fa5e0a0a8632458a
-      internalID: -409621183
+      spriteID: 74c9cfcaacbeb954294e163854c4e776
+      internalID: 1219850886
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_8
+      name: Atlas_6
       rect:
         serializedVersion: 2
-        x: 948
-        y: 339
-        width: 69
-        height: 68
+        x: 653
+        y: 508
+        width: 152
+        height: 176
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ef3eebe2107e36b43b8fce3f7a832314
-      internalID: -1492517041
+      spriteID: dc108701c8900e54e820c0b1383fca1f
+      internalID: -1440340384
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_9
+      name: Atlas_4
       rect:
         serializedVersion: 2
-        x: 842
-        y: 205
-        width: 92
-        height: 97
+        x: 730
+        y: 716
+        width: 104
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 84e485701c422404ba6d548639cea574
-      internalID: -2090973963
+      spriteID: 17dbd8a4684ba8541a6b36da7b7bd151
+      internalID: -713809180
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_10
+      name: Atlas_7
       rect:
         serializedVersion: 2
-        x: 899
-        y: 22
-        width: 103
-        height: 103
+        x: 18
+        y: 12
+        width: 807
+        height: 431
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5317379949cd9a54dafb5de1fee2c371
-      internalID: 490161203
+      spriteID: 977e8ae23577faf45b113403624cb2d7
+      internalID: 1345451707
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CardPortraitSprites_2
+      name: Atlas_8
       rect:
         serializedVersion: 2
-        x: 698
-        y: 660
-        width: 294
-        height: 330
+        x: 27
+        y: 458
+        width: 101
+        height: 100
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 649ba0d4f790dfe43b350b2e96dc8d88
-      internalID: 1492911409
+      spriteID: bb808649971466a428275416986f9783
+      internalID: -816889771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Atlas_9
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 475
+        width: 83
+        height: 84
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b8789156bfa44f4aa9c5f1b006d4b54
+      internalID: -2130480991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Atlas_10
+      rect:
+        serializedVersion: 2
+        x: 348
+        y: 476
+        width: 45
+        height: 85
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37614e3964db6e0498eec5f3e0cd15ad
+      internalID: 691137994
       vertices: []
       indices: 
       edges: []
@@ -314,7 +356,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 3d64f807f3ea94b4796096634cca564d
     internalID: 0
     vertices: []
     indices: 
@@ -322,17 +364,17 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      CardPortraitSprites_0: 1459263628
-      CardPortraitSprites_1: -743491034
-      CardPortraitSprites_10: 490161203
-      CardPortraitSprites_2: 1492911409
-      CardPortraitSprites_3: 1989137226
-      CardPortraitSprites_4: 1802802329
-      CardPortraitSprites_5: -6746450
-      CardPortraitSprites_6: 1092032914
-      CardPortraitSprites_7: -409621183
-      CardPortraitSprites_8: -1492517041
-      CardPortraitSprites_9: -2090973963
+      Atlas_0: -314040179
+      Atlas_1: 1187975108
+      Atlas_10: 15543911
+      Atlas_2: -616948580
+      Atlas_3: -588023092
+      Atlas_4: -713809180
+      Atlas_5: 1219850886
+      Atlas_6: -1440340384
+      Atlas_7: 1345451707
+      Atlas_8: 461087483
+      Atlas_9: -2080556749
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

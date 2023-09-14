@@ -21,7 +21,7 @@ public class GAME : MonoBehaviour
         pm = GetComponent<PunManager>();
         CurrScene = Define.Scene.Login;
         sm.PlayBGM();
-
+        SM.Init();
         SceneManager.sceneLoaded += OnLobbyLoad;
     }
 
@@ -61,6 +61,9 @@ public class GAME : MonoBehaviour
     public PunManager PM { get { return pm; } }
     #endregion
 
+    #region InGameScene 관리
+    public InGameManager IGM { get; set; }
+    #endregion
 
     #region LobbyScene 관리
     public LobbyManager LM { get; set; }
@@ -76,6 +79,7 @@ public class GAME : MonoBehaviour
         switch (scene.name) 
         {
             case "Lobby":
+                SM.Init();
                 // 로비씬 전환시 실행할 초기화 모두 끝날떄
                 // 로그인씬 끝내기
                 // 새씬의 이벤트시스템 삭제
@@ -102,7 +106,10 @@ public class GAME : MonoBehaviour
                     GAME.Manager.Evt.gameObject.SetActive(true);
                 }
                 break;
-            case "InGame": 
+
+            case "InGame":
+                SM.Init();
+                Debug.Log("GM에서 호출");
                 break;
         }
     }

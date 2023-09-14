@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Realtime;
+using UnityEngine.SceneManagement;
+
 public class PunManager : MonoBehaviourPunCallbacks
 {
     #region 랜덤매칭중, 내가 만든방에 누가 올떄까지 대기코루틴
@@ -170,6 +172,8 @@ public class PunManager : MonoBehaviourPunCallbacks
                 // 현재 클라이언트의 화면에 보일 매칭애니메이션 중지시키기
                 RotationBar.stop = true;
 
+                // 사용덱 확정
+                GAME.Manager.RM.GameDeck = sdi.currDeck;
                 // 씬 동기화 설정
                 PhotonNetwork.AutomaticallySyncScene = true;
                 // 동시에 씬 로드
@@ -188,6 +192,11 @@ public class PunManager : MonoBehaviourPunCallbacks
         }
         base.OnJoinedRoom();
         Debug.Log("방입장 성공");
+
+        StopAllCoroutines();
+        // 사용덱 확정
+        GAME.Manager.RM.GameDeck = sdi.currDeck;
+        SceneManager.LoadScene("InGame",LoadSceneMode.Single);
 
         // 내가 방장이 아니라면, 다른 유저 매칭방에 잡힌것
         // 게임시작은 마스터가 자동으로 시작할것 ( 위의 OnPlayerEnteredRoom함수에서 )

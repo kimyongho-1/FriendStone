@@ -10,7 +10,7 @@ public class SelectedDeckIcon : MonoBehaviour
     public TextMeshProUGUI deckName, deckCount, classType , editBtn, playBtn, backBtn , cancelBtn, matchingState;
     public GameObject loadingPopup;
     public Image classIcon;
-    DeckData currDeck;
+    public DeckData currDeck;
     PlayCanvas playCanvas;
     public RotationBar rotate;
     private void OnDisable()
