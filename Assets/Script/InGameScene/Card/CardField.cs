@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using static UnityEngine.GraphicsBuffer;
+using UnityEditor.Experimental.GraphView;
 
 public class CardField : CardEle
 {
@@ -42,11 +44,16 @@ public class CardField : CardEle
 
         // 공격자 자신과, 스폰영역 레이 비활성화
         GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
-        // 타겟팅 카메라 실행
-        GAME.Manager.IGM.TC.StartTargetting(this);
+
+        // 현재 타겟팅 코루틴 등록 및 실행
+        GAME.Manager.IGM.TC.TargetCo = GAME.Manager.IGM.TC.TargettingCo
+            (this, (IBody a, IBody t) => { return AttackCo(a, t); });
+
+        // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
+        GAME.Manager.IGM.TC.StartCoroutine(GAME.Manager.IGM.TC.TargetCo);
     }
 
-    public IEnumerator AttackCo()
+    public IEnumerator AttackCo(IBody attacker, IBody target)
     {
         yield return null;
     }

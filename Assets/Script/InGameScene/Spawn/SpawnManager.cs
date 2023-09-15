@@ -146,6 +146,7 @@ public partial class SpawnManager : MonoBehaviour
         // 현재 핸드카드 (미니언) 정보 토대로 스폰 시작
         CardField cf = GameObject.Instantiate(prefab, Players);
         cf.Init(card.data);
+        cf.PunId = card.PunId;
         cf.transform.localPosition = card.transform.localPosition;
         playerMinions.Insert(idx, cf);
         

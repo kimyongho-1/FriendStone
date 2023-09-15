@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
@@ -57,33 +58,35 @@ public class TargetingCamera : MonoBehaviour
     }
 
     public IEnumerator TargetCo = null;
-    public void StartTargetting(IBody attacker)
+    public void StartTargetting(IBody attacker, Func<IBody, IBody, IEnumerator> RegisterCo)
     {
         Debug.Log(attacker.TR.name+"의 타겟팅 시도");
 
         // 현재 타겟팅 코루틴 등록 및 실행
-        TargetCo = TargettingCo(attacker);
+        TargetCo = TargettingCo(attacker, RegisterCo);
         StartCoroutine(TargetCo);
     }
     
-    public IEnumerator TargettingCo(IBody attacker)
+    public IEnumerator TargettingCo(IBody attacker, Func<IBody, IBody, IEnumerator> RegisterCo)
     {
-        // 공격궤적을 그리는 라인렌더러 실행
-        StartCoroutine(DrawLine(attacker.Pos));
-        StartCoroutine(attacker.StartReadyCoAnimation());
-
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
         yield return new WaitForSeconds(0.15f);
+        // 공격궤적을 그리는 라인렌더러 실행
+        StartCoroutine(DrawLine(attacker.Pos));
+
+        // 미니언의 경우 선택되었단 표시를 코루틴 애니메이션 실행
+        if (attacker.bodyType == BodyType.Minion)
+        { StartCoroutine(attacker.StartReadyCoAnimation()); }
+
+        Vector3 camPos = Camera.main.transform.position;
         while (true)
         {
             // 현재 유저의 커서포인트 월드포지션
             Vector3 CursorPos = Camera.main.ScreenToWorldPoint
-               (new Vector3(Input.mousePosition.x, Input.mousePosition.y, +6.5f));
+               (new Vector3(Input.mousePosition.x, Input.mousePosition.y, -camPos.z));
 
-            // 방향 벡터를 구하고
-            Vector2 dir = CursorPos - attacker.Pos;
-            // 현재 커서위치로 레이캐스팅 시작
-            RaycastHit2D hit = Physics2D.Raycast(attacker.Pos, dir, 20f);
+            // 현재 마우스 위치에 충돌체있는지 검사
+            RaycastHit2D hit = Physics2D.Raycast(CursorPos,Vector2.zero);
 
             // 마우스 클릭과 충돌체 확인시 성공
             if (Input.GetMouseButtonDown(0))
@@ -91,14 +94,17 @@ public class TargetingCamera : MonoBehaviour
                 LR.positionCount = 0;
                 if (hit.collider != null)
                 {
-                    StartCoroutine(attacker.ExitReadyCoAnimation());
+                    if (attacker.bodyType == BodyType.Minion)
+                    { StartCoroutine(attacker.ExitReadyCoAnimation()); }
+                       
                     // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
                     
                     Debug.Log("충돌체 이름 : " + hit.collider.name);
                 }
                 else
                 {
-                    StartCoroutine(attacker.ExitReadyCoAnimation());
+                    if (attacker.bodyType == BodyType.Minion)
+                    { StartCoroutine(attacker.ExitReadyCoAnimation()); }
                     Debug.Log("충돌체 없으면 끝");
                 }
                 

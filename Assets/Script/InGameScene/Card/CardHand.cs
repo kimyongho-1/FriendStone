@@ -172,7 +172,7 @@ public class CardHand : CardEle
     public IEnumerator FadeOutCo()
     {
         // 삭제전 핸드매니저에서 핸드카드들 재정렬 시작
-        GAME.Manager.IGM.Hand.CardAllignment();
+        GAME.Manager.StartCoroutine(GAME.Manager.IGM.Hand.CardAllignment());
 
         // 투명화 위해 모든 TMP와 SR을 묶기
         List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat ,Type};

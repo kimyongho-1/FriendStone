@@ -10,7 +10,7 @@ public interface IBody // 공격을 받을수 있는 모든 객체에 부착
     
     #region 공통 컴포넌트
     public Transform TR { get; } // 트랜스폼
-    public Vector3 Pos { get { return TR.localPosition; } } // 현재 포지션값
+    public Vector3 Pos { get { return TR.position; } } // 현재 포지션값
     public Vector3 OriginPos { get; set; } // 고유위치
     #endregion
 

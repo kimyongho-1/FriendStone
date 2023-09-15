@@ -474,9 +474,8 @@ GameObject:
   - component: {fileID: 53676724}
   - component: {fileID: 53676727}
   - component: {fileID: 53676726}
-  - component: {fileID: 53676725}
   m_Layer: 0
-  m_Name: Deck
+  m_Name: PlayerDeck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -492,32 +491,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.00048979424, y: -0.13052534, z: 0.0037203552, w: 0.9914379}
   m_LocalPosition: {x: 6.5, y: 0, z: -0.03}
-  m_LocalScale: {x: 0.3, y: 1.4026, z: 0.65}
+  m_LocalScale: {x: 0.3, y: 1.4, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1194378270}
   m_LocalEulerAnglesHint: {x: 0, y: -15, z: 0.43}
---- !u!65 &53676725
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 53676723}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &53676726
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3402,7 +3380,7 @@ MonoBehaviour:
   skillIcon: {fileID: 1293814453}
   WpIcon: {fileID: 223058946}
   PlayerIcon: {fileID: 1129772995}
-  skillData: {fileID: 0}
+  heroSkill: {fileID: 0}
   weaponData:
     cardName: 
     cardDescription: 
@@ -3804,7 +3782,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 200
   m_Sprite: {fileID: -2130480991, guid: 8d6bf0d352940bc4ab37aab859e8204d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4982,9 +4960,8 @@ GameObject:
   - component: {fileID: 943837732}
   - component: {fileID: 943837735}
   - component: {fileID: 943837734}
-  - component: {fileID: 943837733}
   m_Layer: 0
-  m_Name: Deck
+  m_Name: PlayerDrawingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4999,33 +4976,12 @@ Transform:
   m_GameObject: {fileID: 943837731}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00048979424, y: -0.13052534, z: 0.0037203552, w: 0.9914379}
-  m_LocalPosition: {x: 6.43, y: -0, z: -0.05}
-  m_LocalScale: {x: 0.071043, y: 1.4026, z: 0.65}
+  m_LocalPosition: {x: 6.5, y: 0, z: -0.03}
+  m_LocalScale: {x: 0.07500001, y: 1.4026, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1194378270}
   m_LocalEulerAnglesHint: {x: 0, y: -15, z: 0.43}
---- !u!65 &943837733
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 943837731}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &943837734
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -5785,6 +5741,7 @@ Transform:
   - {fileID: 53676724}
   - {fileID: 943837732}
   - {fileID: 1894252056}
+  - {fileID: 1484714451}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1194378271
@@ -5799,11 +5756,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b0bc286da404e8459f7252a5ada9aa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerHand: {fileID: 186243240}
-  enemyHand: {fileID: 1311765367}
+  PlayerHandGO: {fileID: 186243240}
+  EnemyHandGO: {fileID: 1311765367}
+  PlayerDeck: {fileID: 53676724}
+  EnemyDeck: {fileID: 1894252056}
+  PlayerDrawingCard: {fileID: 943837732}
+  EnemyDrawingCard: {fileID: 1484714451}
   PlayerHand: []
   EnemyHand: []
   prefab: {fileID: 5054851143355621256, guid: 8c31cfcc07e27644aaa78608c63c119f, type: 3}
+  punConsist: 0
 --- !u!1 &1207020744
 GameObject:
   m_ObjectHideFlags: 0
@@ -5813,14 +5775,16 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1207020745}
+  - component: {fileID: 1207020748}
   - component: {fileID: 1207020746}
+  - component: {fileID: 1207020747}
   m_Layer: 0
   m_Name: ReplyBackGround
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1207020745
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5893,6 +5857,63 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!61 &1207020747
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1207020744}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0.65625, y: 0.875, z: 0.875, w: 0.65625}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2, y: 2}
+    newSize: {x: 2, y: 2}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1.8, y: 1.8}
+  m_EdgeRadius: 0
+--- !u!114 &1207020748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1207020744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a438f310bc258914793ea54c6803f022, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1215053529
 GameObject:
   m_ObjectHideFlags: 0
@@ -5903,6 +5924,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1215053530}
   - component: {fileID: 1215053531}
+  - component: {fileID: 1215053532}
   m_Layer: 0
   m_Name: PlayerImage
   m_TagString: Untagged
@@ -5977,6 +5999,51 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 1
   m_SpriteSortPoint: 0
+--- !u!61 &1215053532
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215053529}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 7.2, y: 9.59}
+    newSize: {x: 7.2, y: 9.59}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 6.57, y: 7.37}
+  m_EdgeRadius: 0
 --- !u!1 &1282446326
 GameObject:
   m_ObjectHideFlags: 0
@@ -6203,7 +6270,7 @@ MonoBehaviour:
   skillIcon: {fileID: 1956069156}
   WpIcon: {fileID: 1732802082}
   PlayerIcon: {fileID: 1403710391}
-  skillData: {fileID: 0}
+  heroSkill: {fileID: 207953231}
   weaponData:
     cardName: 
     cardDescription: 
@@ -7395,6 +7462,89 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 101
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1484714450
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1484714451}
+  - component: {fileID: 1484714454}
+  - component: {fileID: 1484714453}
+  m_Layer: 0
+  m_Name: EnemyDrawingCard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1484714451
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1484714450}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.001981885, y: -0.1305112, z: 0.015053905, w: 0.9913306}
+  m_LocalPosition: {x: 6.47, y: 2.69, z: -0.03}
+  m_LocalScale: {x: 0.074999996, y: 1.4026, z: 0.4}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1194378270}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1484714453
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1484714450}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1484714454
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1484714450}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1503279148
 GameObject:
   m_ObjectHideFlags: 0
@@ -9640,7 +9790,7 @@ LineRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 200
   m_Positions:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 1}
@@ -9755,9 +9905,8 @@ GameObject:
   - component: {fileID: 1894252056}
   - component: {fileID: 1894252059}
   - component: {fileID: 1894252058}
-  - component: {fileID: 1894252057}
   m_Layer: 0
-  m_Name: DrawingCard
+  m_Name: EnemyDeck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9773,32 +9922,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.001981885, y: -0.1305112, z: 0.015053905, w: 0.9913306}
   m_LocalPosition: {x: 6.47, y: 2.69, z: -0.03}
-  m_LocalScale: {x: 0.3, y: 1.4026, z: 0.65}
+  m_LocalScale: {x: 0.3, y: 1.4026, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1194378270}
   m_LocalEulerAnglesHint: {x: 0, y: -15, z: 1.74}
---- !u!65 &1894252057
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1894252055}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1894252058
 MeshRenderer:
   m_ObjectHideFlags: 0
