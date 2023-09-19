@@ -1,6 +1,6 @@
 {
-  "att": 0,
-  "hp": 0,
+  "att": 8,
+  "hp": 4,
   "isTaunt": false,
   "isCharge": false,
   "cardName": "허니츄러스",
@@ -9,7 +9,7 @@
   "cost": 4,
   "cardClass": 2,
   "cardType": 0,
-  "cardRarity": 0,
+  "cardRarity": 2,
   "associatedHandler": null,
   "evtDatas": [
     {

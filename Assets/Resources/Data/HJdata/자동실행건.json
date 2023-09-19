@@ -1,0 +1,27 @@
+{
+  "att": 0,
+  "hp": 0,
+  "isTaunt": false,
+  "isCharge": false,
+  "cardName": "자동실행건",
+  "cardDescription": "내 영웅의 체력을 5회복시킵니다",
+  "cardIdNum": 5,
+  "cost": 3,
+  "cardClass": 0,
+  "cardType": 0,
+  "cardRarity": 0,
+  "associatedHandler": "",
+  "evtDatas": [
+    {
+      "$type": "AttackHandler, Assembly-CSharp",
+      "attTargeting": 1,
+      "attType": 0,
+      "attFX": 0,
+      "attAmount": 3,
+      "when": 0,
+      "area": 0,
+      "faction": 2,
+      "type": 1
+    }
+  ]
+}

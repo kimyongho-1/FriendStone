@@ -1,12 +1,11 @@
 {
   "cardName": "치트키",
   "cardDescription": "적 영웅에게 피해를 20줍니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 303,
   "cost": 10,
   "cardClass": 3,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

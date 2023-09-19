@@ -1,12 +1,11 @@
 {
   "cardName": "소주먹이기",
   "cardDescription": "대상을 선택해 2 치료합니다. 소주병 던지기를 내 손으로 가져옵니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 4,
   "cost": 2,
   "cardClass": 0,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

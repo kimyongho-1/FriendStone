@@ -1,12 +1,15 @@
 {
+  "att": 4,
+  "hp": 4,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "블핑 지수",
   "cardDescription": "낼때 : 양 옆 하수인에게 +1/+1을 부여합니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 6,
   "cost": 4,
   "cardClass": 0,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

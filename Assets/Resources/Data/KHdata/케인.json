@@ -1,12 +1,15 @@
 {
+  "att": 4,
+  "hp": 4,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "케인",
   "cardDescription": "내 영웅의 체력을 5회복하고, 상대 영웅에게 피해를 5줍니다, 카드를 5장 뽑습니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 32,
   "cost": 5,
   "cardClass": 2,
   "cardType": 0,
+  "cardRarity": 2,
   "associatedHandler": null,
   "evtDatas": [
     {

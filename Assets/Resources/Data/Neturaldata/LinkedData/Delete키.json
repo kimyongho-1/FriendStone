@@ -1,12 +1,11 @@
 {
   "cardName": "Delete키",
   "cardDescription": "무작위 적 하수인을 처치합니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 302,
   "cost": 0,
   "cardClass": 3,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

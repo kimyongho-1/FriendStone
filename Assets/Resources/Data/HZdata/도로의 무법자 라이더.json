@@ -1,12 +1,15 @@
 {
+  "att": 4,
+  "hp": 3,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "도로의 무법자 라이더",
   "cardDescription": "죽을떄 : 무작위 적에게 피해를 4줍니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 20,
   "cost": 4,
   "cardClass": 1,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

@@ -1,12 +1,15 @@
 {
+  "att": 2,
+  "hp": 2,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "간호사",
   "cardDescription": "낼떄 : 내 영웅을 3 치료합니다",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 37,
   "cost": 2,
   "cardClass": 3,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

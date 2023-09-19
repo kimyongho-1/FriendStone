@@ -1,12 +1,11 @@
 {
   "cardName": "냉수한잔",
   "cardDescription": "체력을 2 회복하고, 카드를 2장 뽑습니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 9,
   "cost": 2,
   "cardClass": 0,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

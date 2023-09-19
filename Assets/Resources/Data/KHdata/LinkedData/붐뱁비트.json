@@ -1,12 +1,11 @@
 {
   "cardName": "붐뱁비트",
   "cardDescription": "카드를 2장 뽑습니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 201,
   "cost": 2,
   "cardClass": 2,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

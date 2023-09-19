@@ -5,12 +5,11 @@
   "isCharge": false,
   "cardName": "성실한 라이더",
   "cardDescription": null,
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 13,
   "cost": 2,
   "cardClass": 1,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": []
 }

@@ -7,6 +7,7 @@ public class HeroSkill : MonoBehaviour, IBody
 {
     Hero owenrUser;
     Func<IBody, IBody, IEnumerator> skillFunc;
+    public SkillData data ;
     # region
     public bool IsMine { get; set; }
     public int PunId { get; set; }
@@ -35,10 +36,29 @@ public class HeroSkill : MonoBehaviour, IBody
         owenrUser = user;   
         switch (GAME.Manager.RM.GameDeck.ownerClass)
         {
-            case Define.classType.HJ: skillFunc = (IBody a, IBody t) => { return HJClick(a, t); }; break;
-            case Define.classType.HZ: skillFunc = (IBody a, IBody t) => { return HZClick(a, t); }; break;
-            case Define.classType.KH: skillFunc = (IBody a, IBody t) => { return KHClick(a, t); }; break;
+            case Define.classType.HJ:
+                data = new HJskill();
+                data.Name = "소주 맥이기";
+                data.Desc = "마우스로 적 대상을 선택해 피해를 2 줍니다";
+                GAME.Manager.IGM.Hero.Player.skillImg.sprite = 
+                data.Image = GAME.Manager.RM.GetImage(Define.classType.HJ,4);
+                break;
+            case Define.classType.HZ:
+                data = new HZskill();
+                data.Name = "공부 시키기";
+                data.Desc = "마우스로 대상을 선택해 +1/+1을 부여합니다";
+                GAME.Manager.IGM.Hero.Player.skillImg.sprite =
+                data.Image = GAME.Manager.RM.GetImage(Define.classType.HZ, 15);
+                break;
+            case Define.classType.KH:
+                data = new KHskill();
+                data.Name = "감자탕 먹이기";
+                data.Desc = "대상을 선택해 2치유합니다";
+                GAME.Manager.IGM.Hero.Player.skillImg.sprite =
+                data.Image = GAME.Manager.RM.GetImage(Define.classType.KH, 28);
+                break;
         }
+        skillFunc = data.SkillClickEvt;
     }
 
     public void ClickedOnSkill(GameObject go)
@@ -52,26 +72,43 @@ public class HeroSkill : MonoBehaviour, IBody
         GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
 
         // 현재 타겟팅 코루틴 등록 및 실행
-        GAME.Manager.IGM.TC.TargetCo = GAME.Manager.IGM.TC.TargettingCo(this, skillFunc);
+        GAME.Manager.IGM.TC.TargetCo = GAME.Manager.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" });
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
         GAME.Manager.IGM.TC.StartCoroutine(GAME.Manager.IGM.TC.TargetCo);
     }
 
 
-    public IEnumerator HJClick(IBody attacker, IBody target)
+}
+
+public abstract class SkillData
+{
+    public abstract IEnumerator SkillClickEvt(IBody attacker, IBody target);
+    public string Desc,Name;
+    public Sprite Image;
+}
+
+public class HJskill : SkillData
+{
+    public override IEnumerator SkillClickEvt(IBody attacker, IBody target)
     {
         // 대상에게 2 피해주기
         yield return null;
-    }     
-    public IEnumerator HZClick(IBody attacker, IBody target)
+    }
+}
+public class HZskill : SkillData
+{
+    public override IEnumerator SkillClickEvt(IBody attacker, IBody target)
     {
         // 무작위 아군에게 +1/+1 버프
-        yield return null; 
-    }   
-    public IEnumerator KHClick(IBody attacker, IBody target)
+        yield return null;
+    }
+}
+public class KHskill : SkillData
+{
+    public override IEnumerator SkillClickEvt(IBody attacker, IBody target)
     { 
         // 대상을 2치료
-        yield return null; 
+        yield return null;
     }
 }

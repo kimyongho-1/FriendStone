@@ -1,12 +1,11 @@
 {
   "cardName": "인방보기",
   "cardDescription": "게임방송,버튜버방송,먹방 중 하나 고릅니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 30,
   "cost": 2,
   "cardClass": 2,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

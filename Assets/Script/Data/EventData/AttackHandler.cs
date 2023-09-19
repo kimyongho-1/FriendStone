@@ -7,7 +7,6 @@ public class AttackHandler : CardBaseEvtData
 {
     public Define.attTargeting attTargeting;
     public Define.attType attType;
-    public Define.attExtraArea attExtraArea;
     public Define.attFX attFX;
     public int attAmount;
 }

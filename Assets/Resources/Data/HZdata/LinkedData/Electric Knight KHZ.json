@@ -5,12 +5,11 @@
   "isCharge": true,
   "cardName": "Electric Knight KHZ",
   "cardDescription": "도발, 돌진, 엔지니어가 아닌 Knight가 되버렸군요!",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 124,
   "cost": 5,
   "cardClass": 1,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": []
 }

@@ -1,12 +1,11 @@
 {
   "cardName": "헬스장",
   "cardDescription": "내 영웅에게 피해를 5주고 , 무작위 아군에게 +4/+4를 줍니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 29,
   "cost": 5,
   "cardClass": 2,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

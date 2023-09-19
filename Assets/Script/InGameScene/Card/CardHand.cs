@@ -30,7 +30,22 @@ public class CardHand : CardEle
         data = dataParam;
         cardName.text = data.cardName;
         Description.text = data.cardDescription;
-        Stat.text = "";
+        Description.fontSize = (data.cardDescription.Length > 25) ? 18 : 15;
+        // 카드 타입 표시
+        switch (data.cardType)
+        {
+            case Define.cardType.minion:
+                MinionCardData cardData = data as MinionCardData;
+                Stat.text = $"<color=yellow>ATT {cardData.att} <color=red>HP {cardData.hp} <color=black>몬스터";
+                break;
+            case Define.cardType.spell:
+                Stat.text = "<color=black>주문";
+                break;
+            case Define.cardType.weapon:
+                WeaponCardData wData = (WeaponCardData)data;
+                Stat.text = $"<color=yellow>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
+                break;
+        }
         Type.text = data.cardType.ToString();
         Cost.text = data.cost.ToString();
         cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
@@ -67,8 +82,6 @@ public class CardHand : CardEle
                 break;
         }
 
-        // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.Manager.IGM.ShowCardPopup(ref data, new Vector3(-5f, 0.8f, 0));
     }
 
     #region 마우스 이벤트
@@ -141,7 +154,6 @@ public class CardHand : CardEle
     }
     public void Dragging(Vector3 worldPos)
     {
-        Debug.Log(data.cardType); 
         GAME.Manager.IGM.Spawn.MinionAlignment(this, worldPos);
         if (data.cardType == Define.cardType.minion)
         {
@@ -169,10 +181,10 @@ public class CardHand : CardEle
     }
 
     // 카드 투명화로 소멸 코루틴 : 주로 카드 삭제 또는 미니언카드를 필드로 소환할떄 사용
-    public IEnumerator FadeOutCo()
+    public IEnumerator FadeOutCo(bool isMine = true)
     {
         // 삭제전 핸드매니저에서 핸드카드들 재정렬 시작
-        GAME.Manager.StartCoroutine(GAME.Manager.IGM.Hand.CardAllignment());
+        GAME.Manager.StartCoroutine(GAME.Manager.IGM.Hand.CardAllignment(isMine));
 
         // 투명화 위해 모든 TMP와 SR을 묶기
         List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat ,Type};

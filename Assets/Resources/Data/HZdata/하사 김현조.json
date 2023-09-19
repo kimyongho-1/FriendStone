@@ -1,12 +1,15 @@
 {
+  "att": 4,
+  "hp": 4,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "하사 김현조",
   "cardDescription": "필드의 하사 김현조 하나당 비용이 1씩 감소합니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 17,
   "cost": 4,
   "cardClass": 1,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

@@ -6,8 +6,8 @@ using System.IO;
 using UnityEngine;
 
 public class cardInfo
-{ 
-    public string  path;
+{
+    public string path;
     public Define.cardType type;
 }
 // 현재 모든 카드데이터에 접근할수있는 경로추적의 제이슨파일 구조
@@ -21,7 +21,7 @@ public class CardData
 {
     public string cardName;
     public string cardDescription;
-    public int cardIdNum; 
+    public int cardIdNum;
     public int cost;
     public Define.classType cardClass;
     public Define.cardType cardType;
@@ -30,7 +30,7 @@ public class CardData
     public List<CardBaseEvtData> evtDatas = new List<CardBaseEvtData>();
 
     #region GPT도움
-    // 사유 : php로부터 기존 유저가만든 덱데이터를 형성할떄
+    // 사유 : php로부터 기존 유저가만든 덱데이터를 형성할??
     // 덱 내부의 딕셔너리에 들어가는 카드데이터를 올바르게 형변환을 분명하였음에도
     // DeckViewPort.cs내 딕셔너리의 Contains함수를 사용하여도
     // 플레이모드 종료후 재접속시, 동일한 카드도 다른 카드로 인식하는 현상을 발견

@@ -1,12 +1,11 @@
 {
   "cardName": "공부",
   "cardDescription": "무작위 아군에게 +2/+2을 부여합니다",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 15,
   "cost": 2,
   "cardClass": 1,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

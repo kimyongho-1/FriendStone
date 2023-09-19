@@ -1,12 +1,15 @@
 {
+  "att": 2,
+  "hp": 2,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "메이드카페 누메짱",
   "cardDescription": "낼떄 : 양 옆 하수인에게 +2/+2를 줍니다",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 38,
   "cost": 4,
   "cardClass": 3,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

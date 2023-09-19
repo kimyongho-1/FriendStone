@@ -1,16 +1,15 @@
 {
-  "att": 0,
-  "hp": 0,
+  "att": 4,
+  "hp": 4,
   "isTaunt": false,
   "isCharge": false,
   "cardName": "이정용",
   "cardDescription": "필드의 하수인당 비용이 1씩 감소하고, 낼떄 +1/+1을 얻습니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 34,
   "cost": 10,
   "cardClass": 3,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

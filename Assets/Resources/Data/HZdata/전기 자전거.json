@@ -3,12 +3,11 @@
   "durability": 3,
   "cardName": "전기 자전거",
   "cardDescription": "자전거로 맞아본적 있나요?",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 19,
   "cost": 6,
   "cardClass": 1,
   "cardType": 2,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": []
 }

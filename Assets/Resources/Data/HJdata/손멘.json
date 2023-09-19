@@ -5,12 +5,11 @@
   "isCharge": false,
   "cardName": "손멘",
   "cardDescription": "턴이 시작될떄마다, 50프로의 확률로 다시 잠에 듭니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 1,
   "cost": 2,
   "cardClass": 0,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": "RandomSleep",
   "evtDatas": []
 }

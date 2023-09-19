@@ -53,7 +53,7 @@ public partial class SpawnManager : MonoBehaviour
         {
             // i - (count - 1) / 2 는 중심을 기준으로 -3, -2, -1, 0, 1, 2, 3 같은 변환을 유도
             float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
-            spawnPoint[i] = new Vector3(x, 0.5f, -0.1f);
+            spawnPoint[i] = new Vector3(x, 0.35f, -0.1f);
         }
     }
 
@@ -145,11 +145,16 @@ public partial class SpawnManager : MonoBehaviour
     {
         // 현재 핸드카드 (미니언) 정보 토대로 스폰 시작
         CardField cf = GameObject.Instantiate(prefab, Players);
-        cf.Init(card.data);
+        cf.Init(card.data,true);
         cf.PunId = card.PunId;
         cf.transform.localPosition = card.transform.localPosition;
         playerMinions.Insert(idx, cf);
         
+        CardHand tempch= card;
+        int ourIDX = GAME.Manager.IGM.Hand.PlayerHand.IndexOf(card);
+        Debug.Log($"idx : {idx} , ourIDX : {0}");
+        StartCoroutine(EnemySpawn( 0,idx));
+
         // 핸드 카드는 이제 필요없기에 소멸애니메이션 코루틴 실행 (삭제도 내부에서 진행)
         GAME.Manager.StartCoroutine(card.FadeOutCo());
 
@@ -162,18 +167,6 @@ public partial class SpawnManager : MonoBehaviour
             queue.Enqueue(playerMinions[i].gameObject);
             playerMinions[i].OriginPos = spawnPoint[i];
             StartCoroutine(move(playerMinions[i].transform, i));
-        }
-
-        // 모든 이동 코루틴 끝났을지, 다음 스폰포인트 위치값 초기화
-        StartCoroutine(waitCo()); 
-        IEnumerator waitCo()
-        {
-            // 이동 코루틴을 모아둔 queue의 갯수가 0 => 현재 이동코루틴 모두 실행 완료
-            yield return new WaitUntil(() => (queue.Count == 0));
-            // 소환될 미니언의 잠자는 모션 켜주기
-            cf.sleep.gameObject.SetActive(true);
-            // 새로운 위치 구하기
-            CalcSpawnPoint();
         }
 
         // 이동 애니메이션 코루틴
@@ -190,6 +183,19 @@ public partial class SpawnManager : MonoBehaviour
             }
             queue.Dequeue();
         }
+
+        StartCoroutine(wait());
+        IEnumerator wait()
+        {
+            // 모든 이동 코루틴 끝났을지, 다음 스폰포인트 위치값 초기화
+         // 이동 코루틴을 모아둔 queue의 갯수가 0 => 현재 이동코루틴 모두 실행 완료
+            yield return new WaitUntil(() => (queue.Count == 0));
+            // 소환될 미니언의 잠자는 모션 켜주기
+            cf.sleep.gameObject.SetActive(true);
+            // 새로운 위치 구하기
+            CalcSpawnPoint();
+        }
+        
     }
 
   

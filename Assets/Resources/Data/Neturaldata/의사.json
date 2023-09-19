@@ -1,12 +1,15 @@
 {
+  "att": 4,
+  "hp": 4,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "의사",
   "cardDescription": "낼떄 : 모든 아군을 3치료합니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 40,
   "cost": 5,
   "cardClass": 3,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

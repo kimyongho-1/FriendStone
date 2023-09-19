@@ -3,14 +3,13 @@
   "hp": 1,
   "isTaunt": false,
   "isCharge": true,
-  "cardName": "합입만",
+  "cardName": "한입만",
   "cardDescription": "돌진",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 41,
   "cost": 7,
   "cardClass": 3,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": []
 }

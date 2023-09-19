@@ -6,7 +6,10 @@ using UnityEngine;
 [Serializable]
 public class CardBaseEvtData 
 {
-    public Define.evtWhen when; // 이벤트가 발동할 순간
-    public Define.evtArea area; // 자동 실행건인지 여부 ( NONE ), 아니라면 유저가 고를 영역 범위 선택
+    public Define.evtWhen when; // 이벤트가 발동할 순간 : 카드를 손에서 낼떄, 미니언카드라면 죽을떄.. 등등
+    
+    public Define.evtArea area; // 어느 진영이 대상인지 : 유저 | 적 | 모두
+    public Define.evtFaction faction; // 진영의 어떤 타입 : 영웅만 | 미니언 | 모두
+
     public Define.evtType type; // 어떤 이벤트인지 : 치료 공격 드로우..등등
 }

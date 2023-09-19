@@ -1,12 +1,15 @@
 {
+  "att": 2,
+  "hp": 1,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "무면허라이더",
   "cardDescription": "돌진, 낼떄 : 내게 피해를 2 줍니다",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 12,
   "cost": 1,
   "cardClass": 1,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

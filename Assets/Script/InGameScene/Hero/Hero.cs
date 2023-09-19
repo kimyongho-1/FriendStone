@@ -26,7 +26,7 @@ public class Hero : MonoBehaviour, IBody
     public bool IsMine { get; set; }
     public int PunId { get; set; }
     public Define.BodyType bodyType { get { return Define.BodyType.Hero; } }
-    public Transform TR { get { return this.transform; } }
+    public Transform TR { get { return PlayerIcon.transform; } }
 
     public Vector3 OriginPos { get; set; }
     #endregion
@@ -36,18 +36,19 @@ public class Hero : MonoBehaviour, IBody
     public void Awake()
     {
         OriginPos = transform.localPosition;
-        Col = PlayerIcon.GetComponent<Collider2D>();
-        Debug.Log(Col);
+        Col = GetComponent<Collider2D>();
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
+        gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
+        this.PunId = (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000);
 
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)
         {
             // 영웅 아이콘 좌클릭 => 무기공격
-            GAME.Manager.UM.BindEvent(PlayerIcon, HeroAttack, Define.Mouse.ClickL, Define.Sound.Ready);
+            GAME.Manager.UM.BindEvent(this.gameObject, HeroAttack, Define.Mouse.ClickL, Define.Sound.Ready);
 
             // 영웅 아이콘 우클릭 => 감정표현
-            GAME.Manager.UM.BindEvent(PlayerIcon, HeroSpeech, Define.Mouse.ClickR, Define.Sound.None);
+            GAME.Manager.UM.BindEvent(this.gameObject, HeroSpeech, Define.Mouse.ClickR, Define.Sound.None);
 
             // 각각의 말풍선에 이벤트 연결
             for (int i = 0; i < Select.gameObject.transform.childCount; i++)
@@ -79,7 +80,7 @@ public class Hero : MonoBehaviour, IBody
     public void ShowSkillIcon() // 영웅능력 아이콘에 커서를 일정시간 가져다 댈시
     {
         // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.Manager.IGM.ShowCardPopup(ref heroSkill, new Vector3(4f, -1.3f, 0));
+        GAME.Manager.IGM.ShowHeroSkill(new Vector3(4f, -1.3f, 0), heroSkill.data);
     }
     #endregion
 

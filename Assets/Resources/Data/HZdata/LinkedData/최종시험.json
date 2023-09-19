@@ -1,12 +1,11 @@
 {
   "cardName": "최종시험",
   "cardDescription": "무작위 아군에게 +5/+5을 주고, 전기기사 김현조를 내 손으로 가져옵니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 123,
   "cost": 5,
   "cardClass": 1,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

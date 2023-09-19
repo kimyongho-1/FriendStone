@@ -1,12 +1,11 @@
 {
   "cardName": "필기시험",
   "cardDescription": "무작위 아군에게 +3/+1을 주고, 실기시험을 내 손으로 가져옵니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 121,
   "cost": 3,
   "cardClass": 1,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

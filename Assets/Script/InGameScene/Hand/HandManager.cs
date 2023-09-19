@@ -1,7 +1,10 @@
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 // to do list
@@ -14,8 +17,9 @@ public class HandManager : MonoBehaviour
     public Transform PlayerDeck, EnemyDeck, PlayerDrawingCard, EnemyDrawingCard;
     public List<CardHand> PlayerHand, EnemyHand;
     public CardHand prefab;
-    public int punConsist = 0;
+    public int punConsist = 1;
     Queue<CardData> deckCards = new Queue<CardData>();
+    CardData card, card2;
     private void Awake()
     {
         GAME.Manager.IGM.Hand = this;
@@ -40,8 +44,10 @@ public class HandManager : MonoBehaviour
             list[rand] = temp;
             deckCards.Enqueue(list[i]);
         }
-        //CardDrawing(new int[] { 1,1,1,1,1,1,1});
-        StartCoroutine(CardDrawing(10));
+
+     
+        StartCoroutine(CardDrawing(6));
+        StartCoroutine(CardDrawing(new int[] { 1,2,3,}));
     }
 
     
@@ -152,15 +158,16 @@ public class HandManager : MonoBehaviour
             CardData cd = deckCards.Dequeue();
             // 인게임 카드 프리팹 생성
             CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
+            ch.transform.position = new Vector3(9.45f,3.26f,0);
             // 인게임 카드 초기화
             ch.Init(ref cd);
-
+            ch.IsMine = false;
             // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
             ch.PunId = puns[i];
 
             // 적의 핸드카드에 포함시키기
             EnemyHand.Add(ch);
-
+            yield return new WaitUntil(() => (DrawingCo == null));
             // 손패의 카드들 정렬 실행후, 나머지 드로우
             yield return StartCoroutine(CardAllignment(false));
         }
@@ -193,19 +200,23 @@ public class HandManager : MonoBehaviour
         float Height = 0.3f * (hand.Count / 10f);
         // 카드 갯수에 비례하여 z축 회전 적용
         float angle = 18f * ((hand.Count - 1) / 10f);
-        int max = Mathf.Max(hand.Count - 1,1);
+        int max = Mathf.Max(hand.Count - 1, 1);
         for (int i = 0; i < hand.Count; i++)
         {
             // 0으로 나누면 안되기에
-            float ratio = ((float)i / max );
+            float ratio = ((float)i / max);
 
             // 위치 값 구하기
             float x = Mathf.Lerp(Left, Right, ratio);
-            float y = -2.5f + Mathf.Sin(ratio * Mathf.PI) * Height;
+            float y = (isMine) ? -2.5f + Mathf.Sin(ratio * Mathf.PI) * Height
+                : 4.7f - Mathf.Sin(ratio * Mathf.PI) * Height ;
 
             // 고유 위치와 회전값 지정 
             hand[i].OriginPos = new Vector3(x, y, -0.5f);
-            hand[i].originRot = new Vector3(0, 0, Mathf.Cos(ratio * Mathf.PI) * angle);
+            hand[i].originRot = new Vector3(0, 0,
+                (isMine) ? Mathf.Cos(ratio * Mathf.PI) * angle
+                : Mathf.Cos(ratio * Mathf.PI) * -angle);
+       
 
             // 위치로 이동시키기
             StartCoroutine(HandCardMove(hand[i]));

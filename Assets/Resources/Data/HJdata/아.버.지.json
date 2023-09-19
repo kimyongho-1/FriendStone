@@ -5,12 +5,11 @@
   "isCharge": true,
   "cardName": "아.버.지",
   "cardDescription": "도오오올지이이인",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 11,
   "cost": 10,
   "cardClass": 0,
   "cardType": 0,
+  "cardRarity": 2,
   "associatedHandler": null,
   "evtDatas": []
 }

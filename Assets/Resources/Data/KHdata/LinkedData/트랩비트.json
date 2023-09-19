@@ -1,12 +1,11 @@
 {
   "cardName": "트랩비트",
   "cardDescription": "무작위 적에게 피해를 3줍니다",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 203,
   "cost": 2,
   "cardClass": 2,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

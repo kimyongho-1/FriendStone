@@ -18,19 +18,20 @@ public class Define
 
     #region 카드 이벤트 데이터
     public enum evtWhen { onPlayed, onDead, onHand, } // 카드의 어느순간에 이벤트 실행할지 : 낼떄, 미니언죽을떄, 손에있을떄
-    public enum evtArea // 이벤트 타겟팅의범위 : None => 자동실행건, 그외 유저가 선택할수잇는 범위 또는 자동실행의 범위
-    { None, All, enemy, enemyHero, allEnemy, player, playerHero, allPlayer, } 
+    public enum evtArea  // 유저가 직접 선택할시엔 포스트프로세싱의 영역이 되며, 자동이나 랜덤 실행시엔 범위가 되어줄 영역
+    { Enemy, Player, All } //None, All, enemy, enemyHero, allEnemy, player, playerHero, allPlayer, 
+    public enum evtFaction // 위 이벤트범위에서 좀 더 상세한 카테고리범위 역할 : 그래서 미니언이냐 영웅이냐 등등..
+    { All, Minion, Hero,   }
     public enum evtType { buff, attack, restore, utill , } // 어떤 이벤트인지 : 버프효과, 공격, 회복, 드로우 등
 
     // 위의 evtType별로 사용할 변수들
 
     #region 공격 이벤트 데이터 프로퍼티
-    public enum attTargeting { auto , userSelect, randomOnEvtArea } // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
+    public enum attTargeting { userSelect, randomOnEvtArea} // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
     public enum attType { Damage, Kill } // 공격이벤트 타입 : 일반공격 , 죽이기
-    public enum attExtraArea // 추가 공격범위 : 없음, 타겟의 양옆 대상까지 , 공격대상의 영웅까지, 카드의 소유자
-    { None, withTargetsBothSide , withTargetsHero, ownerHero }
     public enum attFX // 재생할 효과 프리팹
     { None, arrow, }
+
     #endregion
 
     #region 드로우 이벤트 데이터 프로퍼티
@@ -41,7 +42,8 @@ public class Define
     #region 버프 이벤트 데이터 프로퍼티
     public enum buffTargeting { auto, userSelect, randomOnEvtArea } // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
     public enum buffType { att, hp, atthp, cost } // 어떤 버프 이벤트인지
-    public enum buffExtraArea { None, withOwnerHero, withBothSide,onlyBothSide, someId } // 버프이벤트의 추가 대상여부 : 없음, 카드의 주인포함, 양옆 하수인, 특정id 하수인기준으로
+    public enum buffExtraArea // 버프이벤트의 추가 대상여부 : 없음, 카드의 주인포함, 양옆 하수인, 특정id 하수인기준으로
+    { None, withBothSide,onlyBothSide, someId } 
     public enum buffFX { None, }
     #endregion
 

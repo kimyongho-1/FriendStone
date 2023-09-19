@@ -1,12 +1,11 @@
 {
   "cardName": "등산",
   "cardDescription": "소주 마시기 3장을 내 손으로 가져옵니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 8,
   "cost": 3,
   "cardClass": 0,
   "cardType": 1,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

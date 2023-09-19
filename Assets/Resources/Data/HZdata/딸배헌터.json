@@ -1,12 +1,15 @@
 {
+  "att": 2,
+  "hp": 2,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "딸배헌터",
   "cardDescription": "낼떄 : 라이더 카드들당 +1/+1을 얻습니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 14,
   "cost": 4,
   "cardClass": 1,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

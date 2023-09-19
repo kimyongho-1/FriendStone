@@ -1,12 +1,15 @@
 {
+  "att": 5,
+  "hp": 4,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "히딩크",
   "cardDescription": "낼떄 : 양쪽 모두 카드를 2장 뽑습니다",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 39,
   "cost": 4,
   "cardClass": 3,
   "cardType": 0,
+  "cardRarity": 0,
   "associatedHandler": null,
   "evtDatas": [
     {

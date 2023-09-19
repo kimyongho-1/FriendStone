@@ -1,12 +1,15 @@
 {
+  "att": 4,
+  "hp": 5,
+  "isTaunt": false,
+  "isCharge": false,
   "cardName": "지오반나",
   "cardDescription": "내 하수인들의 수 만큼, +1/+1을 얻습니다.",
-  "dataPath": null,
-  "imagePath": null,
   "cardIdNum": 10,
   "cost": 6,
   "cardClass": 0,
   "cardType": 0,
+  "cardRarity": 2,
   "associatedHandler": null,
   "evtDatas": [
     {
