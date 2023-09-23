@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Photon.Pun.Demo.Procedural;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -19,7 +20,6 @@ public class HandManager : MonoBehaviour
     public CardHand prefab;
     public int punConsist = 1;
     Queue<CardData> deckCards = new Queue<CardData>();
-    CardData card, card2;
     private void Awake()
     {
         GAME.Manager.IGM.Hand = this;
@@ -45,9 +45,36 @@ public class HandManager : MonoBehaviour
             deckCards.Enqueue(list[i]);
         }
 
-     
-        StartCoroutine(CardDrawing(6));
-        StartCoroutine(CardDrawing(new int[] { 1,2,3,}));
+        deckCards.Clear();
+        // 관련카드들 생성
+        for (int i = 10000; i < 10004; i++)
+        {
+            // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
+            Define.cardType type = GAME.Manager.RM.PathFinder.Dic[i].type;
+            string jsonFile = GAME.Manager.RM.PathFinder.Dic[i].GetJson();
+            CardData card = null;
+            // 확인된 카드타입으로, 실제 카드타입으로 클래스화
+            switch (type)
+            {
+                case Define.cardType.minion:
+                   card = JsonConvert.DeserializeObject<MinionCardData>
+                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                    break;
+                case Define.cardType.spell:
+                    card = JsonConvert.DeserializeObject<SpellCardData>
+                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                break;
+                case Define.cardType.weapon:
+                    card = JsonConvert.DeserializeObject<WeaponCardData>
+                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                     break;
+                default: break;
+            }
+            card.cardDescription = "1"; deckCards.Enqueue(card);
+
+        }
+            StartCoroutine(CardDrawing(4));
+       // StartCoroutine(CardDrawing(new int[] { 1,2,3,}));
     }
 
     
@@ -101,7 +128,7 @@ public class HandManager : MonoBehaviour
             ch.IsMine = true;
 
             // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
-            ch.PunId = (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000) + punConsist;
+            ch.PunId = (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000) + punConsist++;
             // 나의 핸드카드에 포함시키기
             PlayerHand.Add(ch);
             yield return new WaitUntil(() => (DrawingCo == null)) ;
@@ -173,23 +200,23 @@ public class HandManager : MonoBehaviour
         }
     }
 
-    int playerMoveCount = 0;
-    int enemyMoveCount = 0;
     // 핸드 카드 정렬
     public IEnumerator CardAllignment(bool isMine = true)
     {
+        int playerMoveCount = 0;
+        int enemyMoveCount = 0;
+        if (isMine)
+        { playerMoveCount =0; }
+        else
+        { enemyMoveCount = 0; }
+
         // 현재 나 또는 적의 핸드중 무엇인지 확인
         List<CardHand> hand = (isMine) ? PlayerHand : EnemyHand;
 
         // 카드가 없으면 정렬을 수행할 필요가 없으므로 바로 취소
         if (hand.Count == 0) { yield break; }
 
-        // 정렬 코루틴 몇번 실행할지 확인 및 코루틴 잔여 확인용도
-        if (isMine)
-        { playerMoveCount = hand.Count; }
-        else
-        { enemyMoveCount = hand.Count; }
-
+       
         // Left와 Right 은 핸드카드의 좌우 최종길이의 범위
         // interval은 카드가 적을수록 카드간의 간격을 벌리는 범위
         float interval = Mathf.Lerp(0.5f, 0, (hand.Count) / 10f);
@@ -220,6 +247,12 @@ public class HandManager : MonoBehaviour
 
             // 위치로 이동시키기
             StartCoroutine(HandCardMove(hand[i]));
+            // 정렬 코루틴 몇번 실행할지 확인 및 코루틴 잔여 확인용도
+            if (isMine)
+            { playerMoveCount += 1; }
+            else
+            { enemyMoveCount += 1; }
+
 
             if (isMine)
             {
@@ -232,43 +265,48 @@ public class HandManager : MonoBehaviour
 
         // 정렬 코루틴 전부 수행됬는지 확인 및 대기
         yield return new WaitUntil(() => (isMine ? playerMoveCount == 0 : enemyMoveCount == 0));
+
+        IEnumerator HandCardMove(CardHand ch)
+        {
+            Vector3 euler = transform.rotation.eulerAngles;
+
+            if (euler.y > 180)
+            { euler.y -= 360f; }
+            if (euler.x > 180)
+            { euler.x -= 360f; }
+            if (euler.z > 180)
+            { euler.z -= 360f; }
+            ch.Ray = false;
+            Vector3 start = ch.transform.position;
+            Vector3 startRpt = euler;
+            Vector3 startScale = ch.transform.localScale;
+            //Debug.Log(ch.transform.rotation.eulerAngles);
+            float t = 0;
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 1.5f;
+                ch.transform.localScale =
+                    Vector3.Lerp(startScale, ch.originScale, t);
+                ch.transform.localRotation =
+                    Quaternion.Euler(Vector3.Lerp(startRpt, ch.originRot, t));
+                ch.transform.localPosition =
+                    Vector3.Lerp(start, ch.OriginPos, t);
+                yield return null;
+            }
+            ch.Ray = true;
+
+            // 소유여부에 따라, 현재 핸드정렬 코루틴 끝났음을 감소로 표현 => 이후 카운트가 0이되면 나머지 드로우 실행 , 반복
+            if (ch.IsMine == true)
+            {
+                playerMoveCount -= 1;
+            }
+            else
+            {
+                enemyMoveCount -= 1;
+            }
+        }
     }
 
     // 정렬 애니메이션 코루틴
-    public IEnumerator HandCardMove(CardHand ch)
-    {
-        Vector3 euler = transform.rotation.eulerAngles;
-        
-        if (euler.y > 180)
-        { euler.y -= 360f; }
-        if (euler.x > 180)
-        { euler.x -= 360f; }
-        if (euler.z > 180)
-        { euler.z -= 360f; }
-         ch.Ray = false;
-        Vector3 start = ch.transform.position;
-        Vector3 startRpt = euler;
-        //Debug.Log(ch.transform.rotation.eulerAngles);
-        float t = 0;
-        while (t < 1f) 
-        {
-            t += Time.deltaTime * 1.5f;
-            ch.transform.localRotation =
-                Quaternion.Euler(Vector3.Lerp(startRpt, ch.originRot, t));
-            ch.transform.localPosition =
-                Vector3.Lerp(start, ch.OriginPos, t);
-            yield return null;
-        }
-        ch.Ray = true;
-
-        // 소유여부에 따라, 현재 핸드정렬 코루틴 끝났음을 감소로 표현 => 이후 카운트가 0이되면 나머지 드로우 실행 , 반복
-        if (ch.IsMine == true)
-        { 
-            playerMoveCount -= 1; 
-        }
-        else
-        {
-            enemyMoveCount -= 1;
-        }
-    }
+    
 }

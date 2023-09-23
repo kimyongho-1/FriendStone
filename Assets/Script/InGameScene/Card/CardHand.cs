@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.ComponentModel;
 
 public class CardHand : CardEle
 {
@@ -25,8 +26,9 @@ public class CardHand : CardEle
         GAME.Manager.UM.BindEvent(this.gameObject, Dragging, Define.Mouse.Dragging);
         GAME.Manager.UM.BindEvent(this.gameObject, EndDrag, Define.Mouse.EndDrag);
     }
-    public void Init(ref CardData dataParam)
+    public void Init(ref CardData dataParam , bool isMine = true)
     {
+        IsMine = isMine;
         data = dataParam;
         cardName.text = data.cardName;
         Description.text = data.cardDescription;
@@ -183,9 +185,6 @@ public class CardHand : CardEle
     // 카드 투명화로 소멸 코루틴 : 주로 카드 삭제 또는 미니언카드를 필드로 소환할떄 사용
     public IEnumerator FadeOutCo(bool isMine = true)
     {
-        // 삭제전 핸드매니저에서 핸드카드들 재정렬 시작
-        GAME.Manager.StartCoroutine(GAME.Manager.IGM.Hand.CardAllignment(isMine));
-
         // 투명화 위해 모든 TMP와 SR을 묶기
         List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat ,Type};
         List<SpriteRenderer> imageList =    new List<SpriteRenderer>() { cardImage, cardBackGround};
@@ -207,25 +206,53 @@ public class CardHand : CardEle
     {
         Ray = false; // Ray를 비활성화시 Exit가 호출되지만, DragCo를 뒤에서 null로 초기화하여서 Exit 먼저 실행을 막기
         StopAllCoroutines();
-        if (GAME.Manager.IGM.Spawn.CheckInBox(
-            new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
-        {
-            // 현재 핸드목록에서 소환할 이 미니언카드 제거
-            GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
-            // 미니언 소환 완료시, 모든 핸드카드 레이활성 초기화
-            GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-            // 미니언 스폰 시작 (카드 소멸화 애니메이션 및 삭제는 StartSpawn내부에서 실행)
-            GAME.Manager.IGM.Spawn.StartSpawn(this);
-            return;
-        }
+     
         switch (data.cardType)
         {
             case Define.cardType.minion:
-               
+                if (GAME.Manager.IGM.Spawn.CheckInBox(
+                 new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
+                {
+                    // 현재 핸드목록에서 소환할 이 미니언카드 제거
+                    GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
+                    // 미니언 소환 완료시, 모든 핸드카드 레이활성 초기화
+                    GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                    // 미니언 스폰 시작 (카드 소멸화 애니메이션 및 삭제는 StartSpawn내부에서 실행)
+                    GAME.Manager.IGM.Spawn.StartSpawn(this);
+                    //핸드매니저에서 핸드카드들 재정렬 시작
+                    GAME.Manager.IGM.AddAction(GAME.Manager.IGM.Hand.CardAllignment(this.IsMine));
+                    return;
+                }
                 break;
             case Define.cardType.spell:
+                if (GAME.Manager.IGM.Spawn.CheckInBox(
+            new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
+                {
+                    // 현재 핸드목록에서 소환할 이 미니언카드 제거
+                    GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
+                    // 미니언 소환 완료시, 모든 핸드카드 레이활성 초기화
+                    GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                    // 미니언 스폰 시작 (카드 소멸화 애니메이션 및 삭제는 StartSpawn내부에서 실행)
+                    GAME.Manager.IGM.Spawn.StartSpawn(this);
+                    return;
+                }
                 break;
             case Define.cardType.weapon:
+                if (GAME.Manager.IGM.Spawn.CheckInBox(
+                 new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
+                {
+                    // 현재 핸드목록에서 카드 제거
+                    GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
+                    // a무기 착용, 모든 핸드카드 레이활성 초기화
+                    GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                    // 영웅 무기 착용 시작 ( 카드 소멸 애니메이션 코루틴은 함수 내부에서 실행)
+                    GAME.Manager.IGM.AddAction(GAME.Manager.IGM.Hero.Player.EquipWeapon(this));
+
+                    //핸드매니저에서 핸드카드들 재정렬 시작
+                    GAME.Manager.IGM.AddAction(GAME.Manager.IGM.Hand.CardAllignment(this.IsMine));
+
+                    return;
+                }
                 break;
         }
         GAME.Manager.IGM.Spawn.idx = -1000;

@@ -147,7 +147,7 @@ public class CardDataGenerator : EditorWindow
                     }
                     bh.buffAtt = EditorGUILayout.IntField("공격증가량", bh.buffAtt);
                     bh.buffHp = EditorGUILayout.IntField("체력증가량", bh.buffHp);
-                    bh.drawCount = EditorGUILayout.IntField("드로우 수", bh.drawCount);
+                    bh.costCount = EditorGUILayout.IntField("드로우 수", bh.costCount);
                     #endregion
                     SetProperty(bh);
                     // 현재 참조중인 데이터를 바뀐 타입클래스로 초기화

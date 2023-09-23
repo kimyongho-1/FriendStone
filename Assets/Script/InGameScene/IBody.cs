@@ -12,6 +12,11 @@ public interface IBody // 공격을 받을수 있는 모든 객체에 부착
     public Transform TR { get; } // 트랜스폼
     public Vector3 Pos { get { return TR.position; } } // 현재 포지션값
     public Vector3 OriginPos { get; set; } // 고유위치
+
+    
+    public int OriginHp { get; set; }
+    public int Att { get; set;  }
+    public int HP { get; set; }
     #endregion
 
 

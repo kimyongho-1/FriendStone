@@ -9,6 +9,7 @@ public class cardInfo
 {
     public string path;
     public Define.cardType type;
+    public string GetJson() { return Resources.Load<TextAsset>(path).ToString(); }
 }
 // 현재 모든 카드데이터에 접근할수있는 경로추적의 제이슨파일 구조
 public class CardPath

@@ -19,12 +19,16 @@ public class HeroSkill : MonoBehaviour, IBody
     public Vector3 OriginPos { get; set; }
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
+    public int OriginAtt { get; set; }
+    public int OriginHp { get; set; }
+    public int Att { get; set; }
+    public int HP { get; set; }
 
-#endregion
+    #endregion
 
     public void InitSkill(Hero user)
     {
-        bodyType = Define.BodyType.HeroSkill;
+        bodyType = Define.BodyType.None;
         TR = transform;
         Col = GetComponent<CircleCollider2D>();
 
@@ -65,17 +69,14 @@ public class HeroSkill : MonoBehaviour, IBody
     {
         // 레이 비활성화 : 이미 사용하였기에 다음 자신의 턴이 오기까지 해당 이벤트 실행 불가
         // 타겟팅 코루틴이 Null이 아닐시 : 현재 다른 드래깅클릭이 스킬컴포넌트를 클릭한 경우
-        if (Col.enabled == false || GAME.Manager.IGM.TC.TargetCo != null)
+        if (Col.enabled == false || GAME.Manager.IGM.TC.Arrow.gameObject.activeSelf == true)
         { return; }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
         GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
 
-        // 현재 타겟팅 코루틴 등록 및 실행
-        GAME.Manager.IGM.TC.TargetCo = GAME.Manager.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" });
-
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.IGM.TC.StartCoroutine(GAME.Manager.IGM.TC.TargetCo);
+        GAME.Manager.IGM.TC.StartCoroutine(GAME.Manager.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" }));
     }
 
 

@@ -15,12 +15,8 @@ public class CardEle : MonoBehaviour, IBody
             switch (data.cardType)
             {
                 case Define.cardType.minion:
-                    return Define.BodyType.Minion;
-                case Define.cardType.spell:
-                    return Define.BodyType.Hero;
-                case Define.cardType.weapon:
-                    return Define.BodyType.Weapon;
-                default : return Define.BodyType.Minion;
+                    return Define.BodyType.Meele;
+                default : return Define.BodyType.None;
             }
             
         } 
@@ -29,4 +25,8 @@ public class CardEle : MonoBehaviour, IBody
     public bool Ray { set { Col.enabled = value; } }
 
     public Vector3 OriginPos { get; set; }
+    public int OriginAtt { get; set; }
+    public int OriginHp { get; set; }
+    public int Att { get; set; }
+    public int HP { get; set; }
 }

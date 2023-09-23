@@ -11,11 +11,13 @@ public class InGameManager : MonoBehaviour
     public TextMeshPro cardName, Description, Stat, Type, cost;
     public SpriteRenderer cardImage;
 
+    public FindEvtHolder FindEvt { get; set; }
     public HeroManager Hero { get; set; }
     public HandManager Hand { get; set; }
     public SpawnManager Spawn { get; set; }
     public TargetingCamera TC { get; set; } 
     public BattleManager Battle { get; set; }
+    public TurnEndBtn Turn { get; set; }
     private void Awake()
     {
         GAME.Manager.IGM = this;

@@ -211,6 +211,22 @@
     "303": {
       "path": "Data/Neturaldata/치트키",
       "type": "spell"
+    },
+    "10000": {
+      "path": "발견테스트1",
+      "type": "minion"
+    },
+    "10001": {
+      "path": "획득테스트",
+      "type": "minion"
+    },
+    "10003": {
+      "path": "새로운 카드 데이터",
+      "type": "weapon"
+    },
+    "10002": {
+      "path": "새로운 카드 데이터",
+      "type": "weapon"
     }
   }
 }

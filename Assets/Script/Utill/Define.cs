@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Define 
 {
-    public enum BodyType { Hero, Minion, Weapon, HeroSkill }
+    public enum BodyType { None, Meele, Range }
 
     #region 카드 정보 데이터
     // 카드 종류
@@ -35,7 +35,7 @@ public class Define
     #endregion
 
     #region 드로우 이벤트 데이터 프로퍼티
-    public enum utillType { draw, find, acquisition ,sendItem } //  드로우, 발견이벤트, 획득, 상대에게 아이템전달
+    public enum utillType { draw, find, acquisition  } //  드로우, 발견이벤트, 획득
     
     #endregion
 

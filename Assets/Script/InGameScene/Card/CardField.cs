@@ -15,6 +15,7 @@ public class CardField : CardEle
     public bool attackable = true;
     public ParticleSystem sleep;
     public SpriteMask mask;
+    public int maxHp;
 
     // 미니언 카드가 공격을 한다 가정시, 부딪힐떄 위치가 겹치는 순간
     // 소팅 레이어가 동일하면 이미지가 겹치거나 꺠질 위험이 있어, 공격자가 최상단에 위치하도록 레이어 변경
@@ -37,6 +38,8 @@ public class CardField : CardEle
         {
             MinionCardData minionCardData = (MinionCardData)dataParam;
             data = dataParam;
+            Att = minionCardData.att;
+            HP = OriginHp = minionCardData.hp;
             AttTmp.text = minionCardData.att.ToString();
             HpTmp.text = minionCardData.hp.ToString();
             cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
@@ -94,21 +97,18 @@ public class CardField : CardEle
     {
         // 공격 가능한 상태가 아니거나
         // 이미 다른 객체가 타겟팅 중인데 이 객체를 클릭시 취소
-        if (!attackable || GAME.Manager.IGM.TC.TargetCo != null)
+        if (!attackable || GAME.Manager.IGM.TC.LR.gameObject.activeSelf == true)
         { return; }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
         GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
 
-        // 현재 타겟팅 코루틴 등록 및 실행
-        GAME.Manager.IGM.TC.TargetCo = GAME.Manager.IGM.TC.TargettingCo
+        // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
+        GAME.Manager.StartCoroutine(GAME.Manager.IGM.TC.TargettingCo
             (this,
             (IBody a, IBody t) => { return AttackCo(a, t); },
-            new string[] { "foe" , "foeHero"}
-            );
-        
-        // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.IGM.TC.StartCoroutine(GAME.Manager.IGM.TC.TargetCo);
+            new string[] { "foe", "foeHero" }
+            ));
     }
 
     public IEnumerator AttackCo(IBody attacker, IBody target)

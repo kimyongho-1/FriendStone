@@ -1,0 +1,13 @@
+{
+  "att": 3,
+  "durability": 2,
+  "cardName": "새로운 카드 데이터",
+  "cardDescription": "1",
+  "cardIdNum": 10003,
+  "cost": 0,
+  "cardClass": 0,
+  "cardType": 2,
+  "cardRarity": 0,
+  "associatedHandler": null,
+  "evtDatas": []
+}

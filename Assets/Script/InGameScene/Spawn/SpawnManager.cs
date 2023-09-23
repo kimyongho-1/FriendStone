@@ -153,7 +153,7 @@ public partial class SpawnManager : MonoBehaviour
         CardHand tempch= card;
         int ourIDX = GAME.Manager.IGM.Hand.PlayerHand.IndexOf(card);
         Debug.Log($"idx : {idx} , ourIDX : {0}");
-        StartCoroutine(EnemySpawn( 0,idx));
+       // StartCoroutine(EnemySpawn( 0,idx));
 
         // 핸드 카드는 이제 필요없기에 소멸애니메이션 코루틴 실행 (삭제도 내부에서 진행)
         GAME.Manager.StartCoroutine(card.FadeOutCo());
