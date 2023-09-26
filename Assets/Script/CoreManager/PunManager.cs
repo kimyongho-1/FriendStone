@@ -8,31 +8,31 @@ using UnityEngine.SceneManagement;
 public class PunManager : MonoBehaviourPunCallbacks
 {
     #region 랜덤매칭중, 내가 만든방에 누가 올떄까지 대기코루틴
-    IEnumerator waitCool;
-    IEnumerator waitCo()
-    {
-        float t = 0;
-        while (t < 5f)
-        {
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        if (PhotonNetwork.CurrentRoom.Players.Count < 2)
-        {
-            Debug.Log("대기 끝!");
-            waitCool = null;
-            // 현재 내가 만든방에서 나가기
-            PhotonNetwork.LeaveRoom();
-            // 방을 떠나고 다시 마스터서버로 접속까지 대기
-            yield return new WaitUntil(()=>(PhotonNetwork.NetworkClientState == ClientState.ConnectedToMasterServer));
-            // 처음부터 시작
-            // 다시 랜덤방 입장 시작 (다른 유저가 만들었을지 모르니)
-            StartRandomMatching();
-            yield break;
-        }
-
-    }
+   //IEnumerator waitCool;
+   //IEnumerator waitCo()
+   //{
+   //    float t = 0;
+   //    while (t < 5f)
+   //    {
+   //        t += Time.deltaTime;
+   //        yield return null;
+   //    }
+   //
+   //    if (PhotonNetwork.CurrentRoom.Players.Count < 2)
+   //    {
+   //        Debug.Log("대기 끝!");
+   //        waitCool = null;
+   //        // 현재 내가 만든방에서 나가기
+   //        PhotonNetwork.LeaveRoom();
+   //        // 방을 떠나고 다시 마스터서버로 접속까지 대기
+   //        yield return new WaitUntil(()=>(PhotonNetwork.NetworkClientState == ClientState.ConnectedToMasterServer));
+   //        // 처음부터 시작
+   //        // 다시 랜덤방 입장 시작 (다른 유저가 만들었을지 모르니)
+   //        StartRandomMatching();
+   //        yield break;
+   //    }
+   //
+   //}
     #endregion
 
     // 포톤서버 접속 시작
@@ -96,6 +96,7 @@ public class PunManager : MonoBehaviourPunCallbacks
     // LobbyScene의 덱아이콘 클릭후 게임시작 누를시 호출
     public void StartRandomMatching()
     {
+        PhotonNetwork.AutomaticallySyncScene = true;
         // 마스터서버가 아니라면 랜덤매칭 바로 실행이 불가
         if (PhotonNetwork.NetworkClientState != ClientState.ConnectedToMasterServer)
         {
@@ -123,19 +124,10 @@ public class PunManager : MonoBehaviourPunCallbacks
     public void CancelRandomMatching()
     {
         Debug.Log("랜덤매칭 취소");
-        // 진행중인 코루틴 모두 중지
-        StopAllCoroutines();
-        waitCool = null;
         StartCoroutine(wait());
         IEnumerator wait()
         {
-            if (PhotonNetwork.InRoom)
-            {
-                Debug.Log("PhotonNetwork.InRoom : " + PhotonNetwork.InRoom);
-                Debug.Log("LeaveROOM실행");
-                PhotonNetwork.LeaveRoom();
-            }
-
+            if (PhotonNetwork.InRoom) { PhotonNetwork.LeaveRoom(); }
             // 매칭 애니메이션 취소(축소)하는 애니메이션 실행
             float t = 0;
             while (t < 0.25f)
@@ -161,27 +153,21 @@ public class PunManager : MonoBehaviourPunCallbacks
         // 방에 인원2명일시 클라모두 취소버튼 없애기 => 바로 게임시작할것이기에
         if (PhotonNetwork.CurrentRoom.Players.Count == 2)
         {
-            // 취소 버튼 비활성화
-            sdi.cancelBtn.gameObject.SetActive(false);
-            // text로 알려주기
-            sdi.matchingState.text = "적합한 상대를 찾았다!";
-
             // 내가 마스터이며, 현재 누군가 들어와 방인원2명일시 바로 게임시작
             if (PhotonNetwork.IsMasterClient)
             {
-                // 현재 클라이언트의 화면에 보일 매칭애니메이션 중지시키기
-                RotationBar.stop = true;
-
-                // 사용덱 확정
-                GAME.Manager.RM.GameDeck = sdi.currDeck;
                 // 씬 동기화 설정
-                PhotonNetwork.AutomaticallySyncScene = true;
+                //PhotonNetwork.AutomaticallySyncScene = true;
                 // 동시에 씬 로드
-                PhotonNetwork.LoadLevel(2);
-            }
+                photonView.RPC("RotationBarFinished", RpcTarget.All); //PhotonNetwork.LoadLevel(2);
+              
+                   
+                
 
+            }
         }
     }
+
     // 내가 다른사람의 방에 입장하거나 , 내가 만든방에 입장시 호출
     public override void OnJoinedRoom()
     {
@@ -192,15 +178,24 @@ public class PunManager : MonoBehaviourPunCallbacks
         }
         base.OnJoinedRoom();
         Debug.Log("방입장 성공");
-
         StopAllCoroutines();
-        // 사용덱 확정
-        GAME.Manager.RM.GameDeck = sdi.currDeck;
-        SceneManager.LoadScene("InGame",LoadSceneMode.Single);
 
         // 내가 방장이 아니라면, 다른 유저 매칭방에 잡힌것
         // 게임시작은 마스터가 자동으로 시작할것 ( 위의 OnPlayerEnteredRoom함수에서 )
     }
+
+    [PunRPC]
+    public void RotationBarFinished() // 매칭아 잡히면 로테이션 애니메이션 중지 + 화면 전환 코루틴 시작
+    { 
+        // 현재 클라이언트의 화면에 보일 매칭애니메이션 중지시키기
+        RotationBar.stop = true;
+
+        // 취소 버튼 비활성화
+        sdi.cancelBtn.gameObject.SetActive(false);
+        // text로 알려주기
+        sdi.matchingState.text = "적합한 상대를 찾았다!";
+    }
+
     // 랜덤매칭 실패시 호출
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
@@ -215,13 +210,8 @@ public class PunManager : MonoBehaviourPunCallbacks
     // 랜덤매칭 시작후, 다른 유저와 안잡히면 내가 방생성시작 + 성공시 호출
     public override void OnCreatedRoom()
     {
-
         base.OnCreatedRoom();
         Debug.Log("내가 방장, 다른 유저가 안잡혀 내가 방 생성후 대기할것");
-        // 방을 생성하고 일정시간동안 다른유저가 오기까지 대기
-        waitCool = waitCo();
-        StartCoroutine(waitCool);
-        // 만약 안올시, 내가 방을 없애고 다시 처음부터 시작
     }
 
     // 내가 만든 대기방에서 유저가 안와서 내방을 나갈떄 호출

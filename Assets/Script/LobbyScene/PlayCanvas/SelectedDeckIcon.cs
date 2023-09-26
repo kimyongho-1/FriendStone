@@ -9,7 +9,7 @@ public class SelectedDeckIcon : MonoBehaviour
 {
     public TextMeshProUGUI deckName, deckCount, classType , editBtn, playBtn, backBtn , cancelBtn, matchingState;
     public GameObject loadingPopup;
-    public Image classIcon;
+    public Image classIcon, transitionPanel;
     public DeckData currDeck;
     PlayCanvas playCanvas;
     public RotationBar rotate;
@@ -59,6 +59,9 @@ public class SelectedDeckIcon : MonoBehaviour
     // 게임시작 누를시 랜덤매칭 시작
     public void StartGame(TextMeshProUGUI go)
     {
+        // 사용덱 확정
+        GAME.Manager.RM.GameDeck =currDeck;
+
         playBtn.raycastTarget = false;
         // 매칭을 표현하는 애니메이션 코루틴으로 실행
         GAME.Manager.StartCoroutine(RandomSlotAnim());

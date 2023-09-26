@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 using System.IO;
 using Newtonsoft.Json;
 using Unity.VisualScripting;
-using static UnityEditor.MaterialProperty;
 
 public class PlayerInfo
 {

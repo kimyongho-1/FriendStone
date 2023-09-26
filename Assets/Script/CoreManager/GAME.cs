@@ -23,6 +23,7 @@ public class GAME : MonoBehaviour
         sm.PlayBGM();
         SM.Init();
         SceneManager.sceneLoaded += OnLobbyLoad;
+        Screen.SetResolution(800,480,false);
     }
 
     #region ALL MANAGER
@@ -62,7 +63,7 @@ public class GAME : MonoBehaviour
     #endregion
 
     #region InGameScene 包府
-    public InGameManager IGM { get; set; }
+    public static InGameManager IGM { get; set; }
     #endregion
 
     #region LobbyScene 包府
@@ -110,6 +111,7 @@ public class GAME : MonoBehaviour
             case "InGame":
                 SM.Init();
                 Debug.Log("GM俊辑 龋免");
+
                 break;
         }
     }

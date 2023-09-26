@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
-using UnityEditor.SceneManagement;
 
 public class MouseEvtHolder : MonoBehaviour, IPointerDownHandler 
     , IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler ,IPointerExitHandler

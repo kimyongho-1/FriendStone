@@ -1,7 +1,9 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RotationBar : MonoBehaviour
 {
@@ -11,7 +13,7 @@ public class RotationBar : MonoBehaviour
     public float speed = 30.0f;
     public float zThick = 0.5f;
     public Vector3 scale;
-    
+    public SelectedDeckIcon sdi;
     // 쉬운 참조를 위해서 전역으로 설정
     public static bool stop = false;
 
@@ -25,6 +27,7 @@ public class RotationBar : MonoBehaviour
         }
         
     }
+    
     void OnEnable()
     {
         StartCoroutine(rotate());
@@ -76,6 +79,7 @@ public class RotationBar : MonoBehaviour
             yield return null;
         }
 
+        Debug.Log("RotationBar 정지 시작");
         // 매칭이 잡혔을시 모든 Bar들을 초기 위치로 되돌리기 (list[i]가 startRotate값으로 복귀하기까지 회전)
         for (int i = 0; i < list.Count; i++)
         {
@@ -105,5 +109,30 @@ public class RotationBar : MonoBehaviour
             
         }
 
+        yield return new WaitForSeconds(1f);
+        // 화면 전환 코루틴 시작 (점차 화면이 검어지는 코루틴)
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            sdi.transitionPanel.color
+                = new Color(0,0,0,t);
+            yield return null;
+        }
+
+        // 위를 모두 통과하여 여기까지 온경우
+        // 매칭이 잡힌 상황
+        // 연출 시작
+
+        // 씬 전환
+        //SceneManager.LoadScene("InGame", LoadSceneMode.Single);
+        
+        if (PhotonNetwork.IsMasterClient)
+        {
+            yield return new WaitForSeconds(1f);
+            Debug.Log("마스터가 전환 시작");
+            PhotonNetwork.AutomaticallySyncScene = true;
+            PhotonNetwork.LoadLevel("InGame");
+        }
     }
 }

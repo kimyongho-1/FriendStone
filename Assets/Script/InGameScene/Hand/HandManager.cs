@@ -22,7 +22,7 @@ public class HandManager : MonoBehaviour
     Queue<CardData> deckCards = new Queue<CardData>();
     private void Awake()
     {
-        GAME.Manager.IGM.Hand = this;
+        GAME.IGM.Hand = this;
         // 게임 시작시, 사용할 덱 모두 리스트로 풀기
         List<CardData> cards = GAME.Manager.RM.GameDeck.cards.Keys.ToList();
         List<int> counts = GAME.Manager.RM.GameDeck.cards.Values.ToList();
@@ -44,43 +44,17 @@ public class HandManager : MonoBehaviour
             list[rand] = temp;
             deckCards.Enqueue(list[i]);
         }
-
-        deckCards.Clear();
-        // 관련카드들 생성
-        for (int i = 10000; i < 10004; i++)
-        {
-            // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
-            Define.cardType type = GAME.Manager.RM.PathFinder.Dic[i].type;
-            string jsonFile = GAME.Manager.RM.PathFinder.Dic[i].GetJson();
-            CardData card = null;
-            // 확인된 카드타입으로, 실제 카드타입으로 클래스화
-            switch (type)
-            {
-                case Define.cardType.minion:
-                   card = JsonConvert.DeserializeObject<MinionCardData>
-                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                    break;
-                case Define.cardType.spell:
-                    card = JsonConvert.DeserializeObject<SpellCardData>
-                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                break;
-                case Define.cardType.weapon:
-                    card = JsonConvert.DeserializeObject<WeaponCardData>
-                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                     break;
-                default: break;
-            }
-            card.cardDescription = "1"; deckCards.Enqueue(card);
-
-        }
-            StartCoroutine(CardDrawing(4));
-       // StartCoroutine(CardDrawing(new int[] { 1,2,3,}));
     }
 
+    public int CreatePunNumber()
+    { return (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000) + punConsist++; }
     
     // 내가 덱에서 카드 뽑기
     public IEnumerator CardDrawing(int count)
     {
+        // 상대에게 내 드로우 전파 및 동기화를 위해 펀식별자 먼저 카운팅
+        int[] puns = new int[count];
+
         // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
         IEnumerator DrawingCo;
         IEnumerator DeckAnimCo()
@@ -124,11 +98,25 @@ public class HandManager : MonoBehaviour
             // 인게임 카드 프리팹 생성
             CardHand ch = GameObject.Instantiate(prefab, PlayerHandGO.transform);
             // 인게임 카드 초기화
-            ch.Init(ref cd);
-            ch.IsMine = true;
+            ch.Init(cd, true);
 
             // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
-            ch.PunId = (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000) + punConsist++;
+            ch.PunId = CreatePunNumber();
+
+            // OnHand 이벤트 존재 확인 및 실행
+            List<CardBaseEvtData> evtList = cd.evtDatas.FindAll(x => x.when == Define.evtWhen.onHand);
+            if (evtList != null || evtList.Count > 0)
+            {
+                for (int j = 0; j < evtList.Count; j++)
+                {
+                    GAME.IGM.Battle.OnHandEvt(evtList[j],ch);
+                }
+                
+            }
+
+            // 상대에게 내 드로우 정보 전달
+            GAME.IGM.Packet.SendDrawInfo(ch.PunId);
+
             // 나의 핸드카드에 포함시키기
             PlayerHand.Add(ch);
             yield return new WaitUntil(() => (DrawingCo == null)) ;
@@ -140,6 +128,60 @@ public class HandManager : MonoBehaviour
     }
 
     // 상대가 카드 뽑을시 실행
+    public IEnumerator EnemyCardDrawing(int punID)
+    {
+        // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
+        IEnumerator DrawingCo;
+        IEnumerator DeckAnimCo()
+        {
+            // 유저의 카드 드로우시마다 덱 모형도 스케일 감소시키기
+            EnemyDeck.transform.localScale = new Vector3(EnemyDeck.transform.localScale.x - (0.015f), 1.4f, 0.4f);
+
+            float t = 0;
+            Vector3 startPos = EnemyDrawingCard.transform.position;
+            Vector3 destPos = new Vector3(startPos.x, startPos.y, -1f);
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 2f;
+                EnemyDrawingCard.transform.position =
+                    Vector3.Lerp(startPos, destPos, t);
+                yield return null;
+            }
+
+
+            // 만약 카드가 이제 없다면, 덱모형과 드로잉카드 꺼버리기
+            if (EnemyDeck.transform.localScale.x <= 0)
+            {
+                EnemyDeck.gameObject.SetActive(false);
+                EnemyDrawingCard.gameObject.SetActive(false);
+            }
+            EnemyDrawingCard.transform.position = new Vector3(startPos.x, startPos.y, -0.03f);
+            DrawingCo = null;
+            yield break;
+        }
+
+        // 덱에서 뽑히는 연출 코루틴 먼저 실행
+        DrawingCo = DeckAnimCo();
+        StartCoroutine(DrawingCo);
+
+        // 덱에서 실질적으로 뽑힌 카드의 데이터
+        CardData cd = deckCards.Dequeue();
+        // 인게임 카드 프리팹 생성
+        CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
+        ch.transform.position = new Vector3(9.45f, 3.26f, 0);
+        // 인게임 카드 초기화
+        ch.Init(cd, false);
+        
+        // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
+        ch.PunId = punID;
+
+        // 적의 핸드카드에 포함시키기
+        EnemyHand.Add(ch);
+        yield return new WaitUntil(() => (DrawingCo == null));
+        // 손패의 카드들 정렬 실행후, 나머지 드로우
+        yield return StartCoroutine(CardAllignment(false));
+    }
     public IEnumerator CardDrawing(int[] puns)
     {
         // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
@@ -187,8 +229,8 @@ public class HandManager : MonoBehaviour
             CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
             ch.transform.position = new Vector3(9.45f,3.26f,0);
             // 인게임 카드 초기화
-            ch.Init(ref cd);
-            ch.IsMine = false;
+            ch.Init(cd , false);
+            
             // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
             ch.PunId = puns[i];
 
@@ -199,12 +241,16 @@ public class HandManager : MonoBehaviour
             yield return StartCoroutine(CardAllignment(false));
         }
     }
-
+    public int playerMoveCount = 0;
+    public int enemyMoveCount = 0;
     // 핸드 카드 정렬
     public IEnumerator CardAllignment(bool isMine = true)
     {
-        int playerMoveCount = 0;
-        int enemyMoveCount = 0;
+        if (isMine == false)
+        { enemyMoveCount = 0;  }
+
+        playerMoveCount = 0;
+        enemyMoveCount = 0;
         if (isMine)
         { playerMoveCount =0; }
         else

@@ -9,28 +9,24 @@
   "associatedHandler": null,
   "evtDatas": [
     {
-      "$type": "BuffHandler, Assembly-CSharp",
-      "buffTargeting": 0,
-      "buffType": 1,
-      "buffExtraArea": 0,
-      "buffFX": 0,
-      "relatedIds": [],
-      "buffAtt": 0,
-      "buffHp": 0,
-      "drawCount": 2,
-      "when": 0,
-      "area": 6,
-      "type": 0
-    },
-    {
       "$type": "RestoreHandler, Assembly-CSharp",
       "restoreTargeting": 0,
-      "restoreExtraArea": 0,
       "restoreFX": 0,
       "restoreAmount": 2,
       "when": 0,
-      "area": 6,
+      "area": 1,
+      "faction": 2,
       "type": 2
+    },
+    {
+      "$type": "UtillHandler, Assembly-CSharp",
+      "utillType": 0,
+      "relatedCards": [],
+      "utillAmount": 2,
+      "when": 0,
+      "area": 1,
+      "faction": 2,
+      "type": 3
     }
   ]
 }

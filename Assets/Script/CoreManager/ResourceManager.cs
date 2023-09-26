@@ -4,8 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class ResourceManager
 {
@@ -33,4 +31,10 @@ public class ResourceManager
     // 카드직업과 고유번호 통해서 이미지 찾기
     public Sprite GetImage(Define.classType type, int id)
     { return Resources.Load<Sprite>($"Texture/CardImage/{type.ToString()}/{type.ToString()}{id}"); }
+
+    // 카드가 앞면인지 뒷면인지 확인후 이미지 가져오기
+    public Sprite GetCardSprite(bool isFront)
+    {
+        return Resources.Load<Sprite>($"Texture/CardImage/{((isFront) ? "CardFront" : "CardBack")}");
+    }
 }

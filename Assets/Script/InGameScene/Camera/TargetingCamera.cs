@@ -1,20 +1,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 using static Define;
 
 public class TargetingCamera : MonoBehaviour
 {
     public LineRenderer LR;
     public SpriteRenderer Arrow;
+    public Image transitionPanel;
     private void Awake()
     {
         // 타겟팅 카메라 참조
-        GAME.Manager.IGM.TC = this;
+        GAME.IGM.TC = this;
         LR.positionCount = 0;
     }
     public float dist = 7;
@@ -41,6 +41,8 @@ public class TargetingCamera : MonoBehaviour
         }
         tr.rotation = Quaternion.identity; // 회전을 초기 상태로 리셋
     }
+
+    // 유저의 마우스 드래그 공격 궤적 그리기
     public IEnumerator DrawLine(Vector3 startPos)
     {
         // 라인렌더러 실행
@@ -80,10 +82,12 @@ public class TargetingCamera : MonoBehaviour
 
         LR.gameObject.SetActive(false);
     }
+
+    // 유저의 마우스 타겟팅 지정 
     public IEnumerator TargettingCo(IBody attacker, Func<IBody, IBody, IEnumerator> RegisterCo, string[] filter)
     {
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
-        yield return new WaitForSeconds(0.15f);
+        yield return new WaitForSeconds(0.35f);
         // 공격궤적을 그리는 라인렌더러 실행
         StartCoroutine(DrawLine(attacker.Pos));
 
@@ -100,15 +104,15 @@ public class TargetingCamera : MonoBehaviour
             }
         }
 
-            Vector3 camPos = Camera.main.transform.position;
+        // 필터확인
+        if (filter == null) { Debug.Log("Filter is NUll"); }
+
+        Vector3 camPos = Camera.main.transform.position;
         while (true)
         {
             // 현재 유저의 커서포인트 월드포지션
             Vector3 CursorPos = Camera.main.ScreenToWorldPoint
                (new Vector3(Input.mousePosition.x, Input.mousePosition.y, -camPos.z));
-
-            // 현재 마우스 위치에 충돌체있는지 검사 + 범위 레이어 확인
-            //RaycastHit2D hit = Physics2D.Raycast(CursorPos,Vector2.zero, 0, layerMask);
 
             // 마우스 클릭과 충돌체 확인시 성공
             if (Input.GetMouseButtonDown(0))
@@ -122,7 +126,7 @@ public class TargetingCamera : MonoBehaviour
                 if (hit != null)
                 {
                     // 실행 코루틴 예약 실행
-                    GAME.Manager.IGM.AddAction(RegisterCo(attacker, hit.transform.GetComponent<IBody>()));
+                    GAME.IGM.AddAction(RegisterCo(attacker, hit.transform.GetComponent<IBody>()));
                     // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
                     
                     Debug.Log("충돌체 이름 : " + hit.name);
@@ -151,7 +155,21 @@ public class TargetingCamera : MonoBehaviour
             yield return null;
         }
         // 레이 모두 다시 활성화
-        GAME.Manager.IGM.Spawn.SpawnRay = attacker.Ray = true;
+        GAME.IGM.Spawn.SpawnRay = attacker.Ray = true;
         yield break;
+    }
+
+    // 두 유저 인게임씬 진입 + 서로 기본정보 공유 확인시
+    // 마스터 클라이언트가 게임내 트랜지션 캔버스의 알파값을 줄이면서 게임 시작 연출 코루틴
+    public IEnumerator StartIntro()
+    {
+        float t = 0;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 0.5f;
+            transitionPanel.color = new Color(0,0,0,1-t);
+            yield return null;
+        }
     }
 }

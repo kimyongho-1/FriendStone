@@ -20,10 +20,11 @@ public class Hero : MonoBehaviour, IBody
     public WeaponCardData weaponData;
     public int hp, att, dur, mp;
     public SpriteRenderer wpImg, skillImg, playerImg, AttIcon, HpIcon;
-    public TextMeshPro hpTmp, weaponAttTmp, durTmp, replyTmp , mpTmp, attTmp;
+    public TextMeshPro hpTmp, weaponAttTmp, durTmp, replyTmp , mpTmp, attTmp, nickTmp;
     public GameObject Select, Reply, Speech;
     public bool attackable = true;
     public bool CanAttack { get { return (weaponData != null) && attackable == true; } }
+
     #region IBODY
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
@@ -56,10 +57,17 @@ public class Hero : MonoBehaviour, IBody
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
         this.PunId = (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000);
-        attackable = true;
+        attackable = true; 
+        Att = 0;
+        HP = OriginHp = 30;
+        GAME.IGM.allIBody.Add(this);
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)
         {
+            // 내 닉네임 표기
+            nickTmp.text = GAME.Manager.NM.playerInfo.NickName;
+            // 영웅 이미지 초기화
+            playerImg.sprite = GAME.Manager.RM.GetHeroImage(GAME.Manager.RM.GameDeck.ownerClass);
             // 영웅 아이콘 좌클릭 => 무기공격
             GAME.Manager.UM.BindEvent(this.gameObject, HeroAttack, Define.Mouse.ClickL, Define.Sound.Ready);
 
@@ -75,17 +83,16 @@ public class Hero : MonoBehaviour, IBody
             
             // 선택대사 나올떄, 배경클릭시 대사 즉각 종료
             GAME.Manager.UM.BindEvent(Reply.gameObject, OffReply, Mouse.ClickL, Sound.None);
+            
+            // 영웅 스킬란 초기화
+            heroSkill.InitSkill(this);
         }
-        Att = 0;
-        HP = OriginHp = 30;
+        
         // 카드팝업 이벤트 연결 (마우스 엔터로 구현)
         GAME.Manager.UM.BindCardPopupEvent(WpIcon, ShowWeaponIcon, 0.75f);
         GAME.Manager.UM.BindCardPopupEvent(skillIcon, ShowSkillIcon, 0.75f);
+        // 무기 아이콘 초기화
         WpIcon.transform.localScale = Vector3.zero;
-        // 영웅 스킬란 초기화
-        heroSkill.InitSkill(this);
-        // 영웅 대화지 초기화
-
     }
     public void ChangeSortingLayer(bool isOn)
     {
@@ -97,16 +104,17 @@ public class Hero : MonoBehaviour, IBody
         AttIcon.sortingLayerID = HpIcon.sortingLayerID = layer.id;
         attTmp.sortingLayerID = hpTmp.sortingLayerID = layer.id;
     }
+
     #region EnterExit이벤트
     public void ShowWeaponIcon() // 무기아이콘에 커서를 일정시간 가져다 댈시
     {
         // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.Manager.IGM.ShowCardPopup(ref weaponData, new Vector3(-3f, -1.3f, 0));
+        GAME.IGM.ShowCardPopup(ref weaponData, new Vector3(-3f, -1.3f, 0));
     }
     public void ShowSkillIcon() // 영웅능력 아이콘에 커서를 일정시간 가져다 댈시
     {
         // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.Manager.IGM.ShowHeroSkill(new Vector3(4f, -1.3f, 0), heroSkill.data);
+        GAME.IGM.ShowHeroSkill(new Vector3(4f, -1.3f, 0), heroSkill.data);
     }
     #endregion
 
@@ -123,53 +131,58 @@ public class Hero : MonoBehaviour, IBody
         }
         // 공격 가능한 상태가 아니거나
         // 이미 다른 객체가 타겟팅 중인데 이 객체를 클릭시 취소
-        if (GAME.Manager.IGM.TC.LR.gameObject.activeSelf == true || !CanAttack)
+        if (GAME.IGM.TC.LR.gameObject.activeSelf == true || !CanAttack)
         { return;  }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
-        GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
+        GAME.IGM.Spawn.SpawnRay = Ray = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.StartCoroutine(GAME.Manager.IGM.TC.TargettingCo
+        GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
             (this,
             (IBody a, IBody t) => { return AttackCo(a, t); },
             new string[] { "foe", "foeHero" }
             ));
-        
-        IEnumerator AttackCo(IBody attacker, IBody target)
+    }
+    public IEnumerator AttackCo(IBody attacker, IBody target)
+    {
+        #region 공격 코루틴 : 상대에게 박치기
+        ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
+        float t = 0;
+        Vector3 start = playerMask.transform.position;
+        Vector3 dest = target.Pos;
+        while (t < 1f)
         {
-            #region 공격 코루틴 : 상대에게 박치기
-            ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
-            float t = 0;
-            Vector3 start = playerMask.transform.position;
-            Vector3 dest = target.Pos;
-            while (t < 1f)
-            {
-                t += Time.deltaTime * 1f;
-                playerMask.transform.position = Vector3.Lerp(start, dest, t);
-                yield return null;
-            }
-            #endregion
-
-            #region 카메라 흔들기 이펙트
-            // 0~PI 까지의 길이를 정한뒤 사인을 사용하면
-            // 0 ~ 1 후, 1 ~ 0 으로 되돌아 오기에 Z축 회전 코루틴으로 이용하기로 결정
-            StartCoroutine(GAME.Manager.IGM.TC.ShakeCo());
+            t += Time.deltaTime * 1f;
+            playerMask.transform.position = Vector3.Lerp(start, dest, t);
             yield return null;
+        }
+        #endregion
 
-            #endregion
+        #region 카메라 흔들기 이펙트
+        // 0~PI 까지의 길이를 정한뒤 사인을 사용하면
+        // 0 ~ 1 후, 1 ~ 0 으로 되돌아 오기에 Z축 회전 코루틴으로 이용하기로 결정
+        StartCoroutine(GAME.IGM.TC.ShakeCo());
+        yield return null;
 
-            #region 제자리로 복귀
-            t = 0;
-            while (t < 1f)
-            {
-                t += Time.deltaTime * 1f;
-                playerMask.transform.localPosition = Vector3.Lerp(dest, OriginPos, t);
-                yield return null;
-            }
-            ChangeSortingLayer(false); // 소팅레이어 초기화
-            #endregion
+        #endregion
 
+        #region 제자리로 복귀
+        t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 1f;
+            playerMask.transform.localPosition = Vector3.Lerp(dest, OriginPos, t);
+            yield return null;
+        }
+        ChangeSortingLayer(false); // 소팅레이어 초기화
+        #endregion
+
+        // 나의 턴이고, 내 영웅이 공격했다면
+        // 현재 내가 조종한 행동으로 확인 및 공격 이벤트 상대에게 전파
+        if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
+        {
+            GAME.IGM.Packet.SendHeroAttack(attacker.PunId, target.PunId);
         }
     }
 
@@ -237,6 +250,18 @@ public class Hero : MonoBehaviour, IBody
         // 무기 착용 애니메이션 시작
         yield return StartCoroutine(WearingCo(card));
     }
+    public IEnumerator EquipWeapon(CardHand card ,CardData data)
+    {
+        // 무기 데이터 초기화 및 공격 가능 설정
+        weaponData = (WeaponCardData)data;
+        wpImg.sprite = GAME.Manager.RM.GetImage(data.cardClass,data.cardIdNum);
+        Att += weaponData.att;
+        attTmp.text = weaponData.att.ToString();
+        durTmp.text = weaponData.durability.ToString();
+
+        // 무기 착용 애니메이션 시작
+        yield return StartCoroutine(WearingCo(card));
+    }
 
     // 무기 착용 이벤트
     public IEnumerator WearingCo(CardHand card)
@@ -254,5 +279,9 @@ public class Hero : MonoBehaviour, IBody
             yield return null;
         }
     }
+    #endregion
+
+    #region 마나상황과 영웅 인포창
+    //public void 
     #endregion
 }

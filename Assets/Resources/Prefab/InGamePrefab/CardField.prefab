@@ -145,12 +145,20 @@ MonoBehaviour:
     cardRarity: 0
     associatedHandler: 
     evtDatas: []
+  <PunId>k__BackingField: 0
+  <IsMine>k__BackingField: 0
+  <Col>k__BackingField: {fileID: 0}
+  <OriginAtt>k__BackingField: 0
+  <OriginHp>k__BackingField: 0
+  <Att>k__BackingField: 0
+  <HP>k__BackingField: 0
   AttTmp: {fileID: 5318494953368564744}
   HpTmp: {fileID: 2910072322474683016}
   cardImage: {fileID: 3162696530639244512}
   attackable: 1
   sleep: {fileID: 8672430788726145713}
   mask: {fileID: 5324245463499385400}
+  maxHp: 0
 --- !u!58 &5976909367675379938
 CircleCollider2D:
   m_ObjectHideFlags: 0

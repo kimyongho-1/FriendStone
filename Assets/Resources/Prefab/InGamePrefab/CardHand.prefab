@@ -68,6 +68,7 @@ MonoBehaviour:
   Cost: {fileID: 7999593582758407471}
   cardBackGround: {fileID: 1388872039259031023}
   cardImage: {fileID: 9056196857891520872}
+  TMPgo: {fileID: 1480838265459796317}
 --- !u!61 &5081389086616277871
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -522,7 +523,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.506, y: -2.049}
+  m_AnchoredPosition: {x: 1.3, y: -2.049}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &8094961030389745158

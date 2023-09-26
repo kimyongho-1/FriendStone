@@ -3,54 +3,84 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System.ComponentModel;
+using System;
 
 public class CardHand : CardEle
 {
     public Vector3  originRot, originScale;
-    public int originOrder;
+    public int originOrder, originCost;
     public TextMeshPro cardName, Description, Stat, Type, Cost;
     public SpriteRenderer cardBackGround, cardImage;
-    
+    public GameObject TMPgo;
+
+    // OnHand이벤트가 존재시, 특정순간마다 이벤트를 실행 (이벤트 구독은 BattleManager.cs에서 등록)
+    public Action<int> HandCardChanged;
+
     public void Awake()
     {
         originScale = 0.3f * Vector3.one;
         Col = GetComponent<BoxCollider2D>();
-        
-        // 엔터엑시트 이벤트 연결 => 카드팝업으로 보이게
-        //GAME.Manager.UM.BindCardPopupEvent(this.gameObject, CardPopupEnter, 0.3f);
-        GAME.Manager.UM.BindEvent(this.gameObject, Enter ,Define.Mouse.Enter, Define.Sound.None);
-        GAME.Manager.UM.BindEvent(this.gameObject, Exit , Define.Mouse.Exit, Define.Sound.None);
-
-        // 드래그
-        GAME.Manager.UM.BindEvent(this.gameObject, StartDrag, Define.Mouse.StartDrag , Define.Sound.Pick);
-        GAME.Manager.UM.BindEvent(this.gameObject, Dragging, Define.Mouse.Dragging);
-        GAME.Manager.UM.BindEvent(this.gameObject, EndDrag, Define.Mouse.EndDrag);
     }
-    public void Init(ref CardData dataParam , bool isMine = true)
+    public void Init(CardData dataParam , bool isMine = true)
     {
         IsMine = isMine;
-        data = dataParam;
-        cardName.text = data.cardName;
-        Description.text = data.cardDescription;
-        Description.fontSize = (data.cardDescription.Length > 25) ? 18 : 15;
-        // 카드 타입 표시
-        switch (data.cardType)
+        cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(IsMine);
+        originScale = (IsMine) ? Vector3.one * 0.3f : new Vector3(0.16f,0.17f, 0.3f);
+        transform.localScale = originScale;
+        // 나의 카드라면 모든 데이터 초기화
+        if (IsMine)
         {
-            case Define.cardType.minion:
-                MinionCardData cardData = data as MinionCardData;
-                Stat.text = $"<color=yellow>ATT {cardData.att} <color=red>HP {cardData.hp} <color=black>몬스터";
-                break;
-            case Define.cardType.spell:
-                Stat.text = "<color=black>주문";
-                break;
-            case Define.cardType.weapon:
-                WeaponCardData wData = (WeaponCardData)data;
-                Stat.text = $"<color=yellow>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
-                break;
+            data = dataParam;
+            cardName.text = data.cardName;
+            Description.text = data.cardDescription;
+            Description.fontSize = (data.cardDescription.Length > 25) ? 18 : 15;
+            // 카드 희귀도 표시
+            switch (data.cardRarity)
+            {
+                case Define.cardRarity.rare:
+                    Type.text = "<color=blue>희귀"; break;
+                case Define.cardRarity.legend:
+                    Type.text = "<color=red>전설"; break;
+                default: Type.text = "<color=black>일반"; break;
+            }
+            // 카드 타입 표시
+            switch (data.cardType)
+            {
+                case Define.cardType.minion:
+                    MinionCardData cardData = data as MinionCardData;
+                    Stat.text = $"<color=yellow>ATT {cardData.att} <color=red>HP {cardData.hp} <color=black>몬스터";
+                    OriginAtt = cardData.att; OriginHp = cardData.hp;
+                    break;
+                case Define.cardType.spell:
+                    Stat.text = "<color=black>주문";
+                    break;
+                case Define.cardType.weapon:
+                    WeaponCardData wData = (WeaponCardData)data;
+                    Stat.text = $"<color=yellow>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
+                    OriginAtt = wData.att; OriginHp = wData.durability;
+                    break;
+            }
+            originCost = data.cost;
+            Cost.text = originCost.ToString();
+            cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
+
+            // 드래그 이벤트 연결
+            GAME.Manager.UM.BindEvent(this.gameObject, StartDrag, Define.Mouse.StartDrag, Define.Sound.Pick);
+            GAME.Manager.UM.BindEvent(this.gameObject, Dragging, Define.Mouse.Dragging);
+            GAME.Manager.UM.BindEvent(this.gameObject, EndDrag, Define.Mouse.EndDrag);
+            // 커서 가져다 댈시 이벤트
+            GAME.Manager.UM.BindEvent(this.gameObject, Enter, Define.Mouse.Enter, Define.Sound.None);
+            GAME.Manager.UM.BindEvent(this.gameObject, Exit, Define.Mouse.Exit, Define.Sound.None);
         }
-        Type.text = data.cardType.ToString();
-        Cost.text = data.cost.ToString();
-        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
+
+        // 상대 카드라면 꺼두기
+        else
+        {
+            cardImage.gameObject.SetActive(false);
+            TMPgo.gameObject.SetActive(false);  
+        }
+
+
     }
 
     // TMP 소팅오더 정렬
@@ -65,27 +95,7 @@ public class CardHand : CardEle
         cardName.sortingOrder  = i * 10 + 1;
     }
 
-    // 마우스 엔터시, 카드팝업 호출
-    public void CardPopupEnter()
-    {
-        Vector3 pos = default;
-
-        // 나의 소유, 적의 소유인지에 따라 또 위치 변경
-        switch (data.cardType)
-        {
-            case Define.cardType.minion:
-                pos = new Vector3(-3f, -1.3f, 0);
-                break;
-            case Define.cardType.spell:
-                pos = new Vector3(-4f, -1.3f, 0);
-                break;
-            case Define.cardType.weapon:
-                pos = new Vector3(-3f, -1.3f, 0);
-                break;
-        }
-
-    }
-
+    
     #region 마우스 이벤트
     public void Enter(GameObject go)
     {
@@ -118,8 +128,8 @@ public class CardHand : CardEle
         {
             // SR의 오더 강조시키기 (제일 앞에 그려지도록)
             SetOrder(1000);
-            // 현재 드래그중인 카드 제외, 모든 카드 레이끄기
-            GAME.Manager.IGM.Hand.PlayerHand.FindAll(x => x.PunId != this.PunId).ForEach(x => x.Ray = false);
+            // 현재 드래그중인 카드 제외, 모든 카드 레이끄기 (타 핸드카드의 엔터 엑시트 같은 이벤트 중복 방지)
+            GAME.IGM.Hand.PlayerHand.FindAll(x => x.PunId != this.PunId).ForEach(x => x.Ray = false);
             // 크기등 모두 초기화
             float t = 0;
             Vector3 currScale = transform.localScale;
@@ -156,10 +166,10 @@ public class CardHand : CardEle
     }
     public void Dragging(Vector3 worldPos)
     {
-        GAME.Manager.IGM.Spawn.MinionAlignment(this, worldPos);
+        GAME.IGM.Spawn.MinionAlignment(this, worldPos);
         if (data.cardType == Define.cardType.minion)
         {
-           // GAME.Manager.IGM.Spawn.MinionAlignment(this, worldPos);
+           // GAME.IGM.Spawn.MinionAlignment(this, worldPos);
         }
 
         Vector3 euler = transform.rotation.eulerAngles;
@@ -185,21 +195,40 @@ public class CardHand : CardEle
     // 카드 투명화로 소멸 코루틴 : 주로 카드 삭제 또는 미니언카드를 필드로 소환할떄 사용
     public IEnumerator FadeOutCo(bool isMine = true)
     {
-        // 투명화 위해 모든 TMP와 SR을 묶기
-        List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat ,Type};
-        List<SpriteRenderer> imageList =    new List<SpriteRenderer>() { cardImage, cardBackGround};
-        float t = 1;
-        Color tempColor = Color.white;
-        while (t > 0f)
+        if (IsMine)
         {
-            // 알파값 점차 0으로 변환
-            t -= Time.deltaTime * 2.5f;
-            tempColor.a = t;
-            tmpList.ForEach(x => x.alpha = t);
-            imageList.ForEach(x => x.color = tempColor ) ;
-            yield return null;
+            // 투명화 위해 모든 TMP와 SR을 묶기
+            List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat, Type };
+            List<SpriteRenderer> imageList = new List<SpriteRenderer>() { cardImage, cardBackGround };
+            float t = 1;
+            Color tempColor = Color.white;
+            while (t > 0f)
+            {
+                // 알파값 점차 0으로 변환
+                t -= Time.deltaTime * 2.5f;
+                tempColor.a = t;
+                tmpList.ForEach(x => x.alpha = t);
+                imageList.ForEach(x => x.color = tempColor);
+                yield return null;
+            }
+
         }
 
+        // 적의 핸드카드 경우 백그라운드 이미지만 존재
+        else
+        {
+            // 투명화 위해  백그라운드 이미지만 찾기
+            float t = 1;
+            Color tempColor = Color.white;
+            while (t > 0f)
+            {
+                // 알파값 점차 0으로 변환
+                t -= Time.deltaTime * 2.5f;
+                tempColor.a = t;
+                cardBackGround.color = tempColor;
+                yield return null;
+            }
+        }
         GameObject.Destroy(this.gameObject);
     }
     public void EndDrag(Vector3 v)
@@ -210,52 +239,56 @@ public class CardHand : CardEle
         switch (data.cardType)
         {
             case Define.cardType.minion:
-                if (GAME.Manager.IGM.Spawn.CheckInBox(
+                if (GAME.IGM.Spawn.CheckInBox(
                  new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
                     // 현재 핸드목록에서 소환할 이 미니언카드 제거
-                    GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
+                    GAME.IGM.Hand.PlayerHand.Remove(this);
                     // 미니언 소환 완료시, 모든 핸드카드 레이활성 초기화
-                    GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
                     // 미니언 스폰 시작 (카드 소멸화 애니메이션 및 삭제는 StartSpawn내부에서 실행)
-                    GAME.Manager.IGM.Spawn.StartSpawn(this);
+                    GAME.IGM.Spawn.StartSpawn(this);
                     //핸드매니저에서 핸드카드들 재정렬 시작
-                    GAME.Manager.IGM.AddAction(GAME.Manager.IGM.Hand.CardAllignment(this.IsMine));
+                    GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
                     return;
                 }
                 break;
             case Define.cardType.spell:
-                if (GAME.Manager.IGM.Spawn.CheckInBox(
+                if (GAME.IGM.Spawn.CheckInBox(
             new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
                     // 현재 핸드목록에서 소환할 이 미니언카드 제거
-                    GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
+                    GAME.IGM.Hand.PlayerHand.Remove(this);
                     // 미니언 소환 완료시, 모든 핸드카드 레이활성 초기화
-                    GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
                     // 미니언 스폰 시작 (카드 소멸화 애니메이션 및 삭제는 StartSpawn내부에서 실행)
-                    GAME.Manager.IGM.Spawn.StartSpawn(this);
+                    GAME.IGM.Spawn.StartSpawn(this);
                     return;
                 }
                 break;
             case Define.cardType.weapon:
-                if (GAME.Manager.IGM.Spawn.CheckInBox(
+                if (GAME.IGM.Spawn.CheckInBox(
                  new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
                     // 현재 핸드목록에서 카드 제거
-                    GAME.Manager.IGM.Hand.PlayerHand.Remove(this);
+                    GAME.IGM.Hand.PlayerHand.Remove(this);
                     // a무기 착용, 모든 핸드카드 레이활성 초기화
-                    GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
                     // 영웅 무기 착용 시작 ( 카드 소멸 애니메이션 코루틴은 함수 내부에서 실행)
-                    GAME.Manager.IGM.AddAction(GAME.Manager.IGM.Hero.Player.EquipWeapon(this));
+                    GAME.IGM.AddAction(GAME.IGM.Hero.Player.EquipWeapon(this));
+
+                    // 상대에게 내 무기 착용 이벤트 전파
+                    GAME.IGM.Packet.SendWeapon(PunId, data.cardIdNum, this.transform.position.x
+                        , this.transform.position.y, this.transform.position.z);
 
                     //핸드매니저에서 핸드카드들 재정렬 시작
-                    GAME.Manager.IGM.AddAction(GAME.Manager.IGM.Hand.CardAllignment(this.IsMine));
+                    GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
 
                     return;
                 }
                 break;
         }
-        GAME.Manager.IGM.Spawn.idx = -1000;
+        GAME.IGM.Spawn.idx = -1000;
         // 원위치 코루틴 실행
         DragCo = BackToOrigin();
         StartCoroutine(DragCo);
@@ -277,7 +310,7 @@ public class CardHand : CardEle
                 transform.localPosition = Vector3.Lerp(currPos, OriginPos, t);
                 yield return null;
             }
-            GAME.Manager.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+            GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
 
             DragCo = null;
         }

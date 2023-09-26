@@ -5,23 +5,48 @@ using UnityEngine;
 using UnityEngine.UI;
 using static Define;
 
+public class CustomList : List<CardField>
+{
+    public new void Insert(int idx ,CardField ele)
+    {
+        // 기본 Insert 함수 실행후
+        base.Insert(idx, ele);
+        // 총 관리 목적의 LIST에도 추가
+        GAME.IGM.allIBody.Add(ele);
+    }
+
+    public new void Remove(CardField ele) 
+    {
+        base.Remove(ele);
+        GAME.IGM.allIBody.Remove(ele);
+    }
+}
+
 public class InGameManager : MonoBehaviour
 {
+    // 게임내 체력 상호작용을 이루는 영웅들, 미니언들을 여기에서 쉽게 찾기위해 생성
+    public List<IBody> allIBody = new List<IBody>();
+
+    public int GameTurn = 0;
     public GameObject cardPopup;
     public TextMeshPro cardName, Description, Stat, Type, cost;
     public SpriteRenderer cardImage;
 
+    #region 참조
     public FindEvtHolder FindEvt { get; set; }
     public HeroManager Hero { get; set; }
     public HandManager Hand { get; set; }
     public SpawnManager Spawn { get; set; }
-    public TargetingCamera TC { get; set; } 
+    public TargetingCamera TC { get; set; }
     public BattleManager Battle { get; set; }
     public TurnEndBtn Turn { get; set; }
+    public PacketManager Packet { get; set; }
     private void Awake()
     {
-        GAME.Manager.IGM = this;
+        GAME.IGM = this;
     }
+    #endregion
+
 
     // BattleManager의 액션큐 빠르게 접근용도
     public void AddAction(IEnumerator co) { Battle.ActionQueue.Enqueue(co); }

@@ -62,8 +62,8 @@ public class SampleCardIcon : MonoBehaviour
             case Define.cardRarity.rare:
                 type.text = "<color=blue>희귀"; break;
             case Define.cardRarity.legend:
-                type.text = "<color=brown>전설"; break;
-            default: type.text = "일반"; break;
+                type.text = "<color=red>전설"; break;
+            default: type.text = "<color=black>일반"; break;
         }
 
         // 카드 타입 표시

@@ -133,7 +133,6 @@ public class CardDataGenerator : EditorWindow
                     #region BuffHandler 속성 그리기
                     bh.buffTargeting = (Define.buffTargeting)EditorGUILayout.EnumPopup("타겟팅 타입 ", bh.buffTargeting);
                     bh.buffType = (Define.buffType)EditorGUILayout.EnumPopup("어떤 버프 ", bh.buffType);
-                    bh.buffExtraArea = (Define.buffExtraArea)EditorGUILayout.EnumPopup("추가 대상 ", bh.buffExtraArea);
                     bh.buffFX = (Define.buffFX)EditorGUILayout.EnumPopup("재생할 효과 ", bh.buffFX);
                     EditorGUI.BeginChangeCheck();
                     int len = EditorGUILayout.IntField("관련 카드 수", bh.relatedIds.Length);
@@ -188,7 +187,6 @@ public class CardDataGenerator : EditorWindow
                     }
                     #region RestoreHandler 속성 그리기
                     rh.restoreTargeting = (Define.restoreTargeting)EditorGUILayout.EnumPopup("타겟팅 타입", rh.restoreTargeting);
-                    rh.restoreExtraArea = (Define.restoreExtraArea)EditorGUILayout.EnumPopup("추가 대상", rh.restoreExtraArea);
                     rh.restoreFX = (Define.restoreFX)EditorGUILayout.EnumPopup("재생할 효과", rh.restoreFX);
                     rh.restoreAmount = EditorGUILayout.IntField("회복량", rh.restoreAmount);
                     #endregion
@@ -209,17 +207,31 @@ public class CardDataGenerator : EditorWindow
                     }
                     #region UtillHandler 속성 그리기
                     uh.utillType = (Define.utillType)EditorGUILayout.EnumPopup("어떤 종류 ", uh.utillType);
-                    EditorGUI.BeginChangeCheck();
-                    len = EditorGUILayout.IntField("관련 카드 수", uh.relatedCards.Length);
-                    // 배열 설정한 크기 확정시, 배열 크기 변경
-                    if (EditorGUI.EndChangeCheck())
-                    { Array.Resize(ref uh.relatedCards, len); }
 
-                    for (int i = 0; i < uh.relatedCards.Length; i++)
+                    // 단순 드로우 이벤트라면 , 몇장 뽑을지만 에디터에 그리기
+                    if (uh.utillType == Define.utillType.draw)
                     {
-                        uh.relatedCards[i] = EditorGUILayout.IntField($"{i}번 고유번호 : ", uh.relatedCards[i]);
+                        uh.utillAmount = EditorGUILayout.IntField("드로우수 : ", uh.utillAmount);
                     }
-                    uh.utillAmount = EditorGUILayout.IntField("드로우수 : ", uh.utillAmount);
+
+                    // 카드풀에서 발견이벤트 | 관련카드 획득 이벤트
+                    else
+                    {
+                        EditorGUI.BeginChangeCheck();
+
+                        // 발견이벤트의 경우 항상 3장으로 고정, 그외 획득이벤트는 내가 설정하는 양으로 카드배열 설정
+                        uh.utillAmount = (uh.utillType == Define.utillType.find) ? 3 : EditorGUILayout.IntField("획득할 카드의 범위", uh.utillAmount);
+
+                        // 배열 설정한 크기 확정시, 배열 크기 변경
+                        if (EditorGUI.EndChangeCheck())
+                        { Array.Resize(ref uh.relatedCards, uh.utillAmount); }
+
+                        for (int i = 0; i < uh.relatedCards.Length; i++)
+                        {
+                            uh.relatedCards[i] = EditorGUILayout.IntField($"{i}번 고유번호 : ", uh.relatedCards[i]);
+                        }
+                    }
+
                     #endregion
                     SetProperty(uh);
                     cardData.evtDatas[selectedIdx] = uh;

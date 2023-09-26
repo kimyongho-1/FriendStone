@@ -5,8 +5,8 @@ using UnityEngine;
 public class CardEle : MonoBehaviour, IBody
 {
     public CardData data;
-    public int PunId { get; set; }
-    public bool IsMine { get; set; }
+    [field: SerializeField] public int PunId { get; set; }
+    [field: SerializeField] public bool IsMine { get; set; }
     public Transform TR { get { return this.transform; } }
     public Define.BodyType bodyType 
     { 
@@ -21,12 +21,12 @@ public class CardEle : MonoBehaviour, IBody
             
         } 
     }
-    public Collider2D Col { get; set; }
+    [field: SerializeField] public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
 
     public Vector3 OriginPos { get; set; }
-    public int OriginAtt { get; set; }
-    public int OriginHp { get; set; }
-    public int Att { get; set; }
-    public int HP { get; set; }
+    [field: SerializeField] public int OriginAtt { get; set; }
+    [field: SerializeField] public int OriginHp { get; set; }
+    [field: SerializeField] public int Att { get; set; }
+    [field: SerializeField] public int HP { get; set; }
 }

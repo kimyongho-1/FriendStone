@@ -17,9 +17,8 @@ public partial class SpawnManager : MonoBehaviour
     BoxCollider2D SpawnArea;
     private void Awake()
     {
-        GAME.Manager.IGM.Spawn = this;
+        GAME.IGM.Spawn = this;
         SpawnArea = transform.GetComponentInChildren<BoxCollider2D>();
-        Debug.Log("SpawnArea : "+SpawnArea);
 
         spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f));
     }
@@ -140,20 +139,27 @@ public partial class SpawnManager : MonoBehaviour
 
     // 미니언들의 이동 애니메이션코루틴 카운트
     Queue<GameObject> queue = new Queue<GameObject>();
+
+    
     // 미니언 카드 스폰 실행 함수
     public void StartSpawn(CardHand card)
     {
         // 현재 핸드카드 (미니언) 정보 토대로 스폰 시작
         CardField cf = GameObject.Instantiate(prefab, Players);
-        cf.Init(card.data,true);
+        //cf.Init(card.data,true);
         cf.PunId = card.PunId;
         cf.transform.localPosition = card.transform.localPosition;
         playerMinions.Insert(idx, cf);
-        
-        CardHand tempch= card;
-        int ourIDX = GAME.Manager.IGM.Hand.PlayerHand.IndexOf(card);
+
+        // 상대에게 내 미니언 소환 이벤트 전파 [카드객체 식별자, 몇번쨰 필드에 소환인지, 실제 카드 데이터 식별자]
+        GAME.IGM.Packet.SendMinionSpawn(cf.PunId, idx, card.data.cardIdNum);
+
+        // 필드 하수인들의 레이를 잠시 끄기
+        playerMinions.ForEach(x=>x.Ray = false);
+
+        CardHand tempch = card;
+        int ourIDX = GAME.IGM.Hand.PlayerHand.IndexOf(card);
         Debug.Log($"idx : {idx} , ourIDX : {0}");
-       // StartCoroutine(EnemySpawn( 0,idx));
 
         // 핸드 카드는 이제 필요없기에 소멸애니메이션 코루틴 실행 (삭제도 내부에서 진행)
         GAME.Manager.StartCoroutine(card.FadeOutCo());
@@ -168,7 +174,14 @@ public partial class SpawnManager : MonoBehaviour
             playerMinions[i].OriginPos = spawnPoint[i];
             StartCoroutine(move(playerMinions[i].transform, i));
         }
-
+        GAME.IGM.AddAction(waitPos(cf));
+        cf.Init(card.data, true);
+        IEnumerator waitPos(CardField cf)
+        {
+            // 현재 소환된 카드가, 정해진 위치로 이동을 끝맞출떄까지 대기
+            yield return new WaitUntil(() => (cf.transform.position == cf.OriginPos));
+        }
+        
         // 이동 애니메이션 코루틴
         IEnumerator move(Transform tr, int idx)
         {
@@ -188,12 +201,15 @@ public partial class SpawnManager : MonoBehaviour
         IEnumerator wait()
         {
             // 모든 이동 코루틴 끝났을지, 다음 스폰포인트 위치값 초기화
-         // 이동 코루틴을 모아둔 queue의 갯수가 0 => 현재 이동코루틴 모두 실행 완료
+            // 이동 코루틴을 모아둔 queue의 갯수가 0 => 현재 이동코루틴 모두 실행 완료
             yield return new WaitUntil(() => (queue.Count == 0));
-            // 소환될 미니언의 잠자는 모션 켜주기
-            cf.sleep.gameObject.SetActive(true);
+            // 필드 하수인들의 레이를 다시 켜기
+            playerMinions.ForEach(x => x.Ray = true);
             // 새로운 위치 구하기
             CalcSpawnPoint();
+
+            // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
+            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum));
         }
         
     }

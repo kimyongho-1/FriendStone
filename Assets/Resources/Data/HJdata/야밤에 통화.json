@@ -14,9 +14,10 @@
       "relatedCards": [
         10
       ],
-      "utillAmount": 0,
+      "utillAmount": 1,
       "when": 0,
       "area": 0,
+      "faction": 0,
       "type": 3
     }
   ]

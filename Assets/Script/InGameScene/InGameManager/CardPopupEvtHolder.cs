@@ -35,7 +35,7 @@ public class CardPopupEvtHolder : MonoBehaviour
     public void OnPointerExit(PointerEventData eventData)
     {
         if (Co != null) { StopCoroutine(Co); Co = null; }
-        GAME.Manager.IGM.cardPopup.gameObject.SetActive(false);
+        GAME.IGM.cardPopup.gameObject.SetActive(false);
     }
 
 }

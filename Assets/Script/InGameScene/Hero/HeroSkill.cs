@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class HeroSkill : MonoBehaviour, IBody
 {
-    Hero owenrUser;
     Func<IBody, IBody, IEnumerator> skillFunc;
     public SkillData data ;
     # region
@@ -25,7 +24,38 @@ public class HeroSkill : MonoBehaviour, IBody
     public int HP { get; set; }
 
     #endregion
-
+    public void InitEnemySkill(Hero user, Define.classType type)
+    {
+        bodyType = Define.BodyType.None;
+        TR = transform;
+        Col = GetComponent<CircleCollider2D>();
+        user.playerImg.sprite = GAME.Manager.RM.GetHeroImage(type);
+        switch (type)
+        {
+            case Define.classType.HJ:
+                data = new HJskill();
+                data.Name = "소주 맥이기";
+                data.Desc = "마우스로 적 대상을 선택해 피해를 2 줍니다";
+                GAME.IGM.Hero.Player.skillImg.sprite =
+                data.Image = GAME.Manager.RM.GetImage(Define.classType.HJ, 4);
+                break;
+            case Define.classType.HZ:
+                data = new HZskill();
+                data.Name = "공부 시키기";
+                data.Desc = "마우스로 대상을 선택해 +1/+1을 부여합니다";
+                GAME.IGM.Hero.Player.skillImg.sprite =
+                data.Image = GAME.Manager.RM.GetImage(Define.classType.HZ, 15);
+                break;
+            case Define.classType.KH:
+                data = new KHskill();
+                data.Name = "감자탕 먹이기";
+                data.Desc = "대상을 선택해 2치유합니다";
+                GAME.IGM.Hero.Player.skillImg.sprite =
+                data.Image = GAME.Manager.RM.GetImage(Define.classType.KH, 28);
+                break;
+        }
+        skillFunc = data.SkillClickEvt;
+    }
     public void InitSkill(Hero user)
     {
         bodyType = Define.BodyType.None;
@@ -37,28 +67,27 @@ public class HeroSkill : MonoBehaviour, IBody
         // 로비에서 인게임씬으로 진입후
         // ResourcesManager에서 사용할 유저의 덱 프로퍼티를 통해
         // 직업을 찾고 맞는 영웅 능력으로 초기화
-        owenrUser = user;   
         switch (GAME.Manager.RM.GameDeck.ownerClass)
         {
             case Define.classType.HJ:
                 data = new HJskill();
                 data.Name = "소주 맥이기";
                 data.Desc = "마우스로 적 대상을 선택해 피해를 2 줍니다";
-                GAME.Manager.IGM.Hero.Player.skillImg.sprite = 
+                GAME.IGM.Hero.Player.skillImg.sprite = 
                 data.Image = GAME.Manager.RM.GetImage(Define.classType.HJ,4);
                 break;
             case Define.classType.HZ:
                 data = new HZskill();
                 data.Name = "공부 시키기";
                 data.Desc = "마우스로 대상을 선택해 +1/+1을 부여합니다";
-                GAME.Manager.IGM.Hero.Player.skillImg.sprite =
+                GAME.IGM.Hero.Player.skillImg.sprite =
                 data.Image = GAME.Manager.RM.GetImage(Define.classType.HZ, 15);
                 break;
             case Define.classType.KH:
                 data = new KHskill();
                 data.Name = "감자탕 먹이기";
                 data.Desc = "대상을 선택해 2치유합니다";
-                GAME.Manager.IGM.Hero.Player.skillImg.sprite =
+                GAME.IGM.Hero.Player.skillImg.sprite =
                 data.Image = GAME.Manager.RM.GetImage(Define.classType.KH, 28);
                 break;
         }
@@ -69,14 +98,14 @@ public class HeroSkill : MonoBehaviour, IBody
     {
         // 레이 비활성화 : 이미 사용하였기에 다음 자신의 턴이 오기까지 해당 이벤트 실행 불가
         // 타겟팅 코루틴이 Null이 아닐시 : 현재 다른 드래깅클릭이 스킬컴포넌트를 클릭한 경우
-        if (Col.enabled == false || GAME.Manager.IGM.TC.Arrow.gameObject.activeSelf == true)
+        if (Col.enabled == false || GAME.IGM.TC.Arrow.gameObject.activeSelf == true)
         { return; }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
-        GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
+        GAME.IGM.Spawn.SpawnRay = Ray = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.IGM.TC.StartCoroutine(GAME.Manager.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" }));
+        GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" }));
     }
 
 

@@ -3,9 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Profiling.Memory.Experimental;
 
 public class EditCanvas : LobbyPopup
 {

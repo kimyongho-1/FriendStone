@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using static UnityEngine.GraphicsBuffer;
-using UnityEditor.Experimental.GraphView;
 using static Define;
 using System.Linq;
 using System;
@@ -32,35 +30,31 @@ public class CardField : CardEle
     {
         IsMine = isMine;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe") ;
-        attackable = true;
+        
         Col = GetComponent<CircleCollider2D>();
-        if (dataParam is MinionCardData)
-        {
-            MinionCardData minionCardData = (MinionCardData)dataParam;
-            data = dataParam;
-            Att = minionCardData.att;
-            HP = OriginHp = minionCardData.hp;
-            AttTmp.text = minionCardData.att.ToString();
-            HpTmp.text = minionCardData.hp.ToString();
-            cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
-            GAME.Manager.UM.BindCardPopupEvent(this.gameObject,CallPopup, 0.75f );
-        }
-        else
-        {
-            data = dataParam;
-            cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
-        }
-
-        // 좌클릭시 카메라로 레이활성화하여 타겟팅 이벤트 시작
-        GAME.Manager.UM.BindEvent(this.gameObject, StartAttack , Define.Mouse.ClickL, Define.Sound.Ready );
-
+        MinionCardData minionCardData = (MinionCardData)dataParam;
+        data = dataParam;
+        Att = minionCardData.att;
+        HP = OriginHp = minionCardData.hp;
+        AttTmp.text = minionCardData.att.ToString();
+        HpTmp.text = minionCardData.hp.ToString();
+        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
+        
+        GAME.Manager.UM.BindCardPopupEvent(this.gameObject, CallPopup, 0.75f);
+        
+        attackable = (minionCardData.isCharge) ? true : false;
+        sleep.gameObject.SetActive((attackable)? true : false);
         if (IsMine)
-        {
+        { 
+            // 좌클릭시 카메라로 레이활성화하여 타겟팅 이벤트 시작
+            GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL, Define.Sound.Ready);
+
+            // 소환시 , 손에서 낼떄 실행할 이벤트 있는지 확인
             List<CardBaseEvtData> list = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onPlayed);
 
             for (int i = 0; i < list.Count; i++)
             {
-                GAME.Manager.IGM.Battle.Evt(list[i], this);
+                GAME.IGM.Battle.Evt(list[i], this);
             }
         }
     }
@@ -78,8 +72,8 @@ public class CardField : CardEle
         else
         {
             // 몇번쨰 인지 인덱스 찾기
-            int idx = (this.IsMine) ? GAME.Manager.IGM.Spawn.playerMinions.IndexOf(this)
-                : GAME.Manager.IGM.Spawn.enemyMinions.IndexOf(this) ;
+            int idx = (this.IsMine) ? GAME.IGM.Spawn.playerMinions.IndexOf(this)
+                : GAME.IGM.Spawn.enemyMinions.IndexOf(this) ;
 
             // 우측으로 너무 밀린 미니언의 경우 왼쪽으로 카드팝업을 띄어주기
             Vector3 pos = transform.position + Vector3.right * 2f;
@@ -87,7 +81,7 @@ public class CardField : CardEle
             { pos = transform.position - Vector3.right * 2f; }
             
             // 보여질 데이터와 위치 구해지면, 카드팝업 띄우기
-            GAME.Manager.IGM.ShowMinionPopup((MinionCardData)data, pos, cardImage.sprite); 
+            GAME.IGM.ShowMinionPopup((MinionCardData)data, pos, cardImage.sprite); 
         }
         
     }
@@ -97,14 +91,15 @@ public class CardField : CardEle
     {
         // 공격 가능한 상태가 아니거나
         // 이미 다른 객체가 타겟팅 중인데 이 객체를 클릭시 취소
-        if (!attackable || GAME.Manager.IGM.TC.LR.gameObject.activeSelf == true)
+        if (!attackable || GAME.IGM.TC.LR.gameObject.activeSelf == true
+            || sleep.gameObject.activeSelf == true)
         { return; }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
-        GAME.Manager.IGM.Spawn.SpawnRay = Ray = false;
+        GAME.IGM.Spawn.SpawnRay = Ray = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.StartCoroutine(GAME.Manager.IGM.TC.TargettingCo
+        GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
             (this,
             (IBody a, IBody t) => { return AttackCo(a, t); },
             new string[] { "foe", "foeHero" }
@@ -129,7 +124,7 @@ public class CardField : CardEle
         #region 카메라 흔들기 이펙트
         // 0~PI 까지의 길이를 정한뒤 사인을 사용하면
         // 0 ~ 1 후, 1 ~ 0 으로 되돌아 오기에 Z축 회전 코루틴으로 이용하기로 결정
-        StartCoroutine(GAME.Manager.IGM.TC.ShakeCo());
+        StartCoroutine(GAME.IGM.TC.ShakeCo());
         yield return null;
 
         #endregion
@@ -145,5 +140,14 @@ public class CardField : CardEle
         ChangeSortingLayer(false); // 소팅레이어 초기화
         #endregion
 
+        // 나의 턴이고, 나의 소유 미니언이 공격했다면
+        // 현재 내가 조종한 행동으로 확인 및 공격 이벤트 상대에게 전파
+        if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
+        {
+            GAME.IGM.Packet.SendMinionAttack(attacker.PunId, target.PunId);
+        }
     }
+
+    public IEnumerator Dead()
+    { yield return null; }  
 }
