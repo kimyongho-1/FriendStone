@@ -11,6 +11,8 @@ public class CustomList : List<CardField>
     {
         // 기본 Insert 함수 실행후
         base.Insert(idx, ele);
+        Debug.Log($"AllBody List에 {ele.data.cardName},[{ele.PunId}] 가 추가 됨");
+
         // 총 관리 목적의 LIST에도 추가
         GAME.IGM.allIBody.Add(ele);
     }

@@ -9,11 +9,22 @@ using System;
 public class CardField : CardEle
 {
     public TextMeshPro AttTmp, HpTmp;
-    public SpriteRenderer  cardImage;
+    public SpriteRenderer cardImage, attIcon, hpIcon;
     public bool attackable = true;
     public ParticleSystem sleep;
     public SpriteMask mask;
-    public int maxHp;
+    MinionCardData minionCardData;
+    public override int Att
+    {
+        get { return minionCardData.att; }
+        set { minionCardData.att = value; AttTmp.text = minionCardData.att.ToString(); }
+    }
+
+    public override int HP
+    {
+        get { return minionCardData.hp; } 
+        set { minionCardData.hp = value; HpTmp.text = minionCardData.hp.ToString(); } 
+    }
 
     // 미니언 카드가 공격을 한다 가정시, 부딪힐떄 위치가 겹치는 순간
     // 소팅 레이어가 동일하면 이미지가 겹치거나 꺠질 위험이 있어, 공격자가 최상단에 위치하도록 레이어 변경
@@ -28,22 +39,21 @@ public class CardField : CardEle
     }
     public void Init(CardData dataParam, bool isMine)
     {
+        data = dataParam;
         IsMine = isMine;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe") ;
         
         Col = GetComponent<CircleCollider2D>();
-        MinionCardData minionCardData = (MinionCardData)dataParam;
-        data = dataParam;
-        Att = minionCardData.att;
+        minionCardData = (MinionCardData)data;
+        Att = OriginAtt = minionCardData.att;
         HP = OriginHp = minionCardData.hp;
-        AttTmp.text = minionCardData.att.ToString();
-        HpTmp.text = minionCardData.hp.ToString();
         cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
         
         GAME.Manager.UM.BindCardPopupEvent(this.gameObject, CallPopup, 0.75f);
         
         attackable = (minionCardData.isCharge) ? true : false;
         sleep.gameObject.SetActive((attackable)? true : false);
+        attackable = true; sleep.gameObject.SetActive(false);
         if (IsMine)
         { 
             // 좌클릭시 카메라로 레이활성화하여 타겟팅 이벤트 시작
@@ -56,6 +66,61 @@ public class CardField : CardEle
             {
                 GAME.IGM.Battle.Evt(list[i], this);
             }
+        }
+
+        // 필드 하수인이 죽었을때 실행할 애님 코루틴 연결
+        onDead = Dead(IsMine);
+        IEnumerator Dead(bool isMine)
+        {
+            // 점차 투명해지기
+            StartCoroutine(FadeOut());
+            IEnumerator FadeOut()
+            {
+                float t = 1;
+                while (t < 1f)
+                {
+                    // 투명화 진행
+                    t -= Time.deltaTime ;
+                    Color tempColor = new Color(1,1,1,t);
+                    cardImage.color = attIcon.color = hpIcon.color = tempColor;
+                    AttTmp.alpha = HpTmp.alpha =t;
+                    yield return null;
+                }
+                mask.enabled = false;
+            }
+
+            // 좌우로 왔다갔다로 죽는 코루틴 애님
+            yield return StartCoroutine(Wiggle());
+            IEnumerator Wiggle()
+            {
+                float t = 0;
+                float min = this.transform.position.x -0.25f;
+                float max = this.transform.position.x + 0.25f;
+                while (t < 1f)
+                {
+                    t += Time.deltaTime;
+                    float x = Mathf.Lerp(min, max, MathF.Sin(t * MathF.PI));
+                    transform.position = new Vector3(x, transform.position.y, transform.position.z);
+                    yield return null;
+                }
+            }
+
+            // 현재 죽은 하수인이 누구의 편인지에 따라 스폰에서 제거하기
+            if (isMine)
+            { 
+                // 내 하수인 죽엇을시, 리스트에서 제거 및 스폰위치들 재정렬
+                GAME.IGM.Spawn.playerMinions.Remove(GAME.IGM.Spawn.playerMinions.Find(x=>x.PunId == this.PunId));
+                // 필드 재정렬
+                yield return StartCoroutine(GAME.IGM.Spawn.AllPlayersAlignment());
+            }
+            // 적 하수인들 재 정렬
+            else
+            {
+                GAME.IGM.Spawn.enemyMinions.Remove(GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == this.PunId));
+                yield return StartCoroutine(GAME.IGM.Spawn.AllEnemiesAlignment());
+            }
+
+            Destroy(this.gameObject);
         }
     }
 
@@ -140,14 +205,20 @@ public class CardField : CardEle
         ChangeSortingLayer(false); // 소팅레이어 초기화
         #endregion
 
+        // 데미지 교환
+        attacker.HP -= target.Att;
+        target.HP -= attacker.Att;
+
         // 나의 턴이고, 나의 소유 미니언이 공격했다면
         // 현재 내가 조종한 행동으로 확인 및 공격 이벤트 상대에게 전파
         if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
         {
             GAME.IGM.Packet.SendMinionAttack(attacker.PunId, target.PunId);
         }
-    }
 
-    public IEnumerator Dead()
-    { yield return null; }  
+        // 죽은 하수인이 있는지 확인 및 죽었다면 죽는 애니메이션 실행
+        if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
+        if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
+    }
+    
 }
