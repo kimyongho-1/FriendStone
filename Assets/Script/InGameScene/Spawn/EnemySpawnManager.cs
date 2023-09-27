@@ -1,4 +1,4 @@
-using Photon.Pun;
+ï»¿using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,28 +8,28 @@ public partial class SpawnManager
 {
     public IEnumerator EnemySpawn(int punID, int spawnIdx)
     {
-        #region »ó´ë°¡ ¼ÒÈ¯ÇÒ°ÍÀÌ±â¿¡, Ãß°¡ ÀÚ¸®¸¦ Æ÷ÇÔÇÏ¿© Àû ¹Ì´Ï¾ğµé À§Ä¡ °è»ê
-        // ¿òÁ÷ÀÏ ÀûÀÇ ÇÚµåÄ«µå °´Ã¼
+        #region ìƒëŒ€ê°€ ì†Œí™˜í• ê²ƒì´ê¸°ì—, ì¶”ê°€ ìë¦¬ë¥¼ í¬í•¨í•˜ì—¬ ì  ë¯¸ë‹ˆì–¸ë“¤ ìœ„ì¹˜ ê³„ì‚°
+        // ì›€ì§ì¼ ì ì˜ í•¸ë“œì¹´ë“œ ê°ì²´
         CardHand card = GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
-        // ÃÑ ¿¡³Ê¹Ì ¹Ì´Ï¾ğ °¹¼ö (´Ã¾î³¯°ÍÀ» Ãß°¡ÇÏ¿© °è»ê)
+        // ì´ ì—ë„ˆë¯¸ ë¯¸ë‹ˆì–¸ ê°¯ìˆ˜ (ëŠ˜ì–´ë‚ ê²ƒì„ ì¶”ê°€í•˜ì—¬ ê³„ì‚°)
         int count = enemyMinions.Count + 1;
         List<Vector3> pointList = new List<Vector3>();
         for (int i = 0; i < count; i++)
         {
-            // ÃÖ´ëÇÑ °¡¿îµ¥ ÀÎµ¦½ÌÀ» Á¤ÇØµĞ »óÅÂ·Î, ÁÂ¿ì·Î ÆÛÁöµµ·Ï À§Ä¡ ¼±Á¤
+            // ìµœëŒ€í•œ ê°€ìš´ë° ì¸ë±ì‹±ì„ ì •í•´ë‘” ìƒíƒœë¡œ, ì¢Œìš°ë¡œ í¼ì§€ë„ë¡ ìœ„ì¹˜ ì„ ì •
             float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
 
             pointList.Add(new Vector3(x, 2.25f, -0.1f));
         }
         #endregion
 
-        #region »ó´ëÀÇ ÇÚµåÄ«µå°¡ ¼ÒÈ¯µÉ À§Ä¡·Î ÀÌµ¿ÇÏ´Â ¸ğ½À
+        #region ìƒëŒ€ì˜ í•¸ë“œì¹´ë“œê°€ ì†Œí™˜ë  ìœ„ì¹˜ë¡œ ì´ë™í•˜ëŠ” ëª¨ìŠµ
         yield return StartCoroutine(handCardMove());
-        // ¸ÕÀú ÀûÀÇ ÇÚµåÄ«µå°¡ ¼ÒÈ¯µÉ À§Ä¡·Î ÀÌµ¿ÇÏ´Â ¸ğ½À ÄÚ·çÆ¾
+        // ë¨¼ì € ì ì˜ í•¸ë“œì¹´ë“œê°€ ì†Œí™˜ë  ìœ„ì¹˜ë¡œ ì´ë™í•˜ëŠ” ëª¨ìŠµ ì½”ë£¨í‹´
         IEnumerator handCardMove()
         {
             Vector3 start = card.transform.localPosition;
-            Vector3 dest = pointList[spawnIdx]; // ¼ÒÈ¯µÉ À§Ä¡·Î ÇÚµåÄ«µå°¡ ÀÌµ¿ À¯µµ
+            Vector3 dest = pointList[spawnIdx]; // ì†Œí™˜ë  ìœ„ì¹˜ë¡œ í•¸ë“œì¹´ë“œê°€ ì´ë™ ìœ ë„
             float t = 0;
             while (t < 1f)
             {
@@ -42,33 +42,33 @@ public partial class SpawnManager
 
         #endregion
 
-        #region »ó´ëÀÇ ÇÚµå Ä«µå¼Ò¸ê ÄÚ·çÆ¾ ¹× ÇÊµåÄ«µå ÇÁ¸®ÆÕ »ı¼º
-        // ÇöÀç ÇÚµåÄ«µå (¹Ì´Ï¾ğ) Á¤º¸ Åä´ë·Î ½ºÆù ½ÃÀÛ
+        #region ìƒëŒ€ì˜ í•¸ë“œ ì¹´ë“œì†Œë©¸ ì½”ë£¨í‹´ ë° í•„ë“œì¹´ë“œ í”„ë¦¬íŒ¹ ìƒì„±
+        // í˜„ì¬ í•¸ë“œì¹´ë“œ (ë¯¸ë‹ˆì–¸) ì •ë³´ í† ëŒ€ë¡œ ìŠ¤í° ì‹œì‘
         CardField cf = GameObject.Instantiate(prefab, Enemies);
         cf.Init(card.data,false);
         cf.PunId = card.PunId;
         cf.transform.localPosition = card.transform.localPosition;
         enemyMinions.Insert(spawnIdx, cf);
-        // ÇöÀç Àû ÇÚµå¸ñ·Ï¿¡¼­ ¼ÒÈ¯ÇÒ ÀÌ ¹Ì´Ï¾ğÄ«µå Á¦°Å
+        // í˜„ì¬ ì  í•¸ë“œëª©ë¡ì—ì„œ ì†Œí™˜í•  ì´ ë¯¸ë‹ˆì–¸ì¹´ë“œ ì œê±°
         GAME.IGM.Hand.EnemyHand.Remove(card);
-        // ÇÚµå Ä«µå´Â ÀÌÁ¦ ÇÊ¿ä¾ø±â¿¡ ¼Ò¸ê¾Ö´Ï¸ŞÀÌ¼Ç ÄÚ·çÆ¾ ½ÇÇà (»èÁ¦µµ ³»ºÎ¿¡¼­ ÁøÇà)
+        // í•¸ë“œ ì¹´ë“œëŠ” ì´ì œ í•„ìš”ì—†ê¸°ì— ì†Œë©¸ì• ë‹ˆë©”ì´ì…˜ ì½”ë£¨í‹´ ì‹¤í–‰ (ì‚­ì œë„ ë‚´ë¶€ì—ì„œ ì§„í–‰)
         GAME.Manager.StartCoroutine(card.FadeOutCo(false));
         #endregion
 
-        // ¼ÒÈ¯ È¿°úÀ½ Àç»ı
+        // ì†Œí™˜ íš¨ê³¼ìŒ ì¬ìƒ
         GAME.Manager.SM.PlaySound(Define.Sound.Summon);
 
-        // ¸ğµç ÇÊµå ¹Ì´Ï¾ğµé À§Ä¡ ÀçÁ¤·Ä
+        // ëª¨ë“  í•„ë“œ ë¯¸ë‹ˆì–¸ë“¤ ìœ„ì¹˜ ì¬ì •ë ¬
         for (int i = 0; i < enemyMinions.Count; i++)
         {
-            // ÃÖ´ëÇÑ °¡¿îµ¥ ÀÎµ¦½ÌÀ» Á¤ÇØµĞ »óÅÂ·Î, ÁÂ¿ì·Î ÆÛÁöµµ·Ï À§Ä¡ ¼±Á¤
+            // ìµœëŒ€í•œ ê°€ìš´ë° ì¸ë±ì‹±ì„ ì •í•´ë‘” ìƒíƒœë¡œ, ì¢Œìš°ë¡œ í¼ì§€ë„ë¡ ìœ„ì¹˜ ì„ ì •
             float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
 
             enemyMinions[i].OriginPos = new Vector3(x,2.25f, -0.1f);
             StartCoroutine(move(enemyMinions[i].transform, i));
         }
 
-        // ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼Ç ÄÚ·çÆ¾
+        // ì´ë™ ì• ë‹ˆë©”ì´ì…˜ ì½”ë£¨í‹´
         IEnumerator move(Transform tr, int idx)
         {
             float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
@@ -82,11 +82,40 @@ public partial class SpawnManager
             }
         }
 
-        // ÇÏ¼öÀÎµéÀÌ ¼ÒÈ¯µÉ‹š¸¶´Ù, ¼Õ¿¡¼­ ½ÇÇàÇØ¾ßÇÒ ÀÌº¥Æ®°¡ ÀÖ´Â Ä«µåµéÀº ÇöÀç ¼ÒÈ¯µÈ ÇÏ¼öÀÎÀÇ ³Ñ¹ö¸¦ ÀÎÀÚ·Î ÀÌº¥Æ® ½ÇÇà
-        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.data.cardIdNum));
+        // í•˜ìˆ˜ì¸ë“¤ì´ ì†Œí™˜ë ë–„ë§ˆë‹¤, ì†ì—ì„œ ì‹¤í–‰í•´ì•¼í•  ì´ë²¤íŠ¸ê°€ ìˆëŠ” ì¹´ë“œë“¤ì€ í˜„ì¬ ì†Œí™˜ëœ í•˜ìˆ˜ì¸ì˜ ë„˜ë²„ë¥¼ ì¸ìë¡œ ì´ë²¤íŠ¸ ì‹¤í–‰
+        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.data.cardIdNum, cf.IsMine));
 
-        // ÇöÀç ¼ÒÈ¯µÈ Ä«µå°¡, Á¤ÇØÁø À§Ä¡·Î ÀÌµ¿À» ³¡¸ÂÃâ‹š±îÁö ´ë±â
+        // í˜„ì¬ ì†Œí™˜ëœ ì¹´ë“œê°€, ì •í•´ì§„ ìœ„ì¹˜ë¡œ ì´ë™ì„ ëë§ì¶œë–„ê¹Œì§€ ëŒ€ê¸°
         yield return new WaitUntil(()=>(cf.transform.position == cf.OriginPos));
-        // ¿¬ÀÌ¾î °ø°İ ÀÌº¥Æ® ÀüÆÄ½Ã, À§Ä¡¸¦ ´Ù ³¡ ¸ÂÃá »óÅÂ¿¡¼­ ÁøÇàµÇ´Â°ÍÀÌ ÀÚ¿¬½º·´±â¿¡
+        // ì—°ì´ì–´ ê³µê²© ì´ë²¤íŠ¸ ì „íŒŒì‹œ, ìœ„ì¹˜ë¥¼ ë‹¤ ë ë§ì¶˜ ìƒíƒœì—ì„œ ì§„í–‰ë˜ëŠ”ê²ƒì´ ìì—°ìŠ¤ëŸ½ê¸°ì—
+    }
+
+
+    // ëª¬ìŠ¤í„°ê°€ ì£½ê³ ë‚˜ì„œ ì¬ì •ë ¬
+    public IEnumerator AllEnemiesAlignment()
+    {
+        int count = enemyMinions.Count + 1;
+        for (int i = 0; i < enemyMinions.Count; i++)
+        {
+            float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
+
+            enemyMinions[i].OriginPos = new Vector3(x, 2.25f, -0.1f);
+            StartCoroutine(move(enemyMinions[i].transform, i));
+            yield return null;
+        }
+
+        // ï¿½Ìµï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½Ú·ï¿½Æ¾
+        IEnumerator move(Transform tr, int idx)
+        {
+            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
+            Vector3 startPos = tr.transform.localPosition;
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 2.5f;
+                tr.transform.localPosition =
+                    Vector3.Lerp(startPos, spawnPoint[idx], t);
+                yield return null;
+            }
+        }
     }
 }

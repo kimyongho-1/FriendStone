@@ -1,4 +1,4 @@
-using Photon.Pun;
+ï»¿using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,12 +7,12 @@ using UnityEngine;
 public partial class SpawnManager : MonoBehaviour
 {
     public Transform Players, Enemies;
-    public List<CardField> enemyMinions = new List<CardField>();
-    public List<CardField> playerMinions = new List<CardField>();  
+    public CustomList enemyMinions = new CustomList();
+    public CustomList playerMinions = new CustomList();
     public List<Vector3> spawnPoint = new List<Vector3>();
     public CardField prefab;
 
-    public int idx = 0; // ¼ÒÈ¯µÉ ¹Ì´Ï¾ğÀÇ ÀÎµ¦½Ì À§Ä¡
+    public int idx = 0; // ì†Œí™˜ë  ë¯¸ë‹ˆì–¸ì˜ ì¸ë±ì‹± ìœ„ì¹˜
     public bool SpawnRay { get { return SpawnArea.enabled; } set { SpawnArea.enabled = value; } }
     BoxCollider2D SpawnArea;
     private void Awake()
@@ -23,19 +23,19 @@ public partial class SpawnManager : MonoBehaviour
         spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f));
     }
 
-    // ´ÙÀ½ ¹Ì´Ï¾ğÀÌ ³õÀÏ À§Ä¡¸¦ ¹Ì¸® °è»ê
+    // ë‹¤ìŒ ë¯¸ë‹ˆì–¸ì´ ë†“ì¼ ìœ„ì¹˜ë¥¼ ë¯¸ë¦¬ ê³„ì‚°
     public void CalcSpawnPoint() 
     {
-        // ÇöÀç µå·¡±ëÄ¿¼­°¡ ÇÊµå¹üÀ§¿¡ ¾ø´Â°ÍÀ¸·Î ÃÊ±âÈ­
+        // í˜„ì¬ ë“œë˜ê¹…ì»¤ì„œê°€ í•„ë“œë²”ìœ„ì— ì—†ëŠ”ê²ƒìœ¼ë¡œ ì´ˆê¸°í™”
         idx = -1000;
 
-        // ÃÖ´ë ¹Ì´Ï¾ğÀÇ °¹¼ö°¡ 7ÀÌ¸é ´õ ÀÌ»ó °ø°£ ¸¸µé ÇÊ¿ä X
+        // ìµœëŒ€ ë¯¸ë‹ˆì–¸ì˜ ê°¯ìˆ˜ê°€ 7ì´ë©´ ë” ì´ìƒ ê³µê°„ ë§Œë“¤ í•„ìš” X
         if (playerMinions.Count == 7 || spawnPoint.Count == playerMinions.Count+1) { return; }
 
-        // ÇöÀç ¹Ì´Ï¾ğÀÌ ¾øÀ¸¸é ¾ğÁ¦³ª °íÁ¤µÈ À§Ä¡·Î ´ÙÀ½ ¹Ì´Ï¾ğ ¼ÒÈ¯ À§Ä¡ °áÁ¤
+        // í˜„ì¬ ë¯¸ë‹ˆì–¸ì´ ì—†ìœ¼ë©´ ì–¸ì œë‚˜ ê³ ì •ëœ ìœ„ì¹˜ë¡œ ë‹¤ìŒ ë¯¸ë‹ˆì–¸ ì†Œí™˜ ìœ„ì¹˜ ê²°ì •
         if (playerMinions.Count == 0) { spawnPoint[0] = new Vector3(0.5f, 0.5f, -0.1f); return; }
 
-        // ¹Ì´Ï¾ğÀÌ 1°³ ÀÌ»óºÎÅÍ´Â SpawnPoint¿ä¼ÒµéÀÌ º¯°æµÇ±âÀü À§Ä¡ °ªÀ¸·Î °áÁ¤
+        // ë¯¸ë‹ˆì–¸ì´ 1ê°œ ì´ìƒë¶€í„°ëŠ” SpawnPointìš”ì†Œë“¤ì´ ë³€ê²½ë˜ê¸°ì „ ìœ„ì¹˜ ê°’ìœ¼ë¡œ ê²°ì •
         else
         {
             for (int i = 0; i < playerMinions.Count; i++)
@@ -45,51 +45,87 @@ public partial class SpawnManager : MonoBehaviour
             }
         }
 
-        // ÇöÀç ¹Ì´Ï¾ğÀÇ °¹¼ö +1 ÇÑ ¿©À¯ °ø°£ ¸¸µé±â (´ÙÀ½ ¹Ì´Ï¾ğ ¼ÒÈ¯µÉ °ø°£À» ¹Ì¸® ¸¶·ÃÇÏ´Â °³³ä)
+        // í˜„ì¬ ë¯¸ë‹ˆì–¸ì˜ ê°¯ìˆ˜ +1 í•œ ì—¬ìœ  ê³µê°„ ë§Œë“¤ê¸° (ë‹¤ìŒ ë¯¸ë‹ˆì–¸ ì†Œí™˜ë  ê³µê°„ì„ ë¯¸ë¦¬ ë§ˆë ¨í•˜ëŠ” ê°œë…)
         spawnPoint.Add(new Vector3(0, 0, 0));
         int count = spawnPoint.Count;
         for (int i = 0; i < spawnPoint.Count; i++)
         {
-            // i - (count - 1) / 2 ´Â Áß½ÉÀ» ±âÁØÀ¸·Î -3, -2, -1, 0, 1, 2, 3 °°Àº º¯È¯À» À¯µµ
+            // i - (count - 1) / 2 ëŠ” ì¤‘ì‹¬ì„ ê¸°ì¤€ìœ¼ë¡œ -3, -2, -1, 0, 1, 2, 3 ê°™ì€ ë³€í™˜ì„ ìœ ë„
             float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
             spawnPoint[i] = new Vector3(x, 0.35f, -0.1f);
         }
     }
 
-    // ÇöÀç À¯ÀúÀÇ ¹Ì´Ï¾ğÇÚµåÄ«µå°¡, ÇÊµå ¹üÀ§¿¡ µé¾î¿Ô´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+    // ë‚´ ë¯¸ë‹ˆì–¸ì´ ì£½ê³  ì¬ì •ë ¬
+    public IEnumerator AllPlayersAlignment()
+    {
+        spawnPoint.Clear();
+
+        if (playerMinions.Count == 0) { spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f)); yield break; }
+
+        // ï¿½ï¿½ï¿½ ï¿½Êµï¿½ ï¿½Ì´Ï¾ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        for (int i = 0; i < playerMinions.Count + 1; i++)
+        {
+            // ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½îµ¥ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Øµï¿½ ï¿½ï¿½ï¿½Â·ï¿½, ï¿½Â¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
+            float x = 0.5f + 1.25f * (i - (spawnPoint.Count - 1) / 2.0f);
+            spawnPoint.Add(new Vector3(x, 0.5f, -0.1f));
+        }
+        // ï¿½ï¿½ï¿½ ï¿½Êµï¿½ ï¿½Ì´Ï¾ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        for (int i = 0; i < playerMinions.Count; i++)
+        {
+            playerMinions[i].OriginPos = spawnPoint[i];
+            StartCoroutine(move(playerMinions[i].transform, i));
+            yield return null;
+        }
+
+        // ï¿½Ìµï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½Ú·ï¿½Æ¾
+        IEnumerator move(Transform tr, int idx)
+        {
+            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
+            Vector3 startPos = tr.transform.localPosition;
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 2.5f;
+                tr.transform.localPosition =
+                    Vector3.Lerp(startPos, spawnPoint[idx], t);
+                yield return null;
+            }
+        }
+    }
+    // í˜„ì¬ ìœ ì €ì˜ ë¯¸ë‹ˆì–¸í•¸ë“œì¹´ë“œê°€, í•„ë“œ ë²”ìœ„ì— ë“¤ì–´ì™”ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
     public bool CheckInBox(Vector3 worldPos)
     {
         SpawnArea.enabled = true;
         return SpawnArea.OverlapPoint(new Vector3(worldPos.x, worldPos.y));
     }
 
-    // À¯Àú°¡ ÇÚµåÄ«µåÁß ¹Ì´Ï¾ğ Ä«µå¸¦ µå·¡±×ÇÏ¿© ÇÊµåÀ§¿¡¼­
-    // ¿òÁ÷ÀÏ‹š, ¹Ì´Ï¾ğµé °£ÀÇ ÀÚ¸® »çÀÌ¸¦ ¹Ì¸® ¿òÁ÷¿©¼­ º¸¿©ÁÖ´Â ÇÔ¼ö
+    // ìœ ì €ê°€ í•¸ë“œì¹´ë“œì¤‘ ë¯¸ë‹ˆì–¸ ì¹´ë“œë¥¼ ë“œë˜ê·¸í•˜ì—¬ í•„ë“œìœ„ì—ì„œ
+    // ì›€ì§ì¼ë–„, ë¯¸ë‹ˆì–¸ë“¤ ê°„ì˜ ìë¦¬ ì‚¬ì´ë¥¼ ë¯¸ë¦¬ ì›€ì§ì—¬ì„œ ë³´ì—¬ì£¼ëŠ” í•¨ìˆ˜
     public void MinionAlignment(CardHand ch , Vector3 worldPos)
     {
-        // ¹Ì´Ï¾ğÀÌ ÇÏ³ªµµ ¾ø´Ù¸é ÆÇº°ÇÒ ÇÊ¿ä°¡ X
+        // ë¯¸ë‹ˆì–¸ì´ í•˜ë‚˜ë„ ì—†ë‹¤ë©´ íŒë³„í•  í•„ìš”ê°€ X
         if (spawnPoint.Count == 1) { idx = 0; return; }
 
-        // ¸ÕÀú À¯Àú Ä«µå°¡ ÇÊµå¹üÀ§¿¡ ¾Èµé¾î¿ÍÀÖÀ¸¸é ÀÌµ¿ÇÒ ÇÊ¿ä X
+        // ë¨¼ì € ìœ ì € ì¹´ë“œê°€ í•„ë“œë²”ìœ„ì— ì•ˆë“¤ì–´ì™€ìˆìœ¼ë©´ ì´ë™í•  í•„ìš” X
         if (CheckInBox(worldPos) == false)
         {
             StopAllCoroutines();
-            // ¿¹»óµÇ´Â idx°¡ À½¼ö°ªÀº, ÇöÀç ¸¶¿ì½ºÆ÷ÀÎÅÍ°¡ ÇÊµåÀ§°¡ ¾Æ´Ñ °÷¿¡ ÀÖ´Ù.
-            // ±×·¯¸é ÇÊµåÀÇ ¹Ì´Ï¾ğµéÀº ¿ø·¡ÀÇ À§Ä¡°ªÀ¸·Î ÀçÀÌµ¿
+            // ì˜ˆìƒë˜ëŠ” idxê°€ ìŒìˆ˜ê°’ì€, í˜„ì¬ ë§ˆìš°ìŠ¤í¬ì¸í„°ê°€ í•„ë“œìœ„ê°€ ì•„ë‹Œ ê³³ì— ìˆë‹¤.
+            // ê·¸ëŸ¬ë©´ í•„ë“œì˜ ë¯¸ë‹ˆì–¸ë“¤ì€ ì›ë˜ì˜ ìœ„ì¹˜ê°’ìœ¼ë¡œ ì¬ì´ë™
             idx = -1000; 
             for (int i = 0; i < playerMinions.Count; i++)
             {
-                // º»·¡ÀÇ À§Ä¡·Î µ¹¾Æ°¡±â
+                // ë³¸ë˜ì˜ ìœ„ì¹˜ë¡œ ëŒì•„ê°€ê¸°
                 StartCoroutine(move(playerMinions[i].transform, playerMinions[i].OriginPos));
             }
-            Debug.Log("¿ø·¡ÀÇ À§Ä¡·Î ÀçÁ¤·Ä");
+            Debug.Log("ì›ë˜ì˜ ìœ„ì¹˜ë¡œ ì¬ì •ë ¬");
             return;
         }
         
         Debug.Log("IN BOX LINE");
         int currIdx = 0;
         
-        // ÇöÀç ½ºÆùÆ÷ÀÎÆ®¿Í °¡Àå °¡±î¿î ¸¶¿ì½º À§Ä¡ °ª Ã£±â
+        // í˜„ì¬ ìŠ¤í°í¬ì¸íŠ¸ì™€ ê°€ì¥ ê°€ê¹Œìš´ ë§ˆìš°ìŠ¤ ìœ„ì¹˜ ê°’ ì°¾ê¸°
         float minDist = 10f;
         for (int i = 0; i < spawnPoint.Count; i++)
         {
@@ -100,16 +136,16 @@ public partial class SpawnManager : MonoBehaviour
                 currIdx = i;
             }
         }
-        // ¸¸¾à ÇöÀç ÇÊµåÀ§ µå·¡±ë ÀÎµ¦½º°¡ ±âÁ¸ ÀÎµ¦½º¶û °°´Ù¸é, ¹Ì´Ï¾ğµé ¿òÁ÷ÀÏ ÇÊ¿ä°¡ X
+        // ë§Œì•½ í˜„ì¬ í•„ë“œìœ„ ë“œë˜ê¹… ì¸ë±ìŠ¤ê°€ ê¸°ì¡´ ì¸ë±ìŠ¤ë‘ ê°™ë‹¤ë©´, ë¯¸ë‹ˆì–¸ë“¤ ì›€ì§ì¼ í•„ìš”ê°€ X
         if (currIdx == idx) { return; }
-        // ¹Ù²ï ¿¹»ó À§Ä¡ÀÎµ¦½º·Î °»½Å
+        // ë°”ë€ ì˜ˆìƒ ìœ„ì¹˜ì¸ë±ìŠ¤ë¡œ ê°±ì‹ 
         idx = currIdx;
-        // ¿òÁ÷¿©¾ßÇÒ ÀÎµ¦½ÌÀÌ ¹Ù²î¾ú´Ù¸é ±âÁ¸ ¿òÁ÷ÀÓÀÖÀ»Áöµµ ¸ğ¸£´Ï ¸ğµÎ ÁßÁö½ÃÅ°°í »õ·Î ÀÌµ¿ ÄÚ·çÆ¾ ½ÇÇà
+        // ì›€ì§ì—¬ì•¼í•  ì¸ë±ì‹±ì´ ë°”ë€Œì—ˆë‹¤ë©´ ê¸°ì¡´ ì›€ì§ì„ìˆì„ì§€ë„ ëª¨ë¥´ë‹ˆ ëª¨ë‘ ì¤‘ì§€ì‹œí‚¤ê³  ìƒˆë¡œ ì´ë™ ì½”ë£¨í‹´ ì‹¤í–‰
         StopAllCoroutines();
 
-        // ÇöÀç Ä¿¼­°¡ ÇÊµåÀÇ ¸ó½ºÅÍµé À§Ä¡ »çÀÌ ¾î´À°÷¿¡ Á¸Àç
-        // ¸¶¿ì½º Ä¿¼­¶û °¡Àå °¡±î¿î ½ºÆùÆ÷ÀÎÆ® ÁöÁ¡¿¡ ¸ó½ºÅÍ°¡ ³õÀÎ´Ù°í ¿¹»óÇÑÃ¤·Î
-        // ÇöÀçÀÇ ÇÊµå ¹Ì´Ï¾ğµéÀ» ¹Ì¸® ÀÌµ¿ ½ÃÄÑµÎ±â
+        // í˜„ì¬ ì»¤ì„œê°€ í•„ë“œì˜ ëª¬ìŠ¤í„°ë“¤ ìœ„ì¹˜ ì‚¬ì´ ì–´ëŠê³³ì— ì¡´ì¬
+        // ë§ˆìš°ìŠ¤ ì»¤ì„œë‘ ê°€ì¥ ê°€ê¹Œìš´ ìŠ¤í°í¬ì¸íŠ¸ ì§€ì ì— ëª¬ìŠ¤í„°ê°€ ë†“ì¸ë‹¤ê³  ì˜ˆìƒí•œì±„ë¡œ
+        // í˜„ì¬ì˜ í•„ë“œ ë¯¸ë‹ˆì–¸ë“¤ì„ ë¯¸ë¦¬ ì´ë™ ì‹œì¼œë‘ê¸°
         for (int i = 0; i < spawnPoint.Count; i++)
         {
             if (idx < i)
@@ -122,7 +158,7 @@ public partial class SpawnManager : MonoBehaviour
             { StartCoroutine(move(playerMinions[i].transform, spawnPoint[i])); }
         }
 
-        // °¢°¢ÀÇ ÀÌµ¿ ÄÚ·çÆ¾ ¾Ö´Ï¸ŞÀÌ¼Ç
+        // ê°ê°ì˜ ì´ë™ ì½”ë£¨í‹´ ì• ë‹ˆë©”ì´ì…˜
         IEnumerator move(Transform tr, Vector3 dest)
         {
             float t = 0;
@@ -137,37 +173,37 @@ public partial class SpawnManager : MonoBehaviour
         }
     }
 
-    // ¹Ì´Ï¾ğµéÀÇ ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼ÇÄÚ·çÆ¾ Ä«¿îÆ®
+    // ë¯¸ë‹ˆì–¸ë“¤ì˜ ì´ë™ ì• ë‹ˆë©”ì´ì…˜ì½”ë£¨í‹´ ì¹´ìš´íŠ¸
     Queue<GameObject> queue = new Queue<GameObject>();
 
     
-    // ¹Ì´Ï¾ğ Ä«µå ½ºÆù ½ÇÇà ÇÔ¼ö
+    // ë¯¸ë‹ˆì–¸ ì¹´ë“œ ìŠ¤í° ì‹¤í–‰ í•¨ìˆ˜
     public void StartSpawn(CardHand card)
     {
-        // ÇöÀç ÇÚµåÄ«µå (¹Ì´Ï¾ğ) Á¤º¸ Åä´ë·Î ½ºÆù ½ÃÀÛ
+        // í˜„ì¬ í•¸ë“œì¹´ë“œ (ë¯¸ë‹ˆì–¸) ì •ë³´ í† ëŒ€ë¡œ ìŠ¤í° ì‹œì‘
         CardField cf = GameObject.Instantiate(prefab, Players);
         //cf.Init(card.data,true);
         cf.PunId = card.PunId;
         cf.transform.localPosition = card.transform.localPosition;
         playerMinions.Insert(idx, cf);
 
-        // »ó´ë¿¡°Ô ³» ¹Ì´Ï¾ğ ¼ÒÈ¯ ÀÌº¥Æ® ÀüÆÄ [Ä«µå°´Ã¼ ½Äº°ÀÚ, ¸î¹ø¤Š ÇÊµå¿¡ ¼ÒÈ¯ÀÎÁö, ½ÇÁ¦ Ä«µå µ¥ÀÌÅÍ ½Äº°ÀÚ]
+        // ìƒëŒ€ì—ê²Œ ë‚´ ë¯¸ë‹ˆì–¸ ì†Œí™˜ ì´ë²¤íŠ¸ ì „íŒŒ [ì¹´ë“œê°ì²´ ì‹ë³„ì, ëª‡ë²ˆì¨° í•„ë“œì— ì†Œí™˜ì¸ì§€, ì‹¤ì œ ì¹´ë“œ ë°ì´í„° ì‹ë³„ì]
         GAME.IGM.Packet.SendMinionSpawn(cf.PunId, idx, card.data.cardIdNum);
 
-        // ÇÊµå ÇÏ¼öÀÎµéÀÇ ·¹ÀÌ¸¦ Àá½Ã ²ô±â
+        // í•„ë“œ í•˜ìˆ˜ì¸ë“¤ì˜ ë ˆì´ë¥¼ ì ì‹œ ë„ê¸°
         playerMinions.ForEach(x=>x.Ray = false);
 
         CardHand tempch = card;
         int ourIDX = GAME.IGM.Hand.PlayerHand.IndexOf(card);
         Debug.Log($"idx : {idx} , ourIDX : {0}");
 
-        // ÇÚµå Ä«µå´Â ÀÌÁ¦ ÇÊ¿ä¾ø±â¿¡ ¼Ò¸ê¾Ö´Ï¸ŞÀÌ¼Ç ÄÚ·çÆ¾ ½ÇÇà (»èÁ¦µµ ³»ºÎ¿¡¼­ ÁøÇà)
+        // í•¸ë“œ ì¹´ë“œëŠ” ì´ì œ í•„ìš”ì—†ê¸°ì— ì†Œë©¸ì• ë‹ˆë©”ì´ì…˜ ì½”ë£¨í‹´ ì‹¤í–‰ (ì‚­ì œë„ ë‚´ë¶€ì—ì„œ ì§„í–‰)
         GAME.Manager.StartCoroutine(card.FadeOutCo());
 
-        // ¼ÒÈ¯ È¿°úÀ½ Àç»ı
+        // ì†Œí™˜ íš¨ê³¼ìŒ ì¬ìƒ
         GAME.Manager.SM.PlaySound(Define.Sound.Summon);
 
-        // ¸ğµç ÇÊµå ¹Ì´Ï¾ğµé À§Ä¡ ÀçÁ¤·Ä
+        // ëª¨ë“  í•„ë“œ ë¯¸ë‹ˆì–¸ë“¤ ìœ„ì¹˜ ì¬ì •ë ¬
         for (int i = 0; i < playerMinions.Count; i++)
         {
             queue.Enqueue(playerMinions[i].gameObject);
@@ -178,11 +214,11 @@ public partial class SpawnManager : MonoBehaviour
         cf.Init(card.data, true);
         IEnumerator waitPos(CardField cf)
         {
-            // ÇöÀç ¼ÒÈ¯µÈ Ä«µå°¡, Á¤ÇØÁø À§Ä¡·Î ÀÌµ¿À» ³¡¸ÂÃâ‹š±îÁö ´ë±â
+            // í˜„ì¬ ì†Œí™˜ëœ ì¹´ë“œê°€, ì •í•´ì§„ ìœ„ì¹˜ë¡œ ì´ë™ì„ ëë§ì¶œë–„ê¹Œì§€ ëŒ€ê¸°
             yield return new WaitUntil(() => (cf.transform.position == cf.OriginPos));
         }
         
-        // ÀÌµ¿ ¾Ö´Ï¸ŞÀÌ¼Ç ÄÚ·çÆ¾
+        // ì´ë™ ì• ë‹ˆë©”ì´ì…˜ ì½”ë£¨í‹´
         IEnumerator move(Transform tr, int idx)
         {
             float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
@@ -200,16 +236,16 @@ public partial class SpawnManager : MonoBehaviour
         StartCoroutine(wait());
         IEnumerator wait()
         {
-            // ¸ğµç ÀÌµ¿ ÄÚ·çÆ¾ ³¡³µÀ»Áö, ´ÙÀ½ ½ºÆùÆ÷ÀÎÆ® À§Ä¡°ª ÃÊ±âÈ­
-            // ÀÌµ¿ ÄÚ·çÆ¾À» ¸ğ¾ÆµĞ queueÀÇ °¹¼ö°¡ 0 => ÇöÀç ÀÌµ¿ÄÚ·çÆ¾ ¸ğµÎ ½ÇÇà ¿Ï·á
+            // ëª¨ë“  ì´ë™ ì½”ë£¨í‹´ ëë‚¬ì„ì§€, ë‹¤ìŒ ìŠ¤í°í¬ì¸íŠ¸ ìœ„ì¹˜ê°’ ì´ˆê¸°í™”
+            // ì´ë™ ì½”ë£¨í‹´ì„ ëª¨ì•„ë‘” queueì˜ ê°¯ìˆ˜ê°€ 0 => í˜„ì¬ ì´ë™ì½”ë£¨í‹´ ëª¨ë‘ ì‹¤í–‰ ì™„ë£Œ
             yield return new WaitUntil(() => (queue.Count == 0));
-            // ÇÊµå ÇÏ¼öÀÎµéÀÇ ·¹ÀÌ¸¦ ´Ù½Ã ÄÑ±â
+            // í•„ë“œ í•˜ìˆ˜ì¸ë“¤ì˜ ë ˆì´ë¥¼ ë‹¤ì‹œ ì¼œê¸°
             playerMinions.ForEach(x => x.Ray = true);
-            // »õ·Î¿î À§Ä¡ ±¸ÇÏ±â
+            // ìƒˆë¡œìš´ ìœ„ì¹˜ êµ¬í•˜ê¸°
             CalcSpawnPoint();
 
-            // ÇÏ¼öÀÎµéÀÌ ¼ÒÈ¯µÉ‹š¸¶´Ù, ¼Õ¿¡¼­ ½ÇÇàÇØ¾ßÇÒ ÀÌº¥Æ®°¡ ÀÖ´Â Ä«µåµéÀº ÇöÀç ¼ÒÈ¯µÈ ÇÏ¼öÀÎÀÇ ³Ñ¹ö¸¦ ÀÎÀÚ·Î ÀÌº¥Æ® ½ÇÇà
-            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum));
+            // í•˜ìˆ˜ì¸ë“¤ì´ ì†Œí™˜ë ë–„ë§ˆë‹¤, ì†ì—ì„œ ì‹¤í–‰í•´ì•¼í•  ì´ë²¤íŠ¸ê°€ ìˆëŠ” ì¹´ë“œë“¤ì€ í˜„ì¬ ì†Œí™˜ëœ í•˜ìˆ˜ì¸ì˜ ë„˜ë²„ë¥¼ ì¸ìë¡œ ì´ë²¤íŠ¸ ì‹¤í–‰
+            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum, cf.IsMine));
         }
         
     }

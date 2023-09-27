@@ -26,6 +26,7 @@ public class Hero : MonoBehaviour, IBody
     public bool CanAttack { get { return (weaponData != null) && attackable == true; } }
 
     #region IBODY
+    public IEnumerator onDead { get; set; }
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
     public bool IsMine { get; set; }
@@ -34,20 +35,22 @@ public class Hero : MonoBehaviour, IBody
     public Transform TR { get { return playerMask.transform; } }
 
     public Vector3 OriginPos { get; set; }
-    public int OriginHp { get; set; }
-    public int OriginAtt { get; set; }
+    [field: SerializeField] public int OriginHp { get; set; }
+    [field: SerializeField] public int OriginAtt { get; set; }
+  
+
+    #endregion
     public int Att
     {
-        get { return (weaponData != null) ? att + weaponData.att : att; }
-        set 
-        {
-            att += value;    
-        } 
+        get { return (weaponData != null) ? OriginAtt + weaponData.att : OriginAtt; }
+        set { OriginAtt = value; attTmp.text = ((weaponData != null) ? OriginAtt + weaponData.att : OriginAtt).ToString(); }
     }
-    public int HP
-    { get; set; }
-    #endregion
 
+    public int HP
+    {
+        get { return OriginHp; }
+        set { OriginHp = value; hpTmp.text = OriginHp.ToString(); }
+    }
 
     // 카메라의 피직스레이캐스터 필요, 객체에 Collider필요
     public void Awake()
@@ -56,10 +59,10 @@ public class Hero : MonoBehaviour, IBody
         Col = GetComponent<Collider2D>();
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
-        this.PunId = (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000);
-        attackable = true; 
+        this.PunId = ((Photon.Pun.PhotonNetwork.IsMasterClient) ? 1000 : 2000);
+        attackable = true;
         Att = 0;
-        HP = OriginHp = 30;
+        OriginHp = 30;
         GAME.IGM.allIBody.Add(this);
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)

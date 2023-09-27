@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -9,14 +9,24 @@ using System;
 public class CardField : CardEle
 {
     public TextMeshPro AttTmp, HpTmp;
-    public SpriteRenderer  cardImage;
+    public SpriteRenderer cardImage,attIcon, hpIcon;
     public bool attackable = true;
     public ParticleSystem sleep;
     public SpriteMask mask;
-    public int maxHp;
+    MinionCardData minionCardData;
+    public override int Att
+    {
+        get { return minionCardData.att; }
+        set { minionCardData.att = value; AttTmp.text = minionCardData.att.ToString(); }
+    }
 
-    // ¹Ì´Ï¾ğ Ä«µå°¡ °ø°İÀ» ÇÑ´Ù °¡Á¤½Ã, ºÎµúÈú‹š À§Ä¡°¡ °ãÄ¡´Â ¼ø°£
-    // ¼ÒÆÃ ·¹ÀÌ¾î°¡ µ¿ÀÏÇÏ¸é ÀÌ¹ÌÁö°¡ °ãÄ¡°Å³ª ƒÆÁú À§ÇèÀÌ ÀÖ¾î, °ø°İÀÚ°¡ ÃÖ»ó´Ü¿¡ À§Ä¡ÇÏµµ·Ï ·¹ÀÌ¾î º¯°æ
+    public override int HP
+    {
+        get { return OriginHp; }
+        set { OriginHp = value; HpTmp.text = OriginHp.ToString(); }
+    }
+    // ë¯¸ë‹ˆì–¸ ì¹´ë“œê°€ ê³µê²©ì„ í•œë‹¤ ê°€ì •ì‹œ, ë¶€ë”ªíë–„ ìœ„ì¹˜ê°€ ê²¹ì¹˜ëŠ” ìˆœê°„
+    // ì†ŒíŒ… ë ˆì´ì–´ê°€ ë™ì¼í•˜ë©´ ì´ë¯¸ì§€ê°€ ê²¹ì¹˜ê±°ë‚˜ êº ì§ˆ ìœ„í—˜ì´ ìˆì–´, ê³µê²©ìê°€ ìµœìƒë‹¨ì— ìœ„ì¹˜í•˜ë„ë¡ ë ˆì´ì–´ ë³€ê²½
     public void ChangeSortingLayer(bool isOn)
     {
         SortingLayer[] layers = SortingLayer.layers;
@@ -28,28 +38,27 @@ public class CardField : CardEle
     }
     public void Init(CardData dataParam, bool isMine)
     {
+        data = dataParam;
         IsMine = isMine;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe") ;
         
         Col = GetComponent<CircleCollider2D>();
-        MinionCardData minionCardData = (MinionCardData)dataParam;
-        data = dataParam;
-        Att = minionCardData.att;
+        minionCardData = (MinionCardData)data;
+        Att = OriginAtt = minionCardData.att;
         HP = OriginHp = minionCardData.hp;
-        AttTmp.text = minionCardData.att.ToString();
-        HpTmp.text = minionCardData.hp.ToString();
         cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
         
         GAME.Manager.UM.BindCardPopupEvent(this.gameObject, CallPopup, 0.75f);
         
-        attackable = (minionCardData.isCharge) ? true : false;
-        sleep.gameObject.SetActive((attackable)? true : false);
+        //attackable = (minionCardData.isCharge) ? true : false;
+        //sleep.gameObject.SetActive((attackable)? true : false);
+      
         if (IsMine)
         { 
-            // ÁÂÅ¬¸¯½Ã Ä«¸Ş¶ó·Î ·¹ÀÌÈ°¼ºÈ­ÇÏ¿© Å¸°ÙÆÃ ÀÌº¥Æ® ½ÃÀÛ
+            // ì¢Œí´ë¦­ì‹œ ì¹´ë©”ë¼ë¡œ ë ˆì´í™œì„±í™”í•˜ì—¬ íƒ€ê²ŸíŒ… ì´ë²¤íŠ¸ ì‹œì‘
             GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL, Define.Sound.Ready);
 
-            // ¼ÒÈ¯½Ã , ¼Õ¿¡¼­ ³¾‹š ½ÇÇàÇÒ ÀÌº¥Æ® ÀÖ´ÂÁö È®ÀÎ
+            // ì†Œí™˜ì‹œ , ì†ì—ì„œ ë‚¼ë–„ ì‹¤í–‰í•  ì´ë²¤íŠ¸ ìˆëŠ”ì§€ í™•ì¸
             List<CardBaseEvtData> list = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onPlayed);
 
             for (int i = 0; i < list.Count; i++)
@@ -57,48 +66,101 @@ public class CardField : CardEle
                 GAME.IGM.Battle.Evt(list[i], this);
             }
         }
+        onDead = Dead(IsMine);
+        IEnumerator Dead(bool isMine)
+        {
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            StartCoroutine(FadeOut());
+            IEnumerator FadeOut()
+            {
+                float t = 1;
+                while (t < 1f)
+                {
+                    // ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
+                    t -= Time.deltaTime;
+                    Color tempColor = new Color(1, 1, 1, t);
+                    cardImage.color = attIcon.color = hpIcon.color = tempColor;
+                    AttTmp.alpha = HpTmp.alpha = t;
+                    yield return null;
+                }
+                mask.enabled = false;
+            }
+
+            // ï¿½Â¿ï¿½ï¿½ ï¿½Ô´Ù°ï¿½ï¿½Ù·ï¿½ ï¿½×´ï¿½ ï¿½Ú·ï¿½Æ¾ ï¿½Ö´ï¿½
+            yield return StartCoroutine(Wiggle());
+            IEnumerator Wiggle()
+            {
+                float t = 0;
+                float min = this.transform.position.x - 0.25f;
+                float max = this.transform.position.x + 0.25f;
+                while (t < 1f)
+                {
+                    t += Time.deltaTime;
+                    float x = Mathf.Lerp(min, max, MathF.Sin(t * MathF.PI));
+                    transform.position = new Vector3(x, transform.position.y, transform.position.z);
+                    yield return null;
+                }
+            }
+
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
+            if (isMine)
+            {
+                // ï¿½ï¿½ ï¿½Ï¼ï¿½ï¿½ï¿½ ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                GAME.IGM.Spawn.playerMinions.Remove(GAME.IGM.Spawn.playerMinions.Find(x => x.PunId == this.PunId));
+                // ï¿½Êµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                yield return StartCoroutine(GAME.IGM.Spawn.AllPlayersAlignment());
+            }
+            // ï¿½ï¿½ ï¿½Ï¼ï¿½ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            else
+            {
+                GAME.IGM.Spawn.enemyMinions.Remove(GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == this.PunId));
+                yield return StartCoroutine(GAME.IGM.Spawn.AllEnemiesAlignment());
+            }
+
+            Destroy(this.gameObject);
+        }
     }
 
-    // ¹Ì´Ï¾ğ Ä«µåÀÇ °æ¿ì, ÀÏÁ¤ÃÊ µ¿¾È Ä¿¼­¸¦ °¡Á®´Ù ´î½Ã Ä«µåÀÇ Á¤º¸¸¦ º¸¿©ÁÖ´Â Ä«µåÆË¾÷ È£Ãâ ÀÌº¥Æ®
+    // ë¯¸ë‹ˆì–¸ ì¹´ë“œì˜ ê²½ìš°, ì¼ì •ì´ˆ ë™ì•ˆ ì»¤ì„œë¥¼ ê°€ì ¸ë‹¤ ëŒˆì‹œ ì¹´ë“œì˜ ì •ë³´ë¥¼ ë³´ì—¬ì£¼ëŠ” ì¹´ë“œíŒì—… í˜¸ì¶œ ì´ë²¤íŠ¸
     public void CallPopup()
     {
         Debug.Log(data.cardType.ToString());
 
         if (this.data is MinionCardData == false)
         {
-            Debug.Log("ERROR : ¿Ö µ¥ÀÌÅÍ°¡ ¹Ì´Ï¾ğÅ¸ÀÔÀÌ ¾Æ´ÑÁö");
+            Debug.Log("ERROR : ì™œ ë°ì´í„°ê°€ ë¯¸ë‹ˆì–¸íƒ€ì…ì´ ì•„ë‹Œì§€");
         }
 
         else
         {
-            // ¸î¹ø¤Š ÀÎÁö ÀÎµ¦½º Ã£±â
+            // ëª‡ë²ˆì¨° ì¸ì§€ ì¸ë±ìŠ¤ ì°¾ê¸°
             int idx = (this.IsMine) ? GAME.IGM.Spawn.playerMinions.IndexOf(this)
                 : GAME.IGM.Spawn.enemyMinions.IndexOf(this) ;
 
-            // ¿ìÃøÀ¸·Î ³Ê¹« ¹Ğ¸° ¹Ì´Ï¾ğÀÇ °æ¿ì ¿ŞÂÊÀ¸·Î Ä«µåÆË¾÷À» ¶ç¾îÁÖ±â
+            // ìš°ì¸¡ìœ¼ë¡œ ë„ˆë¬´ ë°€ë¦° ë¯¸ë‹ˆì–¸ì˜ ê²½ìš° ì™¼ìª½ìœ¼ë¡œ ì¹´ë“œíŒì—…ì„ ë„ì–´ì£¼ê¸°
             Vector3 pos = transform.position + Vector3.right * 2f;
             if (this.transform.position.x > 3f)
             { pos = transform.position - Vector3.right * 2f; }
             
-            // º¸¿©Áú µ¥ÀÌÅÍ¿Í À§Ä¡ ±¸ÇØÁö¸é, Ä«µåÆË¾÷ ¶ç¿ì±â
+            // ë³´ì—¬ì§ˆ ë°ì´í„°ì™€ ìœ„ì¹˜ êµ¬í•´ì§€ë©´, ì¹´ë“œíŒì—… ë„ìš°ê¸°
             GAME.IGM.ShowMinionPopup((MinionCardData)data, pos, cardImage.sprite); 
         }
         
     }
 
-    // ¹Ì´Ï¾ğ °ø°İ½Ãµµ ÇÔ¼ö (ÁÂÅ¬¸¯ ¸¶¿ì½º ÀÌº¥Æ®)
+    // ë¯¸ë‹ˆì–¸ ê³µê²©ì‹œë„ í•¨ìˆ˜ (ì¢Œí´ë¦­ ë§ˆìš°ìŠ¤ ì´ë²¤íŠ¸)
     public void StartAttack(GameObject go)
     {
-        // °ø°İ °¡´ÉÇÑ »óÅÂ°¡ ¾Æ´Ï°Å³ª
-        // ÀÌ¹Ì ´Ù¸¥ °´Ã¼°¡ Å¸°ÙÆÃ ÁßÀÎµ¥ ÀÌ °´Ã¼¸¦ Å¬¸¯½Ã Ãë¼Ò
+        // ê³µê²© ê°€ëŠ¥í•œ ìƒíƒœê°€ ì•„ë‹ˆê±°ë‚˜
+        // ì´ë¯¸ ë‹¤ë¥¸ ê°ì²´ê°€ íƒ€ê²ŸíŒ… ì¤‘ì¸ë° ì´ ê°ì²´ë¥¼ í´ë¦­ì‹œ ì·¨ì†Œ
         if (!attackable || GAME.IGM.TC.LR.gameObject.activeSelf == true
             || sleep.gameObject.activeSelf == true)
         { return; }
 
-        // °ø°İÀÚ ÀÚ½Å°ú, ½ºÆù¿µ¿ª ·¹ÀÌ ºñÈ°¼ºÈ­
+        // ê³µê²©ì ìì‹ ê³¼, ìŠ¤í°ì˜ì—­ ë ˆì´ ë¹„í™œì„±í™”
         GAME.IGM.Spawn.SpawnRay = Ray = false;
 
-        // Å¸°ÙÆÃ Ä«¸Ş¶ó ½ÇÇà + ¸¸¾à Å¸°ÙÆÃ ¼º°ø½Ã °ø°İÇÔ¼ö ¿¹¾à ½ÇÇà
+        // íƒ€ê²ŸíŒ… ì¹´ë©”ë¼ ì‹¤í–‰ + ë§Œì•½ íƒ€ê²ŸíŒ… ì„±ê³µì‹œ ê³µê²©í•¨ìˆ˜ ì˜ˆì•½ ì‹¤í–‰
         GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
             (this,
             (IBody a, IBody t) => { return AttackCo(a, t); },
@@ -108,8 +170,8 @@ public class CardField : CardEle
 
     public IEnumerator AttackCo(IBody attacker, IBody target)
     {
-        #region °ø°İ ÄÚ·çÆ¾ : »ó´ë¿¡°Ô ¹ÚÄ¡±â
-        ChangeSortingLayer(true); // °ø°İÀÚ ¼ÒÆÃ·¹ÀÌ¾î·Î ¿Å°Ü ÃÖ»ó´Ü¿¡ À§Ä¡ÇÏ±â
+        #region ê³µê²© ì½”ë£¨í‹´ : ìƒëŒ€ì—ê²Œ ë°•ì¹˜ê¸°
+        ChangeSortingLayer(true); // ê³µê²©ì ì†ŒíŒ…ë ˆì´ì–´ë¡œ ì˜®ê²¨ ìµœìƒë‹¨ì— ìœ„ì¹˜í•˜ê¸°
         float t = 0;
         Vector3 start = attacker.Pos;
         Vector3 dest = target.Pos;
@@ -121,15 +183,15 @@ public class CardField : CardEle
         }
         #endregion
 
-        #region Ä«¸Ş¶ó Èçµé±â ÀÌÆåÆ®
-        // 0~PI ±îÁöÀÇ ±æÀÌ¸¦ Á¤ÇÑµÚ »çÀÎÀ» »ç¿ëÇÏ¸é
-        // 0 ~ 1 ÈÄ, 1 ~ 0 À¸·Î µÇµ¹¾Æ ¿À±â¿¡ ZÃà È¸Àü ÄÚ·çÆ¾À¸·Î ÀÌ¿ëÇÏ±â·Î °áÁ¤
+        #region ì¹´ë©”ë¼ í”ë“¤ê¸° ì´í™íŠ¸
+        // 0~PI ê¹Œì§€ì˜ ê¸¸ì´ë¥¼ ì •í•œë’¤ ì‚¬ì¸ì„ ì‚¬ìš©í•˜ë©´
+        // 0 ~ 1 í›„, 1 ~ 0 ìœ¼ë¡œ ë˜ëŒì•„ ì˜¤ê¸°ì— Zì¶• íšŒì „ ì½”ë£¨í‹´ìœ¼ë¡œ ì´ìš©í•˜ê¸°ë¡œ ê²°ì •
         StartCoroutine(GAME.IGM.TC.ShakeCo());
         yield return null;
 
         #endregion
 
-        #region Á¦ÀÚ¸®·Î º¹±Í
+        #region ì œìë¦¬ë¡œ ë³µê·€
         t = 0 ;
         while (t < 1f)
         {
@@ -137,17 +199,21 @@ public class CardField : CardEle
             this.transform.localPosition = Vector3.Lerp( dest , OriginPos, t);
             yield return null;
         }
-        ChangeSortingLayer(false); // ¼ÒÆÃ·¹ÀÌ¾î ÃÊ±âÈ­
+        ChangeSortingLayer(false); // ì†ŒíŒ…ë ˆì´ì–´ ì´ˆê¸°í™”
         #endregion
 
-        // ³ªÀÇ ÅÏÀÌ°í, ³ªÀÇ ¼ÒÀ¯ ¹Ì´Ï¾ğÀÌ °ø°İÇß´Ù¸é
-        // ÇöÀç ³»°¡ Á¶Á¾ÇÑ Çàµ¿À¸·Î È®ÀÎ ¹× °ø°İ ÀÌº¥Æ® »ó´ë¿¡°Ô ÀüÆÄ
+        // ë°ë¯¸ì§€ êµí™˜
+        attacker.HP -= target.Att;
+        target.HP -= attacker.Att;
+        // ë‚˜ì˜ í„´ì´ê³ , ë‚˜ì˜ ì†Œìœ  ë¯¸ë‹ˆì–¸ì´ ê³µê²©í–ˆë‹¤ë©´
+        // í˜„ì¬ ë‚´ê°€ ì¡°ì¢…í•œ í–‰ë™ìœ¼ë¡œ í™•ì¸ ë° ê³µê²© ì´ë²¤íŠ¸ ìƒëŒ€ì—ê²Œ ì „íŒŒ
         if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
         {
             GAME.IGM.Packet.SendMinionAttack(attacker.PunId, target.PunId);
         }
+
+        if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
+        if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
     }
 
-    public IEnumerator Dead()
-    { yield return null; }  
 }
