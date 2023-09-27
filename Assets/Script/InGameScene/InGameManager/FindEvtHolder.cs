@@ -138,7 +138,7 @@ public class FindEvtHolder : MonoBehaviour
             // 뒷면만 나오면 되기에, 나머지 꺼주기
             list[i].cardImage.gameObject.SetActive(false);
             list[i].TMPgo.gameObject.SetActive(false);
-            list[i].transform.localScale =  new Vector3(0.16f, 0.17f, 0.3f);
+            list[i].transform.localScale = Vector3.one * 0.4f;
         }
         // 내가 상대의 카드 상호작용 하면 안되기에 레이 끄기
         left.enabled = right.enabled = center.enabled = false;

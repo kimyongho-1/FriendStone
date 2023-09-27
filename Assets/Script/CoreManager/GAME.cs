@@ -13,6 +13,7 @@ public class GAME : MonoBehaviour
     public AudioSource BGM, FX, Speech;
     private void Awake()
     {
+        Debug.Log("DataPath : "+Application.dataPath);
         DontDestroyOnLoad(this);
         ui = new UIManager(GameObject.Find("@UI_Popup").GetComponent<RectTransform>(),
             GameObject.Find("UIText").GetComponent<TextMeshProUGUI>());

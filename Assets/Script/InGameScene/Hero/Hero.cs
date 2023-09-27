@@ -59,7 +59,6 @@ public class Hero : MonoBehaviour, IBody
         Col = GetComponent<Collider2D>();
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
-        this.PunId = ((Photon.Pun.PhotonNetwork.IsMasterClient) ? 1000 : 2000);
         attackable = true;
         Att = 0;
         OriginHp = 30;

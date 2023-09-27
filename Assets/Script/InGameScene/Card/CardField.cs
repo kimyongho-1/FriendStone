@@ -74,7 +74,7 @@ public class CardField : CardEle
             IEnumerator FadeOut()
             {
                 float t = 1;
-                while (t < 1f)
+                while (t > 0f)
                 {
                     // ����ȭ ����
                     t -= Time.deltaTime;

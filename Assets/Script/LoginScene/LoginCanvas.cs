@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Newtonsoft.Json;
 
 public class LoginCanvas : MonoBehaviour
 {
@@ -43,10 +44,57 @@ public class LoginCanvas : MonoBehaviour
     {
         // tab + enter 단축키 잠시 해제
         CheckEnter = null;
-        
+
+        #region Temp Area
+
+        // 여기서부터 TEMP
+        StartCoroutine(Temp());
+        loginBtn.enabled = false;
+        IEnumerator Temp()
+        {
+            yield return GAME.Manager.StartCoroutine(GAME.Manager.PM.PunConnect());
+            yield return new WaitForSeconds(1f);
+            // TEST 버전 ,no php
+            GAME.Manager.NM.playerInfo = new PlayerInfo() { ID = "123", NickName = "test" };
+            GAME.Manager.RM.GameDeck = new DeckData();
+            for (int i = 1; i < 11; i++)
+            {
+                // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
+                Define.cardType type = GAME.Manager.RM.PathFinder.Dic[i].type;
+                string jsonFile = GAME.Manager.RM.PathFinder.Dic[i].GetJson();
+                CardData card = null;
+                // 확인된 카드타입으로, 실제 카드타입으로 클래스화
+                switch (type)
+                {
+                    case Define.cardType.minion:
+                        card = JsonConvert.DeserializeObject<MinionCardData>
+                    (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                        break;
+                    case Define.cardType.spell:
+                        card = JsonConvert.DeserializeObject<SpellCardData>
+                    (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                        break;
+                    case Define.cardType.weapon:
+                        card = JsonConvert.DeserializeObject<WeaponCardData>
+                    (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                        break;
+                    default: break;
+                }
+
+                GAME.Manager.RM.GameDeck.cards.Add(card, 2);
+
+            }
+
+
+            // 랜덤매칭 시작
+            Photon.Pun.PhotonNetwork.JoinRandomRoom();
+
+        }
+
+        #endregion
         // 로그인 시도
-        GAME.Manager.StartCoroutine(GAME.Manager.NM.TryLogin
-            (loginID.text, loginPW.text, this));
+        // GAME.Manager.StartCoroutine(GAME.Manager.NM.TryLogin
+        //     (loginID.text, loginPW.text, this));
     }
     // 계정생성 버튼 클릭시
     public void OnClickedOpenAccount() 

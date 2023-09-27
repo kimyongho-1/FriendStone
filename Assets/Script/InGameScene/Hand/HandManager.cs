@@ -241,28 +241,17 @@ public class HandManager : MonoBehaviour
             yield return StartCoroutine(CardAllignment(false));
         }
     }
-    public int playerMoveCount = 0;
-    public int enemyMoveCount = 0;
     // 핸드 카드 정렬
     public IEnumerator CardAllignment(bool isMine = true)
     {
-        if (isMine == false)
-        { enemyMoveCount = 0;  }
-
-        playerMoveCount = 0;
-        enemyMoveCount = 0;
-        if (isMine)
-        { playerMoveCount =0; }
-        else
-        { enemyMoveCount = 0; }
-
         // 현재 나 또는 적의 핸드중 무엇인지 확인
         List<CardHand> hand = (isMine) ? PlayerHand : EnemyHand;
 
         // 카드가 없으면 정렬을 수행할 필요가 없으므로 바로 취소
         if (hand.Count == 0) { yield break; }
 
-       
+        // 카드의 정렬 코루틴 실행시킬떄, 모든 핸드카드들의 정렬이 끝났는지 확인하는 카운터 큐
+        Queue<Coroutine> co = new Queue<Coroutine>();
         // Left와 Right 은 핸드카드의 좌우 최종길이의 범위
         // interval은 카드가 적을수록 카드간의 간격을 벌리는 범위
         float interval = Mathf.Lerp(0.5f, 0, (hand.Count) / 10f);
@@ -292,14 +281,8 @@ public class HandManager : MonoBehaviour
        
 
             // 위치로 이동시키기
-            StartCoroutine(HandCardMove(hand[i]));
-            // 정렬 코루틴 몇번 실행할지 확인 및 코루틴 잔여 확인용도
-            if (isMine)
-            { playerMoveCount += 1; }
-            else
-            { enemyMoveCount += 1; }
-
-
+            co.Enqueue(StartCoroutine(HandCardMove(hand[i])));
+           
             if (isMine)
             {
                 // 소팅오더 정렬 시작
@@ -310,7 +293,7 @@ public class HandManager : MonoBehaviour
         }
 
         // 정렬 코루틴 전부 수행됬는지 확인 및 대기
-        yield return new WaitUntil(() => (isMine ? playerMoveCount == 0 : enemyMoveCount == 0));
+        yield return new WaitUntil(() => (co.Count() == 0));
 
         IEnumerator HandCardMove(CardHand ch)
         {
@@ -340,16 +323,8 @@ public class HandManager : MonoBehaviour
                 yield return null;
             }
             ch.Ray = true;
-
-            // 소유여부에 따라, 현재 핸드정렬 코루틴 끝났음을 감소로 표현 => 이후 카운트가 0이되면 나머지 드로우 실행 , 반복
-            if (ch.IsMine == true)
-            {
-                playerMoveCount -= 1;
-            }
-            else
-            {
-                enemyMoveCount -= 1;
-            }
+            // 큐 감소시키기 ( 큐 갯수 0 일시 , 모든 핸드카드 정렬 코루틴 끝났음을 암시)
+            co.Dequeue();
         }
     }
 

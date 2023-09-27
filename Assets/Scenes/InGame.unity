@@ -7333,8 +7333,6 @@ MonoBehaviour:
   EnemyHand: []
   prefab: {fileID: 5054851143355621256, guid: 8c31cfcc07e27644aaa78608c63c119f, type: 3}
   punConsist: 0
-  playerMoveCount: 0
-  enemyMoveCount: 0
 --- !u!1 &1202421450
 GameObject:
   m_ObjectHideFlags: 0
@@ -7902,6 +7900,8 @@ MonoBehaviour:
   Reply: {fileID: 1207020744}
   Speech: {fileID: 1874987598}
   attackable: 0
+  <OriginHp>k__BackingField: 0
+  <OriginAtt>k__BackingField: 0
 --- !u!114 &1295294393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10076,6 +10076,8 @@ MonoBehaviour:
   Reply: {fileID: 1558488776}
   Speech: {fileID: 596177823}
   attackable: 0
+  <OriginHp>k__BackingField: 0
+  <OriginAtt>k__BackingField: 0
 --- !u!1 &1531013150
 GameObject:
   m_ObjectHideFlags: 0
@@ -14491,8 +14493,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Players: {fileID: 122259590}
   Enemies: {fileID: 1115523032}
-  enemyMinions: []
-  playerMinions: []
   spawnPoint: []
   prefab: {fileID: 7083826307056750467, guid: 824b78f660a9a6044bb0206bb5332edd, type: 3}
   idx: 0

@@ -159,31 +159,37 @@ public class PunManager : MonoBehaviourPunCallbacks
                 // 씬 동기화 설정
                 //PhotonNetwork.AutomaticallySyncScene = true;
                 // 동시에 씬 로드
-                photonView.RPC("RotationBarFinished", RpcTarget.All); //PhotonNetwork.LoadLevel(2);
-              
-                   
-                
+                //photonView.RPC("RotationBarFinished", RpcTarget.All); 
+
+                PhotonNetwork.AutomaticallySyncScene = true;
+                //PhotonNetwork.LoadLevel("InGame");
+                photonView.RPC("Test", RpcTarget.All);
+
 
             }
         }
     }
-
+    [PunRPC]
+    public void Test()
+    {
+        SceneManager.LoadScene("InGame", LoadSceneMode.Single);
+    }
     // 내가 다른사람의 방에 입장하거나 , 내가 만든방에 입장시 호출
     public override void OnJoinedRoom()
     {
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
             // 유저가 취소버튼을 누를수 있게 활성화
-            sdi.cancelBtn.gameObject.SetActive(true);
+            //sdi.cancelBtn.gameObject.SetActive(true);
         }
         base.OnJoinedRoom();
         Debug.Log("방입장 성공");
-        StopAllCoroutines();
+        //StopAllCoroutines();
 
         // 내가 방장이 아니라면, 다른 유저 매칭방에 잡힌것
         // 게임시작은 마스터가 자동으로 시작할것 ( 위의 OnPlayerEnteredRoom함수에서 )
     }
-
+    
     [PunRPC]
     public void RotationBarFinished() // 매칭아 잡히면 로테이션 애니메이션 중지 + 화면 전환 코루틴 시작
     { 
