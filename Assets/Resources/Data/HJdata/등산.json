@@ -1,6 +1,6 @@
 {
   "cardName": "등산",
-  "cardDescription": "소주 마시기 3장을 내 손으로 가져옵니다.",
+  "cardDescription": "소주 먹이기 3장을 내 손으로 가져옵니다.",
   "cardIdNum": 8,
   "cost": 3,
   "cardClass": 0,
@@ -18,7 +18,7 @@
       ],
       "utillAmount": 3,
       "when": 0,
-      "area": 0,
+      "area": 1,
       "faction": 0,
       "type": 3
     }

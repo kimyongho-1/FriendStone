@@ -12,25 +12,25 @@
       "$type": "AttackHandler, Assembly-CSharp",
       "attTargeting": 0,
       "attType": 0,
-      "attExtraArea": 0,
       "attFX": 0,
       "attAmount": 5,
       "when": 0,
-      "area": 6,
+      "area": 1,
+      "faction": 2,
       "type": 1
     },
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffTargeting": 2,
+      "buffTargeting": 3,
       "buffType": 2,
-      "buffExtraArea": 0,
       "buffFX": 0,
       "relatedIds": [],
       "buffAtt": 4,
       "buffHp": 4,
-      "drawCount": 0,
+      "costCount": 0,
       "when": 0,
-      "area": 5,
+      "area": 1,
+      "faction": 2,
       "type": 0
     }
   ]

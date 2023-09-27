@@ -1,7 +1,7 @@
 {
   "att": 3,
   "hp": 2,
-  "isTaunt": false,
+  "isTaunt": true,
   "isCharge": false,
   "cardName": "라이더 모집사",
   "cardDescription": "도발, 낼떄 : 내 손으로 성실한 라이더를 2장 가져옵니다.",
@@ -19,9 +19,10 @@
         13,
         13
       ],
-      "utillAmount": 0,
+      "utillAmount": 2,
       "when": 0,
-      "area": 0,
+      "area": 1,
+      "faction": 0,
       "type": 3
     }
   ]

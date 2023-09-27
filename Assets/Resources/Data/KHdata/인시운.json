@@ -16,11 +16,11 @@
       "$type": "AttackHandler, Assembly-CSharp",
       "attTargeting": 0,
       "attType": 0,
-      "attExtraArea": 0,
       "attFX": 1,
       "attAmount": 2,
       "when": 0,
-      "area": 6,
+      "area": 1,
+      "faction": 2,
       "type": 1
     }
   ]

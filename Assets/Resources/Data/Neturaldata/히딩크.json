@@ -18,7 +18,8 @@
       "relatedCards": [],
       "utillAmount": 2,
       "when": 0,
-      "area": 1,
+      "area": 2,
+      "faction": 0,
       "type": 3
     }
   ]

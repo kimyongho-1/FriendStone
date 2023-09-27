@@ -2,7 +2,7 @@
   "att": 2,
   "hp": 1,
   "isTaunt": false,
-  "isCharge": false,
+  "isCharge": true,
   "cardName": "무면허라이더",
   "cardDescription": "돌진, 낼떄 : 내게 피해를 2 줍니다",
   "cardIdNum": 12,
@@ -16,11 +16,11 @@
       "$type": "AttackHandler, Assembly-CSharp",
       "attTargeting": 0,
       "attType": 0,
-      "attExtraArea": 0,
       "attFX": 1,
       "attAmount": 2,
       "when": 0,
-      "area": 6,
+      "area": 1,
+      "faction": 2,
       "type": 1
     }
   ]

@@ -20,9 +20,10 @@
         302,
         303
       ],
-      "utillAmount": 0,
+      "utillAmount": 3,
       "when": 0,
-      "area": 0,
+      "area": 1,
+      "faction": 0,
       "type": 3
     }
   ]

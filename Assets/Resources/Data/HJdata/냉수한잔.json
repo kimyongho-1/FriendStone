@@ -1,11 +1,11 @@
 {
   "cardName": "냉수한잔",
-  "cardDescription": "체력을 2 회복하고, 카드를 2장 뽑습니다.",
+  "cardDescription": "내 영웅이 체력을 2 회복하고, 카드를 2장 뽑습니다.",
   "cardIdNum": 9,
   "cost": 2,
   "cardClass": 0,
   "cardType": 1,
-  "cardRarity": 0,
+  "cardRarity": 1,
   "associatedHandler": null,
   "evtDatas": [
     {

@@ -14,16 +14,16 @@
   "evtDatas": [
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffTargeting": 0,
+      "buffTargeting": 2,
       "buffType": 2,
-      "buffExtraArea": 3,
       "buffFX": 0,
       "relatedIds": [],
       "buffAtt": 1,
       "buffHp": 1,
-      "drawCount": 0,
+      "costCount": 0,
       "when": 0,
-      "area": 0,
+      "area": 1,
+      "faction": 1,
       "type": 0
     }
   ]

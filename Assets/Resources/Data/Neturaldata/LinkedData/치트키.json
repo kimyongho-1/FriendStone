@@ -5,18 +5,18 @@
   "cost": 10,
   "cardClass": 3,
   "cardType": 1,
-  "cardRarity": 0,
+  "cardRarity": 2,
   "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",
       "attTargeting": 0,
       "attType": 0,
-      "attExtraArea": 0,
       "attFX": 1,
       "attAmount": 20,
       "when": 0,
-      "area": 3,
+      "area": 0,
+      "faction": 2,
       "type": 1
     }
   ]

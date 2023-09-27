@@ -9,7 +9,7 @@
   "cost": 7,
   "cardClass": 3,
   "cardType": 0,
-  "cardRarity": 0,
+  "cardRarity": 1,
   "associatedHandler": null,
   "evtDatas": []
 }

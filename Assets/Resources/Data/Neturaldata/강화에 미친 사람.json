@@ -9,21 +9,21 @@
   "cost": 3,
   "cardClass": 3,
   "cardType": 0,
-  "cardRarity": 0,
+  "cardRarity": 1,
   "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "BuffHandler, Assembly-CSharp",
       "buffTargeting": 1,
       "buffType": 2,
-      "buffExtraArea": 0,
       "buffFX": 0,
       "relatedIds": [],
       "buffAtt": 3,
       "buffHp": 3,
-      "drawCount": 0,
+      "costCount": 0,
       "when": 0,
-      "area": 5,
+      "area": 1,
+      "faction": 1,
       "type": 0
     }
   ]

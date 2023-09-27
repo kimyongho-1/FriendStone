@@ -1,22 +1,22 @@
 {
   "cardName": "원랜디하기",
-  "cardDescription": "무작위 적을 처치합니다.",
+  "cardDescription": "무작위 적 하수인을 처치합니다.",
   "cardIdNum": 24,
   "cost": 3,
   "cardClass": 2,
   "cardType": 1,
-  "cardRarity": 0,
+  "cardRarity": 1,
   "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",
-      "attTargeting": 2,
+      "attTargeting": 0,
       "attType": 1,
-      "attExtraArea": 0,
       "attFX": 1,
       "attAmount": 0,
       "when": 0,
-      "area": 2,
+      "area": 0,
+      "faction": 1,
       "type": 1
     }
   ]

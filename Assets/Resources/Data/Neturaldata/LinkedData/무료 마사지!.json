@@ -5,17 +5,17 @@
   "cost": 0,
   "cardClass": 3,
   "cardType": 1,
-  "cardRarity": 0,
+  "cardRarity": 2,
   "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "RestoreHandler, Assembly-CSharp",
       "restoreTargeting": 0,
-      "restoreExtraArea": 0,
       "restoreFX": 0,
       "restoreAmount": 10,
       "when": 0,
-      "area": 6,
+      "area": 1,
+      "faction": 2,
       "type": 2
     }
   ]

@@ -11,11 +11,11 @@
     {
       "$type": "RestoreHandler, Assembly-CSharp",
       "restoreTargeting": 0,
-      "restoreExtraArea": 0,
       "restoreFX": 1,
       "restoreAmount": 5,
       "when": 0,
-      "area": 6,
+      "area": 1,
+      "faction": 2,
       "type": 2
     }
   ]

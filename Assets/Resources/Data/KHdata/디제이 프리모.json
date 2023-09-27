@@ -14,15 +14,16 @@
   "evtDatas": [
     {
       "$type": "UtillHandler, Assembly-CSharp",
-      "utillType": 2,
+      "utillType": 1,
       "relatedCards": [
         201,
         202,
         203
       ],
-      "utillAmount": 0,
+      "utillAmount": 3,
       "when": 0,
-      "area": 0,
+      "area": 1,
+      "faction": 0,
       "type": 3
     }
   ]
