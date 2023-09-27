@@ -26,7 +26,6 @@ public class Hero : MonoBehaviour, IBody
     public bool CanAttack { get { return (weaponData != null) && attackable == true; } }
 
     #region IBODY
-    public IEnumerator onDead { get; set; }
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
     public bool IsMine { get; set; }

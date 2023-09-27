@@ -317,7 +317,7 @@ public class BattleManager : MonoBehaviour
                     // 손에 있는 핸드카드일떄  특정순간마다 실행할 이벤트 예약 실시
                     ch.HandCardChanged += BuffHandle(ch, ch.PunId, bh);
                     // 이벤트 등록시 최초 실행
-                    ch.HandCardChanged.Invoke(ch.data.cardIdNum, true);
+                    ch.HandCardChanged.Invoke(ch.data.cardIdNum);
                 }
                 else 
                 {
@@ -391,18 +391,14 @@ public class BattleManager : MonoBehaviour
         }
 
         // 버프 이벤트 예약해주기
-        Action<int,bool> BuffHandle(CardHand target,int ownerPunID,  BuffHandler bh)
+        Action<int> BuffHandle(CardHand target,int ownerPunID,  BuffHandler bh)
         {
             // 어떠한 부여 효과인지
             switch (bh.buffType)
             {
                 case Define.buffType.att:
-                    return (int id, bool IsMine) =>
+                    return (int id) =>
                     {
-                        // 예외처리, 타겟하수인의 영역이 존재하는데 현재 소환하는 하수인의 소유여부와 불일치시 이벤트 실행 X
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
-
                         int origin = target.OriginAtt;
                         int[] relatedID = bh.relatedIds;
 
@@ -450,11 +446,8 @@ public class BattleManager : MonoBehaviour
                     };
 
                 case Define.buffType.hp:
-                    return (int id,bool IsMine) =>
+                    return (int id) =>
                     {
-                        // 예외처리, 타겟하수인의 영역이 존재하는데 현재 소환하는 하수인의 소유여부와 불일치시 이벤트 실행 X
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
                         int origin = target.OriginHp;
                         int[] relatedID = bh.relatedIds;
 
@@ -502,11 +495,8 @@ public class BattleManager : MonoBehaviour
                     };
 
                 case Define.buffType.atthp:
-                    return (int id, bool IsMine) =>
+                    return (int id) =>
                     {
-                        // 예외처리, 타겟하수인의 영역이 존재하는데 현재 소환하는 하수인의 소유여부와 불일치시 이벤트 실행 X
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
                         int[] relatedID = bh.relatedIds;
                         int count = 0;
                         
@@ -555,11 +545,8 @@ public class BattleManager : MonoBehaviour
                     };
 
                 case Define.buffType.cost:
-                    return (int id, bool IsMine) =>
+                    return (int id) =>
                     {
-                        // 예외처리, 타겟하수인의 영역이 존재하는데 현재 소환하는 하수인의 소유여부와 불일치시 이벤트 실행 X
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
                         int[] relatedID = bh.relatedIds;
                         int count = 0;
                         

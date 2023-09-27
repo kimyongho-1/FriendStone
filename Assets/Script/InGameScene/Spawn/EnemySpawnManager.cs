@@ -3,7 +3,6 @@ using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 
 public partial class SpawnManager 
 {
@@ -84,41 +83,10 @@ public partial class SpawnManager
         }
 
         // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
-        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.data.cardIdNum, false));
+        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.data.cardIdNum));
 
         // 현재 소환된 카드가, 정해진 위치로 이동을 끝맞출떄까지 대기
         yield return new WaitUntil(()=>(cf.transform.position == cf.OriginPos));
         // 연이어 공격 이벤트 전파시, 위치를 다 끝 맞춘 상태에서 진행되는것이 자연스럽기에
     }
-
-    // 모든 적 하수인 정렬
-    public IEnumerator AllEnemiesAlignment()
-    {
-        int count = enemyMinions.Count + 1;
-        // 모든 필드 미니언들 위치 재정렬
-        for (int i = 0; i < enemyMinions.Count; i++)
-        {
-            // 최대한 가운데 인덱싱을 정해둔 상태로, 좌우로 퍼지도록 위치 선정
-            float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
-
-            enemyMinions[i].OriginPos = new Vector3(x, 2.25f, -0.1f);
-            StartCoroutine(move(enemyMinions[i].transform, i));
-            yield return null;
-        }
-
-        // 이동 애니메이션 코루틴
-        IEnumerator move(Transform tr, int idx)
-        {
-            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
-            Vector3 startPos = tr.transform.localPosition;
-            while (t < 1f)
-            {
-                t += Time.deltaTime * 2.5f;
-                tr.transform.localPosition =
-                    Vector3.Lerp(startPos, spawnPoint[idx], t);
-                yield return null;
-            }
-        }
-    }
-
 }

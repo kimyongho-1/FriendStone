@@ -25,5 +25,27 @@ public interface IBody // 공격을 받을수 있는 모든 객체에 부착
     public bool Ray { set; }
     #endregion
 
-    public IEnumerator onDead { get; set; }
+
+    public IEnumerator StartReadyCoAnimation()
+    {
+        float t = 0;
+        Vector3 dest = OriginPos + new Vector3(0, -0.25f, 0.4f);
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 2.5f;
+            TR.transform.localPosition = Vector3.Lerp(OriginPos, dest, t);
+            yield return null;
+        }
+    }
+    public IEnumerator ExitReadyCoAnimation()
+    {
+        float t = 0;
+        Vector3 start = Pos;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 2.5f;
+            TR.transform.localPosition = Vector3.Lerp(start, OriginPos, t);
+            yield return null;
+        }
+    }
 }

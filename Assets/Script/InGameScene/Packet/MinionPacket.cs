@@ -75,7 +75,7 @@ public partial class PacketManager
 
         // 현재 이벤트는 미니언 공격을 기준으로 하기에 , CardField컴포넌트 찾기
         CardField minion = attacker.TR.GetComponent<CardField>();
-        Debug.Log("미니언 존재 여부 : " +minion+$", 공격자pun : {attacker.PunId}, 피해자pun : {target.PunId}");
+
         // 그리고 공격 이벤트 예약
         GAME.IGM.AddAction(minion.AttackCo(attacker, target));
     }

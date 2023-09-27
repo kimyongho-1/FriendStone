@@ -7,8 +7,7 @@ public class HeroSkill : MonoBehaviour, IBody
 {
     Func<IBody, IBody, IEnumerator> skillFunc;
     public SkillData data ;
-    # region IBody
-    public IEnumerator onDead { get; set; }
+    # region
     public bool IsMine { get; set; }
     public int PunId { get; set; }
 

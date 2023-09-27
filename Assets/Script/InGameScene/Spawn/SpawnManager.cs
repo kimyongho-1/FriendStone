@@ -7,8 +7,8 @@ using UnityEngine;
 public partial class SpawnManager : MonoBehaviour
 {
     public Transform Players, Enemies;
-    public CustomList enemyMinions = new CustomList();
-    public CustomList playerMinions = new CustomList();  
+    public List<CardField> enemyMinions = new List<CardField>();
+    public List<CardField> playerMinions = new List<CardField>();  
     public List<Vector3> spawnPoint = new List<Vector3>();
     public CardField prefab;
 
@@ -31,6 +31,7 @@ public partial class SpawnManager : MonoBehaviour
 
         // 최대 미니언의 갯수가 7이면 더 이상 공간 만들 필요 X
         if (playerMinions.Count == 7 || spawnPoint.Count == playerMinions.Count+1) { return; }
+
         // 현재 미니언이 없으면 언제나 고정된 위치로 다음 미니언 소환 위치 결정
         if (playerMinions.Count == 0) { spawnPoint[0] = new Vector3(0.5f, 0.5f, -0.1f); return; }
 
@@ -45,50 +46,13 @@ public partial class SpawnManager : MonoBehaviour
         }
 
         // 현재 미니언의 갯수 +1 한 여유 공간 만들기 (다음 미니언 소환될 공간을 미리 마련하는 개념)
-        int count = spawnPoint.Count;
         spawnPoint.Add(new Vector3(0, 0, 0));
+        int count = spawnPoint.Count;
         for (int i = 0; i < spawnPoint.Count; i++)
         {
             // i - (count - 1) / 2 는 중심을 기준으로 -3, -2, -1, 0, 1, 2, 3 같은 변환을 유도
-            float x = 0.5f + 1.25f * (i - (spawnPoint.Count-1) / 2.0f);
-            spawnPoint[i] = new Vector3(x, 0.5f, -0.1f);
-        }
-    }
-
-    // 내 모든 하수인 정렬
-    public IEnumerator AllPlayersAlignment()
-    {
-        spawnPoint.Clear();
-
-        if (playerMinions.Count == 0) { spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f)) ;  yield break; }
-
-        // 모든 필드 미니언들 위치 재정렬
-        for (int i = 0; i < playerMinions.Count+1; i++)
-        {
-            // 최대한 가운데 인덱싱을 정해둔 상태로, 좌우로 퍼지도록 위치 선정
-            float x = 0.5f + 1.25f * (i - (spawnPoint.Count - 1) / 2.0f);
-            spawnPoint.Add(new Vector3(x, 0.5f, -0.1f));
-        }
-        // 모든 필드 미니언들 위치 재정렬
-        for (int i = 0; i < playerMinions.Count; i++)
-        {
-            playerMinions[i].OriginPos = spawnPoint[i];
-            StartCoroutine(move(playerMinions[i].transform, i));
-            yield return null;
-        }
-        
-        // 이동 애니메이션 코루틴
-        IEnumerator move(Transform tr, int idx)
-        {
-            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
-            Vector3 startPos = tr.transform.localPosition;
-            while (t < 1f)
-            {
-                t += Time.deltaTime * 2.5f;
-                tr.transform.localPosition =
-                    Vector3.Lerp(startPos, spawnPoint[idx], t);
-                yield return null;
-            }
+            float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
+            spawnPoint[i] = new Vector3(x, 0.35f, -0.1f);
         }
     }
 
@@ -210,8 +174,6 @@ public partial class SpawnManager : MonoBehaviour
             playerMinions[i].OriginPos = spawnPoint[i];
             StartCoroutine(move(playerMinions[i].transform, i));
         }
-
-        // 만약 하수인이 손에서 낼떄 실행 이벤트가 존재시, 먼저 하수인이 자리를 잡은후 실행하는 순서보장을 위해, 제자리 위치하였는지부터 예약
         GAME.IGM.AddAction(waitPos(cf));
         cf.Init(card.data, true);
         IEnumerator waitPos(CardField cf)
@@ -247,7 +209,7 @@ public partial class SpawnManager : MonoBehaviour
             CalcSpawnPoint();
 
             // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
-            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum, true));
+            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum));
         }
         
     }

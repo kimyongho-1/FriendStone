@@ -14,7 +14,7 @@ public class CardHand : CardEle
     public GameObject TMPgo;
 
     // OnHand이벤트가 존재시, 특정순간마다 이벤트를 실행 (이벤트 구독은 BattleManager.cs에서 등록)
-    public Action<int,bool> HandCardChanged;
+    public Action<int> HandCardChanged;
 
     public void Awake()
     {
