@@ -4,10 +4,12 @@ using UnityEngine;
 
 public interface IBody // 공격을 받을수 있는 모든 객체에 부착
 {
+    
     public bool IsMine { get; set; }
     public int PunId { get; set; }
-    public Define.BodyType bodyType { get; }
-    
+    public Define.AttType AttType { get; }
+    public Define.ObjType objType { get; set; }
+
     #region 공통 컴포넌트
     public Transform TR { get; } // 트랜스폼
     public Vector3 Pos { get { return TR.position; } } // 현재 포지션값

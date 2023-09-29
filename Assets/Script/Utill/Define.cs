@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class Define 
 {
-    public enum BodyType { None, Meele, Range }
+    public enum ObjType { Hero , Minion, HandCard }
+    public enum AttType { None, Meele, Range }
 
     #region 카드 정보 데이터
     // 카드 종류
     public enum cardType { minion, spell, weapon }
-
     // 직업 종류
     public enum classType { HJ, HZ, KH, Netural }
     // 카드 희귀도
@@ -17,6 +17,7 @@ public class Define
     #endregion
 
     #region 카드 이벤트 데이터
+    public enum evtTargeting { Auto, Select } // 손에서 내면 자동실행건인지, 유저가 직접 선택건인지
     public enum evtWhen { onPlayed, onDead, onHand, } // 카드의 어느순간에 이벤트 실행할지 : 낼떄, 미니언죽을떄, 손에있을떄
     public enum evtArea  // 유저가 직접 선택할시엔 포스트프로세싱의 영역이 되며, 자동이나 랜덤 실행시엔 범위가 되어줄 영역
     { Enemy, Player, All } //None, All, enemy, enemyHero, allEnemy, player, playerHero, allPlayer, 
@@ -27,7 +28,6 @@ public class Define
     // 위의 evtType별로 사용할 변수들
 
     #region 공격 이벤트 데이터 프로퍼티
-    public enum attTargeting { randomOnEvtArea,userSelect, } // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
     public enum attType { Damage, Kill } // 공격이벤트 타입 : 일반공격 , 죽이기
     public enum attFX // 재생할 효과 프리팹
     { None, arrow, }
@@ -40,13 +40,13 @@ public class Define
     #endregion
 
     #region 버프 이벤트 데이터 프로퍼티
-    public enum buffTargeting { autoOnEvtArea, userSelect, BothSide ,randomOnEvtArea ,someID } // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
+    public enum buffAutoMode { autoOnEvtArea,  BothSide ,randomOnEvtArea ,someID } // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
     public enum buffType { att, hp, atthp, cost } // 어떤 버프 이벤트인지
     public enum buffFX { None, }
     #endregion
 
     #region 회복 이벤트 데이터 프로퍼티
-    public enum restoreTargeting // 이벤트범위에서 타겟찾아 자동실행 | 유저가 선택 | 하수인이 소환된 양옆 위치 | 이벤트범위서 랜덤타겟
+    public enum restoreAutoMode // 이벤트범위에서 타겟찾아 자동실행 | 유저가 선택 | 하수인이 소환된 양옆 위치 | 이벤트범위서 랜덤타겟
     { AutoOnEvtArea, userSelect, BothSide ,RandomOnEvtArea} 
     public enum restoreFX { None, Blink}
     #endregion

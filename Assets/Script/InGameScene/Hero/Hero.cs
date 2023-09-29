@@ -31,15 +31,15 @@ public class Hero : MonoBehaviour, IBody
     public bool Ray { set { Col.enabled = value; } }
     public bool IsMine { get; set; }
     public int PunId { get; set; }
-    public Define.BodyType bodyType { get { return Define.BodyType.Meele; } }
+    public Define.AttType AttType { get { return Define.AttType.Meele; } }
+    public Define.ObjType objType { get; set; }
     public Transform TR { get { return playerMask.transform; } }
 
     public Vector3 OriginPos { get; set; }
     [field: SerializeField] public int OriginHp { get; set; }
     [field: SerializeField] public int OriginAtt { get; set; }
-  
-
     #endregion
+
     public int Att
     {
         get { return (weaponData != null) ? OriginAtt + weaponData.att : OriginAtt; }

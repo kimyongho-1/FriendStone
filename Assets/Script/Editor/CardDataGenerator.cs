@@ -131,7 +131,8 @@ public class CardDataGenerator : EditorWindow
                         bh = new BuffHandler();
                     }
                     #region BuffHandler 속성 그리기
-                    bh.buffTargeting = (Define.buffTargeting)EditorGUILayout.EnumPopup("타겟팅 타입 ", bh.buffTargeting);
+                    if (bh.targeting == evtTargeting.Auto)
+                    { bh.buffAutoMode = (Define.buffAutoMode)EditorGUILayout.EnumPopup("타겟팅 타입 ", bh.buffAutoMode); }
                     bh.buffType = (Define.buffType)EditorGUILayout.EnumPopup("어떤 버프 ", bh.buffType);
                     bh.buffFX = (Define.buffFX)EditorGUILayout.EnumPopup("재생할 효과 ", bh.buffFX);
                     EditorGUI.BeginChangeCheck();
@@ -165,7 +166,6 @@ public class CardDataGenerator : EditorWindow
                         ah = new AttackHandler();
                     }
                     #region AttackHandler 속성 그리기
-                    ah.attTargeting = (Define.attTargeting)EditorGUILayout.EnumPopup("타겟팅 타입 ", ah.attTargeting);
                     ah.attType = (Define.attType)EditorGUILayout.EnumPopup("어떤 종류 ", ah.attType);
                     ah.attFX = (Define.attFX)EditorGUILayout.EnumPopup("발사할 효과 ", ah.attFX);
                     ah.attAmount = EditorGUILayout.IntField("공격량", ah.attAmount);
@@ -186,7 +186,8 @@ public class CardDataGenerator : EditorWindow
                         rh = new RestoreHandler();
                     }
                     #region RestoreHandler 속성 그리기
-                    rh.restoreTargeting = (Define.restoreTargeting)EditorGUILayout.EnumPopup("타겟팅 타입", rh.restoreTargeting);
+                    if (rh.targeting == evtTargeting.Auto)
+                    { rh.restoreAutoMode = (Define.restoreAutoMode)EditorGUILayout.EnumPopup("타겟팅 타입", rh.restoreAutoMode ); }
                     rh.restoreFX = (Define.restoreFX)EditorGUILayout.EnumPopup("재생할 효과", rh.restoreFX);
                     rh.restoreAmount = EditorGUILayout.IntField("회복량", rh.restoreAmount);
                     #endregion
@@ -245,6 +246,7 @@ public class CardDataGenerator : EditorWindow
                 evtData.when = (Define.evtWhen)EditorGUILayout.EnumPopup("언제 발동 : ", cardData.evtDatas[selectedIdx].when);
                 evtData.area = (Define.evtArea)EditorGUILayout.EnumPopup("타겟 진영 : ", cardData.evtDatas[selectedIdx].area);
                 evtData.faction = (Define.evtFaction)EditorGUILayout.EnumPopup("타겟타입 : ", cardData.evtDatas[selectedIdx].faction);
+                evtData.targeting = (Define.evtTargeting)EditorGUILayout.EnumPopup("타겟팅방식 : ", cardData.evtDatas[selectedIdx].targeting);
             }
 
             // 바뀐 값 또는 참조로 실제 데이터 변경
@@ -426,7 +428,7 @@ public class CardDataGenerator : EditorWindow
             cd.cardDescription = EditorGUILayout.TextField("설명 : ", cardData.cardDescription);
             cd.cardIdNum = EditorGUILayout.IntField("고유ID: ", cardData.cardIdNum);
             cd.cost = EditorGUILayout.IntField("Cost: ", cardData.cost);
-            cd.associatedHandler = EditorGUILayout.TextField("스크립트명 : ", cardData.associatedHandler);
+           
             cd.evtDatas = cardData.evtDatas;
         }
 

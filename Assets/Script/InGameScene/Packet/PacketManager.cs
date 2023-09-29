@@ -22,6 +22,7 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
         InitStateDictionary();
         InitMinionDictionary();
         InitHeroDictionary();
+        InitSpellDictionary();
 
         PhotonNetwork.NetworkingClient.EventReceived -= Received;
         PhotonNetwork.NetworkingClient.EventReceived += Received;

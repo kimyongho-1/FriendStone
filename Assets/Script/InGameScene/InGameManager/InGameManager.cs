@@ -4,7 +4,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static Define;
-
 public class CustomList : List<CardField>
 {
     public new void Insert(int idx ,CardField ele)
@@ -28,9 +27,9 @@ public class InGameManager : MonoBehaviour
     public List<IBody> allIBody = new List<IBody>();
 
     public int GameTurn = 0;
-    public GameObject cardPopup;
-    public TextMeshPro cardName, Description, Stat, Type, cost;
-    public SpriteRenderer cardImage;
+    public CardPopupEvtHolder cardPopup;
+    public TextMeshPro cardName, Description, Stat, Type, Cost;
+    public SpriteRenderer cardImage,cardBackground;
 
     #region 참조
     public FindEvtHolder FindEvt { get; set; }
@@ -59,7 +58,7 @@ public class InGameManager : MonoBehaviour
         Description.text = skill.Desc;
         Stat.gameObject.SetActive(false);
         Type.text = "skill";
-        cost.text = "2";
+        Cost.text = "2";
         cardImage.sprite = skill.Image;
         cardPopup.gameObject.SetActive(true);
     }
@@ -76,20 +75,45 @@ public class InGameManager : MonoBehaviour
         Description.fontSize = (data.cardDescription.Length > 39) ? 15f : 18f;
         Stat.text = $"<color=yellow>ATT {data.att} <color=red>HP {data.hp} <color=black>몬스터";
         Type.text = data.cardType.ToString();
-        cost.text = data.cost.ToString();
+        Cost.text = data.cost.ToString();
         cardImage.sprite = sprite;
         cardPopup.gameObject.SetActive(true);
     }
     public void ShowSpellPopup(SpellCardData data, Vector3 pos)
     {
+        // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
+        cardPopup.isEnmeySpawning = true;
+
         cardPopup.transform.position = pos;
         cardName.text = data.cardName;
         Description.text = data.cardDescription;
         Stat.text = $"<color=black>주문";
         Type.text = data.cardType.ToString();
-        cost.text = data.cost.ToString();
-        cardImage.sprite = null;
-        cardPopup.gameObject.SetActive(true);
+        Cost.text = data.cost.ToString();
+        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum );
+        StartCoroutine(FadeIn());
+        IEnumerator FadeIn()
+        {
+            float t = 0;
+            // 투명화 위해 모든 TMP와 SR을 묶기
+            List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat, Type };
+            List<SpriteRenderer> imageList = new List<SpriteRenderer>() { cardImage, cardBackground };
+
+            cardPopup.gameObject.SetActive(true);
+
+            tmpList.ForEach(x => x.alpha = 0);
+            imageList.ForEach(x => x.color = new Color(1, 1, 1, 0));
+            Color tempColor = Color.white;
+            while (t < 1f)
+            {
+                // 알파값 점차 1으로 변환
+                t += Time.deltaTime;
+                tempColor.a = t;
+                tmpList.ForEach(x => x.alpha = t);
+                imageList.ForEach(x => x.color = tempColor);
+                yield return null;
+            }
+        }
     }
 
     public void ShowCardPopup(ref WeaponCardData data, Vector3 pos)
@@ -100,7 +124,7 @@ public class InGameManager : MonoBehaviour
         Description.text = data.cardDescription;
         Stat.text = "";
         Type.text = data.cardType.ToString();
-        cost.text = data.cost.ToString();
+        Cost.text = data.cost.ToString();
         cardImage.sprite = null;
         cardPopup.gameObject.SetActive(true);
     }

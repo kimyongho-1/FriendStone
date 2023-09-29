@@ -16,6 +16,7 @@
       ],
       "utillAmount": 1,
       "when": 0,
+      "targeting": 0,
       "area": 1,
       "faction": 1,
       "type": 3

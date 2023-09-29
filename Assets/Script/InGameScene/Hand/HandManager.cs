@@ -166,12 +166,12 @@ public class HandManager : MonoBehaviour
         StartCoroutine(DrawingCo);
 
         // 덱에서 실질적으로 뽑힌 카드의 데이터
-        CardData cd = deckCards.Dequeue();
+        //CardData cd = deckCards.Dequeue();
         // 인게임 카드 프리팹 생성
         CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
         ch.transform.position = new Vector3(9.45f, 3.26f, 0);
         // 인게임 카드 초기화
-        ch.Init(cd, false);
+        ch.Init(null, false);
         
         // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
         ch.PunId = punID;

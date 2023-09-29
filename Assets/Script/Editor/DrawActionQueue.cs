@@ -14,13 +14,10 @@ public class DrawActionQueue : Editor
 
         BattleManager bm = (BattleManager)target;
 
-        // 큐 갯수 동일시 인스펙터창 그리기 취소
-        if (exCount == bm.ActionQueue.Count)
+        exCount = bm.ActionQueue.Count;
+        // 큐없을시 생략
+        if (exCount ==0)
         { return; }
-        else
-        { 
-            exCount = bm.ActionQueue.Count;
-        }
         EditorGUILayout.LabelField("Action Queue Count: " + bm.ActionQueue.Count);
 
         // 현재 진행 코루틴

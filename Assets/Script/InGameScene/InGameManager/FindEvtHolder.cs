@@ -46,7 +46,6 @@ public class FindEvtHolder : MonoBehaviour
             list[i].cardImage.gameObject.SetActive(true);
             list[i].TMPgo.gameObject.SetActive(true);
             list[i].cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(true);
-            list[i].transform.localScale = Vector3.one * 0.3f;
 
             // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
             Define.cardType type = GAME.Manager.RM.PathFinder.Dic[puns[i]].type;
@@ -138,7 +137,6 @@ public class FindEvtHolder : MonoBehaviour
             // 뒷면만 나오면 되기에, 나머지 꺼주기
             list[i].cardImage.gameObject.SetActive(false);
             list[i].TMPgo.gameObject.SetActive(false);
-            list[i].transform.localScale = Vector3.one * 0.4f;
         }
         // 내가 상대의 카드 상호작용 하면 안되기에 레이 끄기
         left.enabled = right.enabled = center.enabled = false;

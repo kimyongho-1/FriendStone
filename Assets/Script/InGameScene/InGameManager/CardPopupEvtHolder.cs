@@ -8,6 +8,7 @@ using static Define;
 public class CardPopupEvtHolder : MonoBehaviour
     , IPointerEnterHandler, IPointerExitHandler
 {
+    public bool isEnmeySpawning = false;
     public  Action func;
     IEnumerator Co;
     public float time; // 커서 대기시간
@@ -27,6 +28,7 @@ public class CardPopupEvtHolder : MonoBehaviour
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (isEnmeySpawning == true) { return; }
         if (Co != null) { StopCoroutine(Co); Co = null; }
         Co = waitCo();
         StartCoroutine(Co);
@@ -34,6 +36,7 @@ public class CardPopupEvtHolder : MonoBehaviour
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (isEnmeySpawning == true) { return; }
         if (Co != null) { StopCoroutine(Co); Co = null; }
         GAME.IGM.cardPopup.gameObject.SetActive(false);
     }

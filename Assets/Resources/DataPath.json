@@ -45,7 +45,7 @@
       "type": "minion"
     },
     "101": {
-      "path": "Data/HJdata/소주병 던지기",
+      "path": "Data/HJdata/LinkedData/소주병 던지기",
       "type": "spell"
     },
     "12": {
@@ -89,19 +89,19 @@
       "type": "spell"
     },
     "121": {
-      "path": "Data/HZdata/필기시험",
+      "path": "Data/HZdata/LinkedData/필기시험",
       "type": "spell"
     },
     "122": {
-      "path": "Data/HZdata/실기시험",
+      "path": "Data/HZdata/LinkedData/실기시험",
       "type": "spell"
     },
     "123": {
-      "path": "Data/HZdata/최종시험",
+      "path": "Data/HZdata/LinkedData/최종시험",
       "type": "spell"
     },
     "124": {
-      "path": "Data/HZdata/Electric Knight KHZ",
+      "path": "Data/HZdata/LinkedData/Electric Knight KHZ",
       "type": "minion"
     },
     "22": {
@@ -149,15 +149,15 @@
       "type": "minion"
     },
     "201": {
-      "path": "Data/KHdata/붐뱁비트",
+      "path": "Data/KHdata/LinkedData/붐뱁비트",
       "type": "spell"
     },
     "202": {
-      "path": "Data/KHdata/째즈비트",
+      "path": "Data/KHdata/LinkedData/째즈비트",
       "type": "spell"
     },
     "203": {
-      "path": "Data/KHdata/트랩비트",
+      "path": "Data/KHdata/LinkedData/트랩비트",
       "type": "spell"
     },
     "33": {
@@ -201,15 +201,15 @@
       "type": "minion"
     },
     "301": {
-      "path": "Data/Neturaldata/무료 마사지!",
+      "path": "Data/Neturaldata/LinkedData/무료 마사지!",
       "type": "spell"
     },
     "302": {
-      "path": "Data/Neturaldata/Delete키",
+      "path": "Data/Neturaldata/LinkedData/Delete키",
       "type": "spell"
     },
     "303": {
-      "path": "Data/Neturaldata/치트키",
+      "path": "Data/Neturaldata/LinkedData/치트키",
       "type": "spell"
     },
     "10000": {

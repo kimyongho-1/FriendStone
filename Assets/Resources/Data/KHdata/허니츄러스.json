@@ -14,11 +14,11 @@
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",
-      "attTargeting": 0,
       "attType": 0,
       "attFX": 1,
       "attAmount": 4,
       "when": 0,
+      "targeting": 0,
       "area": 1,
       "faction": 2,
       "type": 1

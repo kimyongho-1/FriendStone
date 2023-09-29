@@ -10,18 +10,18 @@
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",
-      "attTargeting": 0,
       "attType": 0,
       "attFX": 0,
       "attAmount": 5,
       "when": 0,
+      "targeting": 0,
       "area": 1,
       "faction": 2,
       "type": 1
     },
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffTargeting": 3,
+      "buffAutoMode": 0,
       "buffType": 2,
       "buffFX": 0,
       "relatedIds": [],
@@ -29,6 +29,7 @@
       "buffHp": 4,
       "costCount": 0,
       "when": 0,
+      "targeting": 0,
       "area": 1,
       "faction": 2,
       "type": 0

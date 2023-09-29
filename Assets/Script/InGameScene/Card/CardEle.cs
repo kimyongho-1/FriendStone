@@ -8,17 +8,20 @@ public class CardEle : MonoBehaviour, IBody
     [field: SerializeField] public int PunId { get; set; }
     [field: SerializeField] public bool IsMine { get; set; }
     public Transform TR { get { return this.transform; } }
-    public Define.BodyType bodyType 
+    public Define.AttType AttType
     { 
         get 
         {
             switch (data.cardType)
             {
+                case Define.cardType.weapon:
                 case Define.cardType.minion:
-                    return Define.BodyType.Meele;
-                default : return Define.BodyType.None;
+                    return Define.AttType.Meele;
+                case Define.cardType.spell:
+                    return Define.AttType.Range;
+
+                default : return Define.AttType.None;
             }
-            
         } 
     }
     [field: SerializeField] public Collider2D Col { get; set; }
@@ -30,4 +33,7 @@ public class CardEle : MonoBehaviour, IBody
     [field: SerializeField] public virtual int Att { get; set; }
     [field: SerializeField] public virtual int HP { get; set; }
     public IEnumerator onDead { get; set; }
+
+
+    public Define.ObjType objType { get; set; }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class BuffHandler : CardBaseEvtData
 {
-    public Define.buffTargeting buffTargeting;
+    public Define.buffAutoMode buffAutoMode;
     public Define.buffType buffType;
     public Define.buffFX buffFX;
     public int[] relatedIds= new int[] { }; // 관련된 하수인ID

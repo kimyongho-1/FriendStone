@@ -33,8 +33,8 @@ public partial class PacketManager
         dic.Add(OtherTurnStartMSG, ShowOtherTurn);
         dic.Add(DoDraw, ReceivedDoDraw);
         dic.Add(FindEvt, ReceivedFindEvt);
-        dic.Add(FindEvtResult, ReceiveddResultFindEvt);
-        dic.Add(AcqusitionEvt, ReceiveddAcquisition );
+        dic.Add(FindEvtResult, ReceivedResultFindEvt);
+        dic.Add(AcqusitionEvt, ReceivedAcquisition );
         
     }
 
@@ -175,7 +175,7 @@ public partial class PacketManager
     { PhotonNetwork.RaiseEvent(FindEvtResult, new object[] { idx , punID }, Other, SendOptions.SendReliable); }
 
     // 상대가 발견이벤트 결과를 받아서 동기화 하기
-    public void ReceiveddResultFindEvt(object[] data)
+    public void ReceivedResultFindEvt(object[] data)
     { 
         // 상대로부터 몇번째 카드인지 + 그 카드의 고유 넘버가 무엇인지 전달받아 똑같은 화면 그려주기
         int idx = (int)data[0];
@@ -189,26 +189,30 @@ public partial class PacketManager
     #region 획득 이벤트 전달 및 받기
 
     // 내가 획득할 카드들의 카드식별넘버를 전송하여 상대에게도 동기화시키기
-    public void SendAcquisition(int punID ,int[] nums, int[] puns)
+    public void SendAcquisition(Define.ObjType objType,int punID ,int[] nums, int[] puns)
     {
-        object[] data = new object[] { punID, nums, puns};
+        object[] data = new object[] { (objType == Define.ObjType.Minion) ? true : false, punID, nums, puns};
         // 전파 실행
         PhotonNetwork.RaiseEvent(AcqusitionEvt, data, Other, SendOptions.SendReliable);
     }
 
     // 상대의 획득 이벤트 전달받았으면, 똑같이 만들어주기
-    public void ReceiveddAcquisition(object[] data)
+    public void ReceivedAcquisition(object[] data)
     {
+        // 시전자가 미니언인지 여부
+        bool isMinionAct = (bool)data[0];
         // 시전자 찾기 + 카드넘버 + 식별넘버 
-        int punID = (int)data[0];
-        IBody caster = GAME.IGM.allIBody.Find(x=>x.PunId == punID);
-        int[] cardIDs = (int[])data[1];
-        int[] puns = (int[])data[2];
+        int punID = (int)data[1];
+        Debug.Log($"획득이벤트 시전자 punID : {punID}");
+        IBody caster = (isMinionAct) ? GAME.IGM.allIBody.Find(x=>x.PunId == punID) : GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
+        
+        int[] cardIDs = (int[])data[2];
+        int[] puns = (int[])data[3];
 
-        GAME.IGM.AddAction(SyncAcquisitionEvt(cardIDs, puns, caster));
+        GAME.IGM.AddAction(SyncAcquisitionEvt(cardIDs, puns));
 
         // 상대의 획득 이벤트를 내 화면에도 똑같이 동기화 해주기
-        IEnumerator SyncAcquisitionEvt(int[] cardIDs, int[] puns, IBody caster)
+        IEnumerator SyncAcquisitionEvt(int[] cardIDs, int[] puns)
         {
             // 획득하는 수치가, 최대 10장을 넘어서는지 확인 (넘을시 가능한 수만큼만 획득)
             int count = cardIDs.Length;
@@ -243,13 +247,12 @@ public partial class PacketManager
                 ch.Init(card, false);
                 ch.PunId = puns[i];
 
-                ch.transform.localScale = Vector3.one;
-                ch.transform.localPosition = caster.TR.position;
+                ch.transform.localScale = Vector3.zero;
+                ch.transform.localPosition = new Vector3(0.45f,3.8f,0);
                 GAME.IGM.Hand.EnemyHand.Add(ch);
                 yield return null;
             }
 
-            yield return StartCoroutine(GAME.IGM.Hand.CardAllignment(true));
         }
     }
     

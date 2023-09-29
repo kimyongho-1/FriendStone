@@ -56,6 +56,7 @@ SpriteAtlas:
     - {fileID: 2800000, guid: 4612c1e8a693ebd4e8dc7e0fff2509b2, type: 3}
     - {fileID: 2800000, guid: edd49ea002b01fd42b9c13e476a45473, type: 3}
     - {fileID: 2800000, guid: 46886c806ffbdad42b9b395b16ccfa22, type: 3}
+    - {fileID: 2800000, guid: 12ece888a33c40b45902e599ccff69f0, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -67,6 +68,7 @@ SpriteAtlas:
     - 0dab0f775ae5d27459a031722e99bb42: 21300000
     - c1d19908cac726643b4cdc5f3ceb17b7: 21300000
     - 8efd29785dafd32479857ddaf4951315: 21300000
+    - 12ece888a33c40b45902e599ccff69f0: 21300000
     - 4612c1e8a693ebd4e8dc7e0fff2509b2: 21300000
     - f6f1f02f98f9d9944a118f2de15b90e0: 21300000
     - e30d749f6ac092042aef756f5c2b3309: 21300000
@@ -80,6 +82,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 0dab0f775ae5d27459a031722e99bb42, type: 3}
   - {fileID: 21300000, guid: c1d19908cac726643b4cdc5f3ceb17b7, type: 3}
   - {fileID: 21300000, guid: 8efd29785dafd32479857ddaf4951315, type: 3}
+  - {fileID: 21300000, guid: 12ece888a33c40b45902e599ccff69f0, type: 3}
   - {fileID: 21300000, guid: 4612c1e8a693ebd4e8dc7e0fff2509b2, type: 3}
   - {fileID: 21300000, guid: f6f1f02f98f9d9944a118f2de15b90e0, type: 3}
   - {fileID: 21300000, guid: e30d749f6ac092042aef756f5c2b3309, type: 3}
@@ -92,6 +95,7 @@ SpriteAtlas:
   - HJ1
   - HJ8
   - HJ6
+  - HJ101
   - HJ7
   - HJ11
   - HJ9

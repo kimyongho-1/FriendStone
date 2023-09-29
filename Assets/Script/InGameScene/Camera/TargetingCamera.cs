@@ -92,7 +92,7 @@ public class TargetingCamera : MonoBehaviour
         StartCoroutine(DrawLine(attacker.Pos));
 
         // 공격자가 미니언이면 공격자세 취하기
-        if (attacker.bodyType == BodyType.Meele)
+        if (attacker.AttType == AttType.Meele)
         {
             float t = 0;
             Vector3 dest = attacker.OriginPos + new Vector3(0, -0.25f, -0.5f);
@@ -135,7 +135,7 @@ public class TargetingCamera : MonoBehaviour
                 {
                     Debug.Log("충돌체 없으면 끝");
                     // 공격자가 미니언이었으면 공격자세 해제하기
-                    if (attacker.bodyType == BodyType.Meele)
+                    if (attacker.AttType == AttType.Meele)
                     {
                         float t = 0;
                         Vector3 start = attacker.Pos;

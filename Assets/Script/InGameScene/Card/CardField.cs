@@ -13,7 +13,7 @@ public class CardField : CardEle
     public bool attackable = true;
     public ParticleSystem sleep;
     public SpriteMask mask;
-    MinionCardData minionCardData;
+    MinionCardData minionCardData { get; set; }
     public override int Att
     {
         get { return minionCardData.att; }
@@ -61,10 +61,51 @@ public class CardField : CardEle
             // 소환시 , 손에서 낼떄 실행할 이벤트 있는지 확인
             List<CardBaseEvtData> list = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onPlayed);
 
-            for (int i = 0; i < list.Count; i++)
+            // 이벤트 없으면 자동 취소
+            if (list == null) { return; }
+
+            // 먼저 유저가 직접 타겟팅하는 이벤트가 존재하는지 확인
+            CardBaseEvtData selectEvt = list.Find(x => x.targeting == evtTargeting.Select);
+
+            // 유저가 직접 찾는 타겟팅 방식이 있다면
+            if (selectEvt != null)
             {
-                GAME.IGM.Battle.Evt(list[i], this);
+                // 전체 이벤트에서 직접 수동으로 타겟팅하는 이벤트만 제거
+                list.Remove(selectEvt);
+
+                // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
+                GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
+                    (this,
+
+                    (IBody a, IBody t) =>
+                    {
+                        return evt(a, t);
+                    },
+
+                    GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+                    ));
+
+                // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
+                IEnumerator evt(IBody a, IBody t)
+                {
+                    GAME.IGM.Battle.Evt(selectEvt, a,t);
+                    yield return null;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        GAME.IGM.Battle.Evt(list[i], this);
+                        yield return null;
+                    }
+                }
             }
+
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    GAME.IGM.Battle.Evt(list[i], this);
+                }
+            }
+            
         }
         onDead = Dead(IsMine);
         IEnumerator Dead(bool isMine)

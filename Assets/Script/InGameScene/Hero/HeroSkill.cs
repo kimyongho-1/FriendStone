@@ -12,8 +12,8 @@ public class HeroSkill : MonoBehaviour, IBody
     public bool IsMine { get; set; }
     public int PunId { get; set; }
 
-    public Define.BodyType bodyType { get; set; }
-
+    public Define.AttType AttType { get; set; }
+    public Define.ObjType objType { get; set; }
     public Transform TR { get; set; }
 
     public Vector3 OriginPos { get; set; }
@@ -27,7 +27,7 @@ public class HeroSkill : MonoBehaviour, IBody
     #endregion
     public void InitEnemySkill(Hero user, Define.classType type)
     {
-        bodyType = Define.BodyType.None;
+        AttType = Define.AttType.None;
         TR = transform;
         Col = GetComponent<CircleCollider2D>();
         user.playerImg.sprite = GAME.Manager.RM.GetHeroImage(type);
@@ -59,7 +59,7 @@ public class HeroSkill : MonoBehaviour, IBody
     }
     public void InitSkill(Hero user)
     {
-        bodyType = Define.BodyType.None;
+        AttType = Define.AttType.None;
         TR = transform;
         Col = GetComponent<CircleCollider2D>();
 

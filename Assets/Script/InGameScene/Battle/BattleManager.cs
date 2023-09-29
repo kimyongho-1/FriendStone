@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
@@ -22,6 +23,9 @@ public class BattleManager : MonoBehaviour
             yield return new WaitUntil(()=>(ActionQueue.Count > 0));
             currCo = ActionQueue.Dequeue();
             yield return StartCoroutine(currCo);
+
+            // 현재 타겟팅 중이면 , 타겟팅이 끝날떄까지 대기
+            yield return new WaitUntil(() => (GAME.IGM.TC.LR.gameObject.activeSelf == false));
             currCo = null;
         }
     }
@@ -37,22 +41,22 @@ public class BattleManager : MonoBehaviour
         
     }
 
-    public void Evt(CardBaseEvtData evtData, IBody attacker)
+    public void Evt(CardBaseEvtData evtData, IBody attacker, IBody searchedTarget = null)
     {
         Debug.Log($"attacker[{attacker.PunId}]가 {evtData.when}이기에 {evtData.type}실행");
         if (evtData is UtillHandler) { Debug.Log("Utill"); }
 
         switch (evtData.type) // 이벤트 타입별로 분류
         {
-            case Define.evtType.attack: RegisterAttHandler((AttackHandler)evtData , attacker); return;
-            case Define.evtType.buff: RegisterBuffHandler((BuffHandler)evtData, attacker); return;
+            case Define.evtType.attack: RegisterAttHandler((AttackHandler)evtData , attacker, searchedTarget); return;
+            case Define.evtType.buff: RegisterBuffHandler((BuffHandler)evtData, attacker, searchedTarget); return;
             case Define.evtType.utill: RegisterUtillHandler((UtillHandler)evtData, attacker); break;
-            case Define.evtType.restore: RegisterRestoreHandler((RestoreHandler)evtData, attacker); break;
+            case Define.evtType.restore: RegisterRestoreHandler((RestoreHandler)evtData, attacker, searchedTarget); break;
         }
     }
 
     #region 유저가 선택건일시, 타겟 레이어 찾기
-    string[] FindLayer(CardBaseEvtData ah) // 유저가 선택하는건이면, 타겟층의 레이어 찾기
+    public string[] FindLayer(CardBaseEvtData ah) // 유저가 선택하는건이면, 타겟층의 레이어 찾기
     {
         switch (ah.area)
         {
@@ -83,35 +87,26 @@ public class BattleManager : MonoBehaviour
     #endregion
 
     // 공격 이벤트 실행
-    public void RegisterAttHandler(AttackHandler ah, IBody attacker)
+    public void RegisterAttHandler(AttackHandler ah, IBody attacker, IBody searchedTarget)
     {
         // 유저가 직접 선택하는 타겟인지, 자동 선택되는 타겟인지 확인
-        switch (ah.attTargeting)
+
+        // 유저가 직접 선택일시, 미니언 공격처럼 먼저 타겟팅 실행
+        if (ah.targeting == Define.evtTargeting.Select)
         {
-            // 유저가 직접 선택일시, 미니언 공격처럼 먼저 타겟팅 실행
-            case Define.attTargeting.userSelect:
-                StartCoroutine(GAME.IGM.TC.TargettingCo
-                    (attacker,
-
-                    // 공격인지 강제로 죽이는 이벤트인지 식별하기
-                    (ah.attType == Define.attType.Damage) ? (IBody a, IBody t) => { return AttackEvt(a, t); }
-                     : (IBody a, IBody t) => { return KillEvt(a, t); },
-                    // 타겟범위 레이어 찾기
-                    FindLayer(ah)
-                    ));
-                break;
-
-            case Define.attTargeting.randomOnEvtArea:
-                // 설정된 이벤트타입별로 타겟범위 찾기
-                IBody target = AutoExecute();
-                if (target == null) { Debug.Log($"attacker[{attacker.PunId}] 의 이벤트 타겟 존재 X"); return; }
-                
-                // 타겟있을시 이벤트 예약
-                if (ah.attType == Define.attType.Damage) { ActionQueue.Enqueue(AttackEvt(attacker, target)); }
-                else { ActionQueue.Enqueue(KillEvt(attacker, target)); }
-                break;
+            if (ah.attType == Define.attType.Damage) { ActionQueue.Enqueue(AttackEvt(attacker, searchedTarget)); }
+            else { ActionQueue.Enqueue(KillEvt(attacker, searchedTarget)); }
         }
 
+        else
+        {
+            IBody target = AutoExecute();
+            if (target == null) { Debug.Log($"attacker[{attacker.PunId}] 의 이벤트 타겟 존재 X"); return; }
+
+            // 타겟있을시 이벤트 예약
+            if (ah.attType == Define.attType.Damage) { ActionQueue.Enqueue(AttackEvt(attacker, target)); }
+            else { ActionQueue.Enqueue(KillEvt(attacker, target)); }
+        }
         #region 자동 실행건
         IBody AutoExecute()
         {
@@ -249,85 +244,85 @@ public class BattleManager : MonoBehaviour
         #endregion
     }
 
-    public void RegisterBuffHandler(BuffHandler bh, IBody caster)
+    public void RegisterBuffHandler(BuffHandler bh, IBody caster, IBody searchedTarget)
     {
-        switch (bh.buffTargeting)
+        #region 유저가 직접 타겟을 선택하여 지정
+        if (bh.targeting == Define.evtTargeting.Select)
         {
-            #region 이벤트 데이터내 범위의 타겟들에게 이벤트 실행
-            case Define.buffTargeting.autoOnEvtArea:
-                List<IBody> targetList = FindBaseRange(bh.area);
-                if (targetList.Count == 0) { Debug.Log($"caster[{caster.PunId}] 의 타겟이 없음 "); return; }
-                // 타겟 범위만큼, 이벤트 예약
-                for (int i = 0; i < targetList.Count; i++)
-                {
-                    ActionQueue.Enqueue(Buff(caster, targetList[i], bh));
-                }
-                break;
-            #endregion
-
-            #region 유저가 직접 타겟을 선택하여 지정
-            case Define.buffTargeting.userSelect:
-                StartCoroutine(GAME.IGM.TC.TargettingCo
-                    (caster,
-                     // 이벤트 전달
-                     (IBody a, IBody t) => { return Buff(a, t, bh); },
-                    // 타겟범위 레이어 찾기
-                    FindLayer(bh)
-                    ));
-                break;
-            #endregion
-
-            #region 랜덤 타겟을 하나 추출하여 이벤트 실행
-            case Define.buffTargeting.randomOnEvtArea:
-                targetList = FindBaseRange(bh.area);
-                if (targetList.Count == 0) { Debug.Log($"caster[{caster.PunId}] 의 타겟이 없음 "); return; }
-                ActionQueue.Enqueue(Buff(caster, targetList[UnityEngine.Random.Range(0, targetList.Count)], bh));
-                break;
-            #endregion
-
-            #region 시전 하수인 양옆에게 실행
-            case Define.buffTargeting.BothSide:
-                // 현재 이벤트 실행 하수인의 위치찾기 (단 하수인수가 혼자라면 실행할 필요 X )
-                List<CardField> minonList = (caster.IsMine) ? GAME.IGM.Spawn.playerMinions : GAME.IGM.Spawn.enemyMinions;
-                if (minonList.Count < 2) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
-
-                int idx = minonList.IndexOf(minonList.Find(x => x.PunId == caster.PunId));
-                List<IBody> targets = new List<IBody>();
-                // 자신의 왼쪽이 존재 및 시전자 본인이 아니라면 타겟 확정
-                if (idx - 1 > -1 && minonList[idx - 1].PunId != caster.PunId)
-                {
-                    ActionQueue.Enqueue(Buff(caster, minonList[idx - 1], bh));
-                }
-                // 시전자 하수인의 오른쪽 존재하는지 찾기
-                if (idx + 1 < minonList.Count && minonList[idx + 1].PunId != caster.PunId)
-                {
-                    ActionQueue.Enqueue(Buff(caster, minonList[idx + 1], bh));
-                }
-                break;
-            #endregion
-
-            #region 특정 카드ID의 하수인 수 만큼, 하수인에게 시전
-            case Define.buffTargeting.someID:
-                // 손에 있을떄 실행건이라면, 현재 Caster가 핸드카드라는것을 알수 있다
-                CardHand ch = caster.TR.GetComponent<CardHand>();
-
-                // 손에 있을떄 실행건이라면
-                if (bh.when == Define.evtWhen.onHand)
-                {
-                    // 손에 있는 핸드카드일떄  특정순간마다 실행할 이벤트 예약 실시
-                    ch.HandCardChanged += BuffHandle(ch, ch.PunId, bh);
-                    // 이벤트 등록시 최초 실행
-                    ch.HandCardChanged.Invoke(ch.data.cardIdNum, true);
-                }
-                else 
-                {
-                    GAME.IGM.AddAction(InvokeCo(ch, ch.PunId, bh)); 
-                    IEnumerator InvokeCo(CardHand target, int ownerPunID,  BuffHandler bh)
-                    { BuffHandle(ch, ch.PunId, bh); yield return null; }
-                }
-                break;
-                #endregion
+            ActionQueue.Enqueue(Buff(caster, searchedTarget, bh));
         }
+        #endregion
+
+        #region 그외 손에서 낼떄 자동실행이면 자동실행이면, 분류에 맞게 실행
+        else
+        {
+            switch (bh.buffAutoMode)
+            {
+                #region 이벤트 데이터내 범위의 타겟들에게 이벤트 실행
+                case Define.buffAutoMode.autoOnEvtArea:
+                    List<IBody> targetList = FindBaseRange(bh.area);
+                    if (targetList.Count == 0) { Debug.Log($"caster[{caster.PunId}] 의 타겟이 없음 "); return; }
+                    // 타겟 범위만큼, 이벤트 예약
+                    for (int i = 0; i < targetList.Count; i++)
+                    {
+                        ActionQueue.Enqueue(Buff(caster, targetList[i], bh));
+                    }
+                    break;
+                #endregion
+
+                #region 랜덤 타겟을 하나 추출하여 이벤트 실행
+                case Define.buffAutoMode.randomOnEvtArea:
+                    targetList = FindBaseRange(bh.area);
+                    if (targetList.Count == 0) { Debug.Log($"caster[{caster.PunId}] 의 타겟이 없음 "); return; }
+                    ActionQueue.Enqueue(Buff(caster, targetList[UnityEngine.Random.Range(0, targetList.Count)], bh));
+                    break;
+                #endregion
+
+                #region 시전 하수인 양옆에게 실행
+                case Define.buffAutoMode.BothSide:
+                    // 현재 이벤트 실행 하수인의 위치찾기 (단 하수인수가 혼자라면 실행할 필요 X )
+                    List<CardField> minonList = (caster.IsMine) ? GAME.IGM.Spawn.playerMinions : GAME.IGM.Spawn.enemyMinions;
+                    if (minonList.Count < 2) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
+
+                    int idx = minonList.IndexOf(minonList.Find(x => x.PunId == caster.PunId));
+                    List<IBody> targets = new List<IBody>();
+                    // 자신의 왼쪽이 존재 및 시전자 본인이 아니라면 타겟 확정
+                    if (idx - 1 > -1 && minonList[idx - 1].PunId != caster.PunId)
+                    {
+                        ActionQueue.Enqueue(Buff(caster, minonList[idx - 1], bh));
+                    }
+                    // 시전자 하수인의 오른쪽 존재하는지 찾기
+                    if (idx + 1 < minonList.Count && minonList[idx + 1].PunId != caster.PunId)
+                    {
+                        ActionQueue.Enqueue(Buff(caster, minonList[idx + 1], bh));
+                    }
+                    break;
+                #endregion
+
+                #region 특정 카드ID의 하수인 수 만큼, 하수인에게 시전
+                case Define.buffAutoMode.someID:
+                    // 손에 있을떄 실행건이라면, 현재 Caster가 핸드카드라는것을 알수 있다
+                    CardHand ch = caster.TR.GetComponent<CardHand>();
+
+                    // 손에 있을떄 실행건이라면
+                    if (bh.when == Define.evtWhen.onHand)
+                    {
+                        // 손에 있는 핸드카드일떄  특정순간마다 실행할 이벤트 예약 실시
+                        ch.HandCardChanged += BuffHandle(ch, ch.PunId, bh);
+                        // 이벤트 등록시 최초 실행
+                        ch.HandCardChanged.Invoke(ch.data.cardIdNum, true);
+                    }
+                    else
+                    {
+                        GAME.IGM.AddAction(InvokeCo(ch, ch.PunId, bh));
+                        IEnumerator InvokeCo(CardHand target, int ownerPunID, BuffHandler bh)
+                        { BuffHandle(ch, ch.PunId, bh); yield return null; }
+                    }
+                    break;
+                    #endregion
+            }
+        }
+        #endregion
 
         // 이벤트 범위내 해당 하는 타겟들 추적
         List<IBody> FindBaseRange(Define.evtArea area)
@@ -689,6 +684,7 @@ public class BattleManager : MonoBehaviour
                 // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
                 Define.cardType type = GAME.Manager.RM.PathFinder.Dic[uh.relatedCards[i]].type;
                 string jsonFile = GAME.Manager.RM.PathFinder.Dic[uh.relatedCards[i]].GetJson();
+                
                 CardData card = null;  
                 // 확인된 카드타입으로, 실제 카드타입으로 클래스화
                 switch (type)
@@ -718,80 +714,80 @@ public class BattleManager : MonoBehaviour
                 sendArray[i] = uh.relatedCards[i];
                 punArray[i] = ch.PunId;
 
-                ch.transform.localScale = Vector3.one;
+                ch.transform.localScale = Vector3.zero;
                 ch.transform.localPosition = caster.TR.position;
+                
                 GAME.IGM.Hand.PlayerHand.Add(ch);
                 yield return null;
             }
 
             // 상대에게 나의 획득이벤트를 전파하기
-            GAME.IGM.Packet.SendAcquisition(casterPunID,sendArray,punArray);
+            GAME.IGM.Packet.SendAcquisition(caster.objType , casterPunID, sendArray, punArray);
 
-            // 카드 정렬
-            yield return StartCoroutine(GAME.IGM.Hand.CardAllignment(true));
         }
     }
 
-    public void RegisterRestoreHandler(RestoreHandler rh, IBody caster)
+    public void RegisterRestoreHandler(RestoreHandler rh, IBody caster, IBody searchedTarget)
     {
-        // 치료이벤트의 동작 방식에 따라 나누어 처리
-        switch (rh.restoreTargeting)
+
+        #region 유저가 직접 선택하여 치료이벤트 실행
+        if (rh.targeting == Define.evtTargeting.Auto)
         {
-            #region 유저가 직접 선택하여 치료이벤트 실행
-            case Define.restoreTargeting.userSelect:
-                StartCoroutine(GAME.IGM.TC.TargettingCo
-                    (caster,
-                     // 이벤트 전달
-                     (IBody a, IBody t) => { return Restore(a, t, rh.restoreAmount); },
-                    // 타겟범위 레이어 찾기
-                    FindLayer(rh)
-                    ));
-                break;
-            #endregion
-
-            #region 이벤트범위내 타겟들을 모두 찾아 실행
-            case Define.restoreTargeting.AutoOnEvtArea:
-                List<IBody> list = FindBaseTarget();
-                if (list.Count == 0) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
-                for (int i = 0; i < list.Count; i++)
-                {
-                    ActionQueue.Enqueue(Restore(caster, list[i], rh.restoreAmount));
-                }
-                break;
-            #endregion
-
-            #region 이벤트 범위의 타겟팅중 랜덤타겟 하나를 찾아 실행
-            case Define.restoreTargeting.RandomOnEvtArea:
-                list = FindBaseTarget();
-                if (list.Count == 0) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
-                for (int i = 0; i < list.Count ; i++)
-                {
-                    ActionQueue.Enqueue(Restore(caster, list[UnityEngine.Random.Range(0, list.Count)] , rh.restoreAmount));
-                }
-                break;
-            #endregion
-
-            #region 소환된 시전 미니언의 양옆을 타겟지정
-            case Define.restoreTargeting.BothSide:
-                // 현재 이벤트 실행 하수인의 위치찾기 (단 하수인수가 혼자라면 실행할 필요 X )
-                List<CardField> minonList = (caster.IsMine) ? GAME.IGM.Spawn.playerMinions : GAME.IGM.Spawn.enemyMinions;
-                if (minonList.Count < 2) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
-
-                int idx = minonList.IndexOf(minonList.Find(x => x.PunId == caster.PunId));
-                List<IBody> targets = new List<IBody>();
-                // 자신의 왼쪽이 존재 및 시전자 본인이 아니라면 타겟 확정
-                if (idx - 1 > -1 && minonList[idx - 1].PunId != caster.PunId) 
-                {
-                    ActionQueue.Enqueue(Restore(caster, minonList[idx - 1], rh.restoreAmount)); 
-                }
-                // 시전자 하수인의 오른쪽 존재하는지 찾기
-                if (idx + 1 < minonList.Count && minonList[idx + 1].PunId != caster.PunId) 
-                {
-                    ActionQueue.Enqueue(Restore(caster, minonList[idx + 1], rh.restoreAmount));
-                }
-                break;
-            #endregion
+            ActionQueue.Enqueue( Restore(caster , searchedTarget, rh.restoreAmount));
         }
+        #endregion
+
+        #region 자동실행건이면, 분류에 맞게 실행
+        else
+        {
+            // 치료이벤트의 동작 방식에 따라 나누어 처리
+            switch (rh.restoreAutoMode)
+            {
+                #region 이벤트범위내 타겟들을 모두 찾아 실행
+                case Define.restoreAutoMode.AutoOnEvtArea:
+                    List<IBody> list = FindBaseTarget();
+                    if (list.Count == 0) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        ActionQueue.Enqueue(Restore(caster, list[i], rh.restoreAmount));
+                    }
+                    break;
+                #endregion
+
+                #region 이벤트 범위의 타겟팅중 랜덤타겟 하나를 찾아 실행
+                case Define.restoreAutoMode.RandomOnEvtArea:
+                    list = FindBaseTarget();
+                    if (list.Count == 0) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        ActionQueue.Enqueue(Restore(caster, list[UnityEngine.Random.Range(0, list.Count)], rh.restoreAmount));
+                    }
+                    break;
+                #endregion
+
+                #region 소환된 시전 미니언의 양옆을 타겟지정
+                case Define.restoreAutoMode.BothSide:
+                    // 현재 이벤트 실행 하수인의 위치찾기 (단 하수인수가 혼자라면 실행할 필요 X )
+                    List<CardField> minonList = (caster.IsMine) ? GAME.IGM.Spawn.playerMinions : GAME.IGM.Spawn.enemyMinions;
+                    if (minonList.Count < 2) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
+
+                    int idx = minonList.IndexOf(minonList.Find(x => x.PunId == caster.PunId));
+                    List<IBody> targets = new List<IBody>();
+                    // 자신의 왼쪽이 존재 및 시전자 본인이 아니라면 타겟 확정
+                    if (idx - 1 > -1 && minonList[idx - 1].PunId != caster.PunId)
+                    {
+                        ActionQueue.Enqueue(Restore(caster, minonList[idx - 1], rh.restoreAmount));
+                    }
+                    // 시전자 하수인의 오른쪽 존재하는지 찾기
+                    if (idx + 1 < minonList.Count && minonList[idx + 1].PunId != caster.PunId)
+                    {
+                        ActionQueue.Enqueue(Restore(caster, minonList[idx + 1], rh.restoreAmount));
+                    }
+                    break;
+                    #endregion
+            }
+        }
+        #endregion
 
         // 설정한 이벤트의 범위에서 기본범위 찾기
         List<IBody> FindBaseTarget()
@@ -830,12 +826,12 @@ public class BattleManager : MonoBehaviour
 
                     else if (rh.area == Define.evtArea.Player)
                     {
-                        targets.AddRange(GAME.IGM.Spawn.playerMinions);
+                        targets.AddRange((caster.IsMine) ? GAME.IGM.Spawn.playerMinions : GAME.IGM.Spawn.enemyMinions);
                     }
 
                     else
                     {
-                        targets.AddRange(GAME.IGM.Spawn.enemyMinions);
+                        targets.AddRange((caster.IsMine) ? GAME.IGM.Spawn.enemyMinions : GAME.IGM.Spawn.playerMinions);
                     }
                     break;
 
@@ -848,12 +844,12 @@ public class BattleManager : MonoBehaviour
 
                     else if (rh.area == Define.evtArea.Player)
                     {
-                        targets.Add(GAME.IGM.Hero.Player);
+                        targets.Add((caster.IsMine)? GAME.IGM.Hero.Player : GAME.IGM.Hero.Enemy);
                     }
 
                     else
                     {
-                        targets.Add(GAME.IGM.Hero.Enemy);
+                        targets.Add((caster.IsMine) ? GAME.IGM.Hero.Enemy : GAME.IGM.Hero.Player);
                     }
                     break;
             }
@@ -868,7 +864,7 @@ public class BattleManager : MonoBehaviour
         // 치료실행 이벤트 코루틴
         IEnumerator Restore(IBody caster , IBody target , int amount)
         {
-            target.HP = Mathf.Clamp(target.HP + amount, 0, target.OriginHp);
+            target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
             yield break;
         }
     }
