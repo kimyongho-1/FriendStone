@@ -14,7 +14,7 @@
   "evtDatas": [
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffAutoMode": 0,
+      "buffAutoMode": 1,
       "buffType": 2,
       "buffFX": 0,
       "relatedIds": [],

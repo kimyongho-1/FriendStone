@@ -27,6 +27,7 @@ public class BattleManager : MonoBehaviour
             // 현재 타겟팅 중이면 , 타겟팅이 끝날떄까지 대기
             yield return new WaitUntil(() => (GAME.IGM.TC.LR.gameObject.activeSelf == false));
             currCo = null;
+
         }
     }
     private void Awake()
@@ -107,6 +108,7 @@ public class BattleManager : MonoBehaviour
             if (ah.attType == Define.attType.Damage) { ActionQueue.Enqueue(AttackEvt(attacker, target)); }
             else { ActionQueue.Enqueue(KillEvt(attacker, target)); }
         }
+
         #region 자동 실행건
         IBody AutoExecute()
         {
@@ -183,65 +185,6 @@ public class BattleManager : MonoBehaviour
         }
         #endregion
 
-        #region 이벤트 코루틴
-        IEnumerator AttackEvt(IBody attacker, IBody target)
-        {
-            // 투사체 호출
-            ParticleSystem pj = FX.GetPJ;
-
-            // 공격자의 위치에서 시작하도록 위치 초기화
-            pj.transform.position = attacker.Pos;
-            pj.gameObject.SetActive(true);
-            Vector3 start = attacker.Pos;
-            Vector3 dest = target.Pos;
-            Vector3 dir = (dest - start).normalized; // 방향벡터
-            float angle = Vector3.Angle(attacker.TR.up, dir);
-            Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
-            if (cross.y < 0) { angle *= -1; }
-
-
-            float t = 0;
-            while (t < 1f)
-            {
-                t += Time.deltaTime;
-                pj.transform.rotation =
-                    Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
-                pj.transform.position =
-                    Vector3.Lerp(start, dest, t);
-
-                yield return null;
-            }
-            pj.gameObject.SetActive(false);
-        }
-        IEnumerator KillEvt(IBody attacker, IBody target)
-        { // 투사체 호출
-            ParticleSystem pj = FX.GetPJ;
-
-            // 공격자의 위치에서 시작하도록 위치 초기화
-            pj.transform.position = attacker.Pos;
-            pj.gameObject.SetActive(true);
-            Vector3 start = attacker.Pos;
-            Vector3 dest = target.Pos;
-            Vector3 dir = (dest - start).normalized; // 방향벡터
-            float angle = Vector3.Angle(attacker.TR.up, dir);
-            Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
-            if (cross.y < 0) { angle *= -1; }
-
-
-            float t = 0;
-            while (t < 1f)
-            {
-                t += Time.deltaTime;
-                pj.transform.rotation =
-                    Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
-                pj.transform.position =
-                    Vector3.Lerp(start, dest, t);
-
-                yield return null;
-            }
-            pj.gameObject.SetActive(false);
-        }
-        #endregion
     }
 
     public void RegisterBuffHandler(BuffHandler bh, IBody caster, IBody searchedTarget)
@@ -285,15 +228,16 @@ public class BattleManager : MonoBehaviour
                     if (minonList.Count < 2) { Debug.Log($"시전자[{caster.PunId}]의 타겟이 존재하지 않음"); return; }
 
                     int idx = minonList.IndexOf(minonList.Find(x => x.PunId == caster.PunId));
-                    List<IBody> targets = new List<IBody>();
                     // 자신의 왼쪽이 존재 및 시전자 본인이 아니라면 타겟 확정
                     if (idx - 1 > -1 && minonList[idx - 1].PunId != caster.PunId)
                     {
+                        Debug.Log($"양옆 하수인, 왼쪽에게 실행 타겟 {minonList[idx - 1]}[{minonList[idx - 1].PunId}]");
                         ActionQueue.Enqueue(Buff(caster, minonList[idx - 1], bh));
                     }
                     // 시전자 하수인의 오른쪽 존재하는지 찾기
                     if (idx + 1 < minonList.Count && minonList[idx + 1].PunId != caster.PunId)
                     {
+                        Debug.Log($"양옆 하수인, 오른쪽에게 실행 타겟 {minonList[idx + 1]}[{minonList[idx+1].PunId}]");
                         ActionQueue.Enqueue(Buff(caster, minonList[idx + 1], bh));
                     }
                     break;
@@ -301,22 +245,52 @@ public class BattleManager : MonoBehaviour
 
                 #region 특정 카드ID의 하수인 수 만큼, 하수인에게 시전
                 case Define.buffAutoMode.someID:
-                    // 손에 있을떄 실행건이라면, 현재 Caster가 핸드카드라는것을 알수 있다
-                    CardHand ch = caster.TR.GetComponent<CardHand>();
-
+                    
                     // 손에 있을떄 실행건이라면
                     if (bh.when == Define.evtWhen.onHand)
                     {
+                        // 손에 있을떄 실행건이라면, 현재 Caster가 핸드카드라는것을 알수 있다
+                        CardHand ch = caster.TR.GetComponent<CardHand>();
+
                         // 손에 있는 핸드카드일떄  특정순간마다 실행할 이벤트 예약 실시
                         ch.HandCardChanged += BuffHandle(ch, ch.PunId, bh);
                         // 이벤트 등록시 최초 실행
                         ch.HandCardChanged.Invoke(ch.data.cardIdNum, true);
                     }
+
+                    // 손에서 낼떄, 즉 필드 미니언이 객체
                     else
                     {
-                        GAME.IGM.AddAction(InvokeCo(ch, ch.PunId, bh));
-                        IEnumerator InvokeCo(CardHand target, int ownerPunID, BuffHandler bh)
-                        { BuffHandle(ch, ch.PunId, bh); yield return null; }
+                        CardField cf = caster.TR.GetComponent<CardField>();
+                        int count = 0;
+                        // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
+                        if (bh.relatedIds.Length > 0)
+                        {
+                            for (int i = 0; i < bh.relatedIds.Length; i++)
+                            {
+                                count += GAME.IGM.allIBody.FindAll(x => x.PunId == bh.relatedIds[i]).Count();
+                            }
+                        }
+
+                        // count 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
+                        else
+                        {
+                            switch (bh.area)
+                            {
+                                case Define.evtArea.Enemy:
+                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
+                                case Define.evtArea.Player:
+                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true && x.PunId != caster.PunId).Count() - 1; break;
+                                case Define.evtArea.All:
+                                    count = GAME.IGM.allIBody.Count() - 2; break;
+                            }
+                        }
+
+                        // 구해진 count수만큼 배수로 진행
+                        bh.buffAtt *= count;
+                        bh.buffHp *= count;
+                        // 이벤트 예약
+                        GAME.IGM.AddAction(Buff(caster, caster, bh));
                     }
                     break;
                     #endregion
@@ -587,27 +561,6 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        // 실행할 버프 코루틴
-        IEnumerator Buff(IBody caster, IBody target, BuffHandler bh )
-        {
-            // 어떠한 부여 효과인지
-            switch (bh.buffType)
-            {
-                case Define.buffType.att:
-                    target.Att += bh.buffAtt;
-                    yield break;
-                case Define.buffType.hp:
-                    target.HP += bh.buffHp;
-                    yield break;
-                case Define.buffType.atthp:
-                    target.Att += bh.buffAtt;
-                    target.HP += bh.buffHp;
-                    yield break;
-                case Define.buffType.cost:
-                    
-                    yield break;
-            }
-        }
     }
 
     public void RegisterUtillHandler(UtillHandler uh, IBody caster)
@@ -731,7 +684,7 @@ public class BattleManager : MonoBehaviour
     {
 
         #region 유저가 직접 선택하여 치료이벤트 실행
-        if (rh.targeting == Define.evtTargeting.Auto)
+        if (rh.targeting == Define.evtTargeting.Select)
         {
             ActionQueue.Enqueue( Restore(caster , searchedTarget, rh.restoreAmount));
         }
@@ -861,11 +814,131 @@ public class BattleManager : MonoBehaviour
             return targets;
         }
 
-        // 치료실행 이벤트 코루틴
-        IEnumerator Restore(IBody caster , IBody target , int amount)
+        
+    }
+
+
+    // 실행할 버프 코루틴
+    public IEnumerator Buff(IBody caster, IBody target, BuffHandler bh)
+    {
+        // 어떠한 부여 효과인지
+        switch (bh.buffType)
         {
-            target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
-            yield break;
+            case Define.buffType.att:
+                target.Att += bh.buffAtt;
+                break;
+            case Define.buffType.hp:
+                target.HP += bh.buffHp;
+                break;
+            case Define.buffType.atthp:
+                target.Att += bh.buffAtt;
+                target.HP += bh.buffHp;
+                break;
+            case Define.buffType.cost:
+                break;
         }
+
+        if (bh.when == Define.evtWhen.onHand)
+        {
+            Debug.Log(bh);
+            Debug.Log("OnHand 이벤트네..");
+        }
+
+        // 버프 이벤트 동기화를 위해 전달 
+        GAME.IGM.Packet.SendBuffEvt(target.PunId, bh.buffType, bh.buffAtt, bh.buffHp);
+        yield break;
+    }
+    public IEnumerator ReceivedBuff(Define.buffType type, IBody target,int att, int hp)
+    {
+        // 어떠한 부여 효과인지
+        switch (type)
+        {
+            case Define.buffType.att:
+                target.Att += att;
+                break;
+            case Define.buffType.hp:
+                target.HP += hp;
+                break;
+            case Define.buffType.atthp:
+                target.Att += att;
+                target.HP += hp;
+                break;
+            case Define.buffType.cost:
+                break;
+        }
+        yield break;
+    }
+
+    // 치료 코루틴
+    public IEnumerator Restore(IBody caster, IBody target, int amount)
+    {
+        if (caster == null || target == null)
+        {
+            Debug.Log($"caster[{caster.PunId}],  target{target}[{target.PunId}]");
+        }
+
+        target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
+        yield break;
+    }
+   
+    // 공격 코루틴
+    public IEnumerator AttackEvt(IBody attacker, IBody target)
+    {
+        // 투사체 호출
+        ParticleSystem pj = FX.GetPJ;
+
+        // 공격자의 위치에서 시작하도록 위치 초기화
+        pj.transform.position = attacker.Pos;
+        pj.gameObject.SetActive(true);
+        Vector3 start = attacker.Pos;
+        Vector3 dest = target.Pos;
+        Vector3 dir = (dest - start).normalized; // 방향벡터
+        float angle = Vector3.Angle(attacker.TR.up, dir);
+        Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
+        if (cross.y < 0) { angle *= -1; }
+
+
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            pj.transform.rotation =
+                Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
+            pj.transform.position =
+                Vector3.Lerp(start, dest, t);
+
+            yield return null;
+        }
+        pj.gameObject.SetActive(false);
+    }
+
+    // 강제 확정 킬 코루틴
+    public IEnumerator KillEvt(IBody attacker, IBody target)
+    { // 투사체 호출
+        ParticleSystem pj = FX.GetPJ;
+
+        // 공격자의 위치에서 시작하도록 위치 초기화
+        pj.transform.position = attacker.Pos;
+        pj.gameObject.SetActive(true);
+        Vector3 start = attacker.Pos;
+        Vector3 dest = target.Pos;
+        Vector3 dir = (dest - start).normalized; // 방향벡터
+        float angle = Vector3.Angle(attacker.TR.up, dir);
+        Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
+        if (cross.y < 0) { angle *= -1; }
+
+
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            pj.transform.rotation =
+                Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
+            pj.transform.position =
+                Vector3.Lerp(start, dest, t);
+
+            yield return null;
+        }
+        pj.gameObject.SetActive(false);
     }
 }

@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using System.ComponentModel;
-using System;
 
+using System;
+using System.Linq;
 public class CardHand : CardEle
 {
     public Vector3  originRot, originScale;
@@ -78,6 +78,7 @@ public class CardHand : CardEle
             if (dataParam is SpellCardData)
             {
                 spellCardData = (SpellCardData)dataParam;
+                objType = Define.ObjType.HandCard;
             }
         }
 
@@ -127,57 +128,114 @@ public class CardHand : CardEle
     IEnumerator DragCo = null;
     public void StartDrag(Vector3 v)
     {
-        // 드래그 시작 : 현재 드래깅 객체 크기,회전등 초기화
-        DragCo = BackToOrigin();
-        StartCoroutine(DragCo);
-
-        // 드래그 시작시, 확대와 회전등 초기화
-        IEnumerator BackToOrigin()
+        // 주문카드이며 직접 타겟팅하는 경우, 카드를 움직이지않고 현재 핸드카드에서 타겟팅 화살표 실행
+        if (spellCardData != null &&
+            spellCardData.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select) != null)
         {
-            // SR의 오더 강조시키기 (제일 앞에 그려지도록)
-            SetOrder(1000);
-            // 현재 드래그중인 카드 제외, 모든 카드 레이끄기 (타 핸드카드의 엔터 엑시트 같은 이벤트 중복 방지)
-            GAME.IGM.Hand.PlayerHand.FindAll(x => x.PunId != this.PunId).ForEach(x => x.Ray = false);
-            // 크기등 모두 초기화
-            float t = 0;
-            Vector3 currScale = transform.localScale;
-            Vector3 currRot = transform.localRotation.eulerAngles;
-            while (t < 1f)
+            // 이벤트중에 선택 이벤트 찾기
+            CardBaseEvtData selectEvt = spellCardData.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select);
+
+            // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 실행함수 예약 실행
+            GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
+                (this,
+
+                (IBody a, IBody t) =>
+                {
+                    return evt(a, t);
+                },
+
+                GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+                ));
+
+            // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
+            IEnumerator evt(IBody a, IBody t)
             {
-                t += Time.deltaTime  *2.5F;    
-                transform.localScale = Vector3.Lerp(currScale , originScale, t);
-                transform.localRotation = Quaternion.Euler(Vector3.Lerp(currRot, Vector3.zero , t));
-                yield return null;
+                //  evt 코루틴이 실행된 의미는 , 유저가 적합한 타겟팅을 선택하였기에 이벤트 실행 및 주문카드 사용으로 간주
+                // 현재 핸드목록에서 사용할 주문 카드 제거
+                GAME.IGM.Hand.PlayerHand.Remove(this);
+
+                // 상대에게 내가 주문 카드를 사용한걸 알리기
+                GAME.IGM.Packet.SendUseSpellCard(this.PunId, spellCardData.cardIdNum);
+
+                // 유저 선택건 , 자동 순서로 변경 [true,true,false,false]
+                data.evtDatas =  data.evtDatas.OrderByDescending(x => x.targeting == Define.evtTargeting.Select).ToList();
+              
+                for (int i = 0; i < data.evtDatas.Count; i++)
+                {
+                    GAME.IGM.Battle.Evt(data.evtDatas[i], this, t);
+                    yield return null;
+                }
+
+                // 나머지 핸드 레이 풀어주기
+                GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+
+                //핸드매니저에서 핸드카드들 재정렬 시작
+                GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
+
+                // 상대에게 내 주문카드 사용 끝을 알리기
+                GAME.IGM.AddAction(EndSpell());
+                IEnumerator EndSpell()
+                {
+                    // 주문카드 사용 완료시, 모든 핸드카드 레이활성 초기화
+                    GAME.IGM.StartCoroutine(FadeOutCo(IsMine));
+                    GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
+                    yield return null;
+
+                }
             }
         }
 
-        // 드래그동안에 상하좌우등의 이동에 맞게 회전 코루틴 실행
-        StartCoroutine(Rotate());
-        IEnumerator Rotate()
+        // 그외 모든 카드들은 필드에 드래그를 하여 놓아야 사용하는것으로 판정
+        else
         {
-            while (true)
+            // 드래그 시작 : 현재 드래깅 객체 크기,회전등 초기화
+            DragCo = BackToOrigin();
+            StartCoroutine(DragCo);
+
+            // 드래그 시작시, 확대와 회전등 초기화
+            IEnumerator BackToOrigin()
             {
-               // Vector3 euler = transform.rotation.eulerAngles;
-               //
-               // if (euler.y > 180)
-               // { euler.y -= 360f; }
-               // if (euler.x > 180)
-               // { euler.x -= 360f; }
-                // 현재 회전값이 0.1 이하일시, 강제로 1로 벨류를 고정
-                float angle = Quaternion.Angle(transform.localRotation, Quaternion.identity);
-                float val = (angle < 0.1f) ? 1f  : 0.05f;
-                transform.localRotation
-                = Quaternion.Lerp(transform.localRotation, Quaternion.identity, val);
-                yield return null;
+                // SR의 오더 강조시키기 (제일 앞에 그려지도록)
+                SetOrder(1000);
+                // 현재 드래그중인 카드 제외, 모든 카드 레이끄기 (타 핸드카드의 엔터 엑시트 같은 이벤트 중복 방지)
+                GAME.IGM.Hand.PlayerHand.FindAll(x => x.PunId != this.PunId).ForEach(x => x.Ray = false);
+                // 크기등 모두 초기화
+                float t = 0;
+                Vector3 currScale = transform.localScale;
+                Vector3 currRot = transform.localRotation.eulerAngles;
+                while (t < 1f)
+                {
+                    t += Time.deltaTime * 2.5F;
+                    transform.localScale = Vector3.Lerp(currScale, originScale, t);
+                    transform.localRotation = Quaternion.Euler(Vector3.Lerp(currRot, Vector3.zero, t));
+                    yield return null;
+                }
+            }
+
+            // 드래그동안에 상하좌우등의 이동에 맞게 회전 코루틴 실행
+            StartCoroutine(Rotate());
+            IEnumerator Rotate()
+            {
+                while (true)
+                {
+                    // 현재 회전값이 0.1 이하일시, 강제로 1로 벨류를 고정
+                    float angle = Quaternion.Angle(transform.localRotation, Quaternion.identity);
+                    float val = (angle < 0.1f) ? 1f : 0.05f;
+                    transform.localRotation
+                    = Quaternion.Lerp(transform.localRotation, Quaternion.identity, val);
+                    yield return null;
+                }
             }
         }
+
     }
     public void Dragging(Vector3 worldPos)
     {
-        GAME.IGM.Spawn.MinionAlignment(this, worldPos);
+        if (spellCardData != null && spellCardData.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select) != null) { return; }
+        // 미니언 카드들만 정렬 실행
         if (data.cardType == Define.cardType.minion)
         {
-           // GAME.IGM.Spawn.MinionAlignment(this, worldPos);
+            GAME.IGM.Spawn.MinionAlignment(this, worldPos);
         }
 
         Vector3 euler = transform.rotation.eulerAngles;
@@ -263,101 +321,38 @@ public class CardHand : CardEle
                 break;
             case Define.cardType.spell:
                 if (GAME.IGM.Spawn.CheckInBox(
-                 new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
+                 new Vector2(this.transform.localPosition.x, this.transform.localPosition.y))
+                    && spellCardData.evtDatas.Find(x=>x.targeting == Define.evtTargeting.Select) == null)
                 {
-                    // 현재 핸드목록에서 소환할 이 미니언카드 제거
                     GAME.IGM.Hand.PlayerHand.Remove(this);
 
-                    // 실행 이벤트 데이터 확인
-                    List<CardBaseEvtData> list = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onPlayed);
-
-                    // 이벤트 없으면 자동 취소
-                    if (list == null) { return; }
-
-                    // 이벤트중에 선택 이벤트 있는지 확인
-                    CardBaseEvtData selectEvt = data.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select);
-
-                    // 직접 타겟팅해야하는 이벤트가 있다면
-                    if (selectEvt != null)
+                    // 상대에게 내가 주문 카드를 사용한걸 알리기
+                    GAME.IGM.Packet.SendUseSpellCard(this.PunId, spellCardData.cardIdNum);
+                    // 이벤트 실행
+                    for (int i = 0; i < data.evtDatas.Count; i++)
                     {
-                        // 전체 이벤트에서 직접 수동으로 타겟팅하는 이벤트만 제거
-                        list.Remove(selectEvt);
-
-                        // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 실행함수 예약 실행
-                        GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
-                            (this,
-
-                            (IBody a, IBody t) =>
-                            {
-                                return evt(a, t);
-                            },
-
-                            GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
-                            ));
-
-                        // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
-                        IEnumerator evt(IBody a, IBody t)
-                        {
-                            // 상대에게 내가 주문 카드를 사용한걸 알리기
-                            GAME.IGM.Packet.SendUseSpellCard(this.PunId, spellCardData.cardIdNum);
-
-                            // 먼저 유저가 직접 선택하는 타겟이벤트 부터 예약
-                            GAME.IGM.Battle.Evt(selectEvt, a, t);
-
-                            yield return null;
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                GAME.IGM.Battle.Evt(list[i], this);
-                                yield return null;
-                            }
-                            GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);  
-                            
-
-                            // 상대에게 내 주문카드 사용 끝을 알리기
-                            GAME.IGM.AddAction(EndSpell());
-                            //핸드매니저에서 핸드카드들 재정렬 시작
-                            GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
-                            IEnumerator EndSpell()
-                            {
-                                // 주문카드 사용 완료시, 모든 핸드카드 레이활성 초기화
-                                GAME.IGM.StartCoroutine(FadeOutCo(IsMine));
-                                GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
-                                yield return null;
-
-                            }
-                        }
+                        GAME.IGM.Battle.Evt(data.evtDatas[i], this);
                     }
 
-                    // 전부 자동실행 이벤트만 존재하면, 순서대로 재생
-                    else
+                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+
+                    // 상대에게 내 주문카드 사용 끝을 알리기
+                    GAME.IGM.AddAction(EndSpell());
+                    IEnumerator EndSpell()
                     {
-                        // 상대에게 내가 주문 카드를 사용한걸 알리기
-                        GAME.IGM.Packet.SendUseSpellCard(this.PunId, spellCardData.cardIdNum);
-                        // 이벤트 실행
-                        for (int i = 0; i < list.Count; i++)
-                        {
-                            GAME.IGM.Battle.Evt(list[i], this);
-                        }
-
-                        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-
+                        yield return null;
+                        GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
+                        //핸드매니저에서 핸드카드들 재정렬 시작
+                        GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
                         // 주문카드 사용 완료시, 모든 핸드카드 레이활성 초기화
-                        GAME.IGM.StartCoroutine(FadeOutCo(IsMine));
-
-                        // 상대에게 내 주문카드 사용 끝을 알리기
-                        GAME.IGM.AddAction(EndSpell());
-                        IEnumerator EndSpell()
-                        {
-                            yield return null;
-                            GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
-                            //핸드매니저에서 핸드카드들 재정렬 시작
-                            GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
-                        }
+                        GAME.IGM.AddAction(FadeOutCo(IsMine));
                     }
-                    
+
+
                     return;
                 }
-                else { break; }
+                else
+                { GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true); break; }
             case Define.cardType.weapon:
                 if (GAME.IGM.Spawn.CheckInBox(
                  new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))

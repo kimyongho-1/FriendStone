@@ -22,6 +22,8 @@ public partial class PacketManager
     const byte FindEvt = 10;
     const byte FindEvtResult = 11;
     const byte AcqusitionEvt = 12;
+
+    const byte BuffEvt = 14;
     public void InitStateDictionary()
     {
         dic.Add(UserInfo, ReceivedUserInfo);
@@ -35,7 +37,7 @@ public partial class PacketManager
         dic.Add(FindEvt, ReceivedFindEvt);
         dic.Add(FindEvtResult, ReceivedResultFindEvt);
         dic.Add(AcqusitionEvt, ReceivedAcquisition );
-        
+        dic.Add(BuffEvt, ReceivedBuffEvt);
     }
 
     // 내턴 시작 전송
@@ -255,6 +257,29 @@ public partial class PacketManager
 
         }
     }
-    
+
+    #endregion
+
+    #region 버프 이벤트 전달 및 받기
+    public void SendBuffEvt(int targetPunID, Define.buffType type,int att, int hp)
+    {
+        object[] data = new object[] {targetPunID, (int)type , att,hp };
+        // 전파 실행
+        PhotonNetwork.RaiseEvent(BuffEvt, data, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedBuffEvt(object[] data)
+    {
+        int targetPunID = (int)data[0];
+        Define.buffType type = (Define.buffType)data[1];
+        int att = (int)data[2];
+        int hp = (int)data[3];
+
+        GAME.IGM.AddAction(DelayedBuff(targetPunID, type, att, hp));
+        IEnumerator DelayedBuff(int targetPunID, Define.buffType type , int att, int hp)
+        {
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.ReceivedBuff(type, GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID)
+            , att, hp));
+        }
+    }
     #endregion
 }

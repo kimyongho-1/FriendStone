@@ -5,7 +5,6 @@ using UnityEngine;
 public class Define 
 {
     public enum ObjType { Hero , Minion, HandCard }
-    public enum AttType { None, Meele, Range }
 
     #region 카드 정보 데이터
     // 카드 종류

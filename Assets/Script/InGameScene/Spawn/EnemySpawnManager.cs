@@ -71,7 +71,7 @@ public partial class SpawnManager
         // 이동 애니메이션 코루틴
         IEnumerator move(Transform tr, int idx)
         {
-            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
+            float t = (tr.transform.localPosition == enemyMinions[idx].OriginPos) ? 1f : 0f;
             Vector3 startPos = tr.transform.localPosition;
             while (t < 1f)
             {

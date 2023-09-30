@@ -7,7 +7,6 @@ public interface IBody // 공격을 받을수 있는 모든 객체에 부착
     
     public bool IsMine { get; set; }
     public int PunId { get; set; }
-    public Define.AttType AttType { get; }
     public Define.ObjType objType { get; set; }
 
     #region 공통 컴포넌트

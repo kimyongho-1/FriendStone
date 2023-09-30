@@ -8,22 +8,7 @@ public class CardEle : MonoBehaviour, IBody
     [field: SerializeField] public int PunId { get; set; }
     [field: SerializeField] public bool IsMine { get; set; }
     public Transform TR { get { return this.transform; } }
-    public Define.AttType AttType
-    { 
-        get 
-        {
-            switch (data.cardType)
-            {
-                case Define.cardType.weapon:
-                case Define.cardType.minion:
-                    return Define.AttType.Meele;
-                case Define.cardType.spell:
-                    return Define.AttType.Range;
-
-                default : return Define.AttType.None;
-            }
-        } 
-    }
+  
     [field: SerializeField] public Collider2D Col { get; set; }
     public bool Ray { set { if (Col == null) { Col = TR.GetComponent<Collider2D>(); } Col.enabled = value; } }
 

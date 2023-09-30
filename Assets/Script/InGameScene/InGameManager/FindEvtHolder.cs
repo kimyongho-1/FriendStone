@@ -159,7 +159,7 @@ public class FindEvtHolder : MonoBehaviour
         ch.transform.SetParent(GAME.IGM.Hand.EnemyHandGO.transform);
 
         // 해당 카드 적 핸드로 들어가는 연출 해주기 
-        GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment());
+        GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(false));
         yield return null;
 
         // 발견 이벤트 창 끄기

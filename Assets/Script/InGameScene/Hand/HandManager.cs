@@ -105,11 +105,11 @@ public class HandManager : MonoBehaviour
 
             // OnHand 이벤트 존재 확인 및 실행
             List<CardBaseEvtData> evtList = cd.evtDatas.FindAll(x => x.when == Define.evtWhen.onHand);
-            if (evtList != null || evtList.Count > 0)
+            if (evtList != null)
             {
                 for (int j = 0; j < evtList.Count; j++)
                 {
-                    GAME.IGM.Battle.OnHandEvt(evtList[j],ch);
+                    GAME.IGM.Battle.Evt(evtList[j],ch);
                 }
                 
             }
@@ -182,65 +182,7 @@ public class HandManager : MonoBehaviour
         // 손패의 카드들 정렬 실행후, 나머지 드로우
         yield return StartCoroutine(CardAllignment(false));
     }
-    public IEnumerator CardDrawing(int[] puns)
-    {
-        // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
-        IEnumerator DrawingCo;
-        IEnumerator DeckAnimCo()
-        {
-            // 유저의 카드 드로우시마다 덱 모형도 스케일 감소시키기
-            EnemyDeck.transform.localScale = new Vector3(EnemyDeck.transform.localScale.x - (0.015f), 1.4f, 0.4f);
-
-            float t = 0;
-            Vector3 startPos = EnemyDrawingCard.transform.position;
-            Vector3 destPos = new Vector3(startPos.x, startPos.y, -1f);
-
-            while (t < 1f)
-            {
-                t += Time.deltaTime *2f;
-                EnemyDrawingCard.transform.position =
-                    Vector3.Lerp(startPos, destPos, t);
-                yield return null;
-            }
-
-
-            // 만약 카드가 이제 없다면, 덱모형과 드로잉카드 꺼버리기
-            if (EnemyDeck.transform.localScale.x <= 0)
-            {
-                 EnemyDeck.gameObject.SetActive(false);
-                 EnemyDrawingCard.gameObject.SetActive(false);
-            }
-            EnemyDrawingCard.transform.position = new Vector3(startPos.x, startPos.y, -0.03f);
-            DrawingCo = null;
-            yield break;
-        }
-      
-
-        // 덱에 카드수 남는지 확인
-        for (int i = 0; i < puns.Length; i++)
-        {    
-            // 덱에서 뽑히는 연출 코루틴 먼저 실행
-            DrawingCo = DeckAnimCo();
-            StartCoroutine(DrawingCo);
-
-            // 덱에서 실질적으로 뽑힌 카드의 데이터
-            CardData cd = deckCards.Dequeue();
-            // 인게임 카드 프리팹 생성
-            CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
-            ch.transform.position = new Vector3(9.45f,3.26f,0);
-            // 인게임 카드 초기화
-            ch.Init(cd , false);
-            
-            // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
-            ch.PunId = puns[i];
-
-            // 적의 핸드카드에 포함시키기
-            EnemyHand.Add(ch);
-            yield return new WaitUntil(() => (DrawingCo == null));
-            // 손패의 카드들 정렬 실행후, 나머지 드로우
-            yield return StartCoroutine(CardAllignment(false));
-        }
-    }
+  
     // 핸드 카드 정렬
     public IEnumerator CardAllignment(bool isMine = true)
     {

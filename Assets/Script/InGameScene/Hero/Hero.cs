@@ -31,7 +31,6 @@ public class Hero : MonoBehaviour, IBody
     public bool Ray { set { Col.enabled = value; } }
     public bool IsMine { get; set; }
     public int PunId { get; set; }
-    public Define.AttType AttType { get { return Define.AttType.Meele; } }
     public Define.ObjType objType { get; set; }
     public Transform TR { get { return playerMask.transform; } }
 

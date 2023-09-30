@@ -84,7 +84,7 @@ public partial class PacketManager
 
         // 공격자와 타겟 찾기
         // 공격자가 영웅인것을 알고 있는 상태
-        Hero enemyHero = GAME.IGM.allIBody.Find(x => x.PunId == attackerID).TR.GetComponent<Hero>();
+        Hero enemyHero = GAME.IGM.allIBody.Find(x => x.PunId == attackerID).TR.GetComponentInParent<Hero>();
         IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetID);
 
         // 적 영웅 공격 예약

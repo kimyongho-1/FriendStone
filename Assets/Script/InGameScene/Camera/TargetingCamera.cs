@@ -87,15 +87,27 @@ public class TargetingCamera : MonoBehaviour
     public IEnumerator TargettingCo(IBody attacker, Func<IBody, IBody, IEnumerator> RegisterCo, string[] filter)
     {
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
-        yield return new WaitForSeconds(0.35f);
+        yield return new WaitForSeconds(0.15f);
         // 공격궤적을 그리는 라인렌더러 실행
         StartCoroutine(DrawLine(attacker.Pos));
 
-        // 공격자가 미니언이면 공격자세 취하기
-        if (attacker.AttType == AttType.Meele)
+        // 공격자가 미니언이나 영웅이면 공격자세 취하기
+        if (attacker.objType != Define.ObjType.HandCard)
         {
             float t = 0;
             Vector3 dest = attacker.OriginPos + new Vector3(0, -0.25f, -0.5f);
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 2.5f;
+                attacker.TR.position = Vector3.Lerp(attacker.OriginPos, dest, t);
+                yield return null;
+            }
+        }
+        // 타겟팅 실행자가 핸드카드라면 
+        if (attacker.objType == Define.ObjType.HandCard)
+        {
+            float t = 0;
+            Vector3 dest = attacker.OriginPos + new Vector3(0, 0.5f, -0.5f);
             while (t < 1f)
             {
                 t += Time.deltaTime * 2.5f;
@@ -108,6 +120,11 @@ public class TargetingCamera : MonoBehaviour
         if (filter == null) { Debug.Log("Filter is NUll"); }
 
         Vector3 camPos = Camera.main.transform.position;
+        Func<bool> waitInput = (attacker.objType != Define.ObjType.HandCard) ?
+            () => { return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1); }
+        :
+            () => { return Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1); };
+
         while (true)
         {
             // 현재 유저의 커서포인트 월드포지션
@@ -115,7 +132,7 @@ public class TargetingCamera : MonoBehaviour
                (new Vector3(Input.mousePosition.x, Input.mousePosition.y, -camPos.z));
 
             // 마우스 클릭과 충돌체 확인시 성공
-            if (Input.GetMouseButtonDown(0))
+            if (waitInput.Invoke()) //Input.GetMouseButtonDown(0)
             {
                 Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
                 for (int i = 0; i < filter.Length; i++)
@@ -135,7 +152,7 @@ public class TargetingCamera : MonoBehaviour
                 {
                     Debug.Log("충돌체 없으면 끝");
                     // 공격자가 미니언이었으면 공격자세 해제하기
-                    if (attacker.AttType == AttType.Meele)
+                    if (attacker.objType != Define.ObjType.HandCard)
                     {
                         float t = 0;
                         Vector3 start = attacker.Pos;
@@ -146,6 +163,19 @@ public class TargetingCamera : MonoBehaviour
                             attacker.TR.position = Vector3.Lerp(start , dest, t);
                             yield return null;
                         }
+                    }  
+                    // 타겟팅 실행자가 핸드카드라면 
+                    if (attacker.objType == Define.ObjType.HandCard)
+                    {
+                        float t = 0;
+                        Vector3 start = attacker.Pos;
+                        Vector3 dest = attacker.OriginPos;
+                        while (t < 1f)
+                        {
+                            t += Time.deltaTime * 2.5f;
+                            attacker.TR.position = Vector3.Lerp(start, dest, t);
+                            yield return null;
+                        }
                     }
                 }
                 
@@ -154,6 +184,8 @@ public class TargetingCamera : MonoBehaviour
 
             yield return null;
         }
+        // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+        LR.positionCount = 0;
         // 레이 모두 다시 활성화
         GAME.IGM.Spawn.SpawnRay = attacker.Ray = true;
         yield break;
