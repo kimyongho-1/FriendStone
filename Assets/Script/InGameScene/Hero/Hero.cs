@@ -35,21 +35,21 @@ public class Hero : MonoBehaviour, IBody
     public Transform TR { get { return playerMask.transform; } }
 
     public Vector3 OriginPos { get; set; }
-    [field: SerializeField] public int OriginHp { get; set; }
-    [field: SerializeField] public int OriginAtt { get; set; }
-    #endregion
 
-    public int Att
+    public int OriginHp { get { return hp; } set { hp = value; } } // 원본 체력
+    public int OriginAtt { get { return att; } set { att = value; } } // 원본 공격력
+    public int Att // 현재 공격력 [무기+원본 공격력]
     {
-        get { return (weaponData != null) ? OriginAtt + weaponData.att : OriginAtt; }
-        set { OriginAtt = value; attTmp.text = ((weaponData != null) ? OriginAtt + weaponData.att : OriginAtt).ToString(); }
+        get {  return att; }
+        set { att = value ; attTmp.text = (att).ToString(); }
     }
 
     public int HP
     {
-        get { return OriginHp; }
-        set { OriginHp = value; hpTmp.text = OriginHp.ToString(); }
+        get { return hp; }
+        set { hp = value; hpTmp.text = hp.ToString(); }
     }
+    #endregion
 
     // 카메라의 피직스레이캐스터 필요, 객체에 Collider필요
     public void Awake()
@@ -59,8 +59,7 @@ public class Hero : MonoBehaviour, IBody
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
         attackable = true;
-        Att = 0;
-        OriginHp = 30;
+        att = 0; hp = 30;
         GAME.IGM.allIBody.Add(this);
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)
@@ -93,7 +92,7 @@ public class Hero : MonoBehaviour, IBody
         GAME.Manager.UM.BindCardPopupEvent(WpIcon, ShowWeaponIcon, 0.75f);
         GAME.Manager.UM.BindCardPopupEvent(skillIcon, ShowSkillIcon, 0.75f);
         // 무기 아이콘 초기화
-        WpIcon.transform.localScale = Vector3.zero;
+        WpIcon.transform.localScale = Vector3.zero; attTmp.text = (att).ToString();
     }
     public void ChangeSortingLayer(bool isOn)
     {
@@ -110,7 +109,7 @@ public class Hero : MonoBehaviour, IBody
     public void ShowWeaponIcon() // 무기아이콘에 커서를 일정시간 가져다 댈시
     {
         // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.IGM.ShowCardPopup(ref weaponData, new Vector3(-3f, -1.3f, 0));
+        GAME.IGM.ShowCardPopup(ref weaponData, new Vector3(-3f, -1.1f, 0));
     }
     public void ShowSkillIcon() // 영웅능력 아이콘에 커서를 일정시간 가져다 댈시
     {
@@ -179,12 +178,18 @@ public class Hero : MonoBehaviour, IBody
         ChangeSortingLayer(false); // 소팅레이어 초기화
         #endregion
 
+        // 데미지 교환
+        attacker.HP -= target.Att;
+        target.HP -= attacker.Att;
         // 나의 턴이고, 내 영웅이 공격했다면
         // 현재 내가 조종한 행동으로 확인 및 공격 이벤트 상대에게 전파
         if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
         {
             GAME.IGM.Packet.SendHeroAttack(attacker.PunId, target.PunId);
         }
+
+        if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
+        if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
     }
 
     // 영웅 우클릭시 대화 이벤트
@@ -245,9 +250,8 @@ public class Hero : MonoBehaviour, IBody
         weaponData = (WeaponCardData)card.data;
         wpImg.sprite = card.cardImage.sprite;
         Att += weaponData.att;
-        attTmp.text = weaponData.att.ToString();
         durTmp.text = weaponData.durability.ToString();
-
+        weaponAttTmp.text  = weaponData.att.ToString();
         // 무기 착용 애니메이션 시작
         yield return StartCoroutine(WearingCo(card));
     }
@@ -257,8 +261,8 @@ public class Hero : MonoBehaviour, IBody
         weaponData = (WeaponCardData)data;
         wpImg.sprite = GAME.Manager.RM.GetImage(data.cardClass,data.cardIdNum);
         Att += weaponData.att;
-        attTmp.text = weaponData.att.ToString();
         durTmp.text = weaponData.durability.ToString();
+        weaponAttTmp.text = weaponData.att.ToString();
 
         // 무기 착용 애니메이션 시작
         yield return StartCoroutine(WearingCo(card));

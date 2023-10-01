@@ -73,7 +73,7 @@ public class InGameManager : MonoBehaviour
         // 만약 글자가 25글자 이상이면 폰트크기를 약간 줄이기
         Debug.Log("글자 길이 : "+data.cardDescription.Length);
         Description.fontSize = (data.cardDescription.Length > 39) ? 15f : 18f;
-        Stat.text = $"<color=yellow>ATT {data.att} <color=red>HP {data.hp} <color=black>몬스터";
+        Stat.text = $"<color=green>ATT {data.att} <color=red>HP {data.hp} <color=black>몬스터";
         Type.text = data.cardType.ToString();
         Cost.text = data.cost.ToString();
         cardImage.sprite = sprite;
@@ -115,7 +115,47 @@ public class InGameManager : MonoBehaviour
             }
         }
     }
+    public void ShowSpawningMinionPopup(MinionCardData data, Vector3 pos)
+    {
+        // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
+        cardPopup.isEnmeySpawning = true;
 
+        cardPopup.transform.position = pos;
+        cardName.text = data.cardName;
+        Description.text = data.cardDescription;
+        Stat.text = $"<color=green>ATT {data.att} <color=red>HP {data.hp} <color=black>몬스터";
+        Type.text = data.cardType.ToString();
+        Cost.text = data.cost.ToString();
+        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
+        StartCoroutine(FadeIn());
+        IEnumerator FadeIn()
+        {
+            float t = 0;
+            // 투명화 위해 모든 TMP와 SR을 묶기
+            List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat, Type };
+            List<SpriteRenderer> imageList = new List<SpriteRenderer>() { cardImage, cardBackground };
+
+            cardPopup.gameObject.SetActive(true);
+
+            tmpList.ForEach(x => x.alpha = 0);
+            imageList.ForEach(x => x.color = new Color(1, 1, 1, 0));
+            Color tempColor = Color.white;
+            while (t < 1f)
+            {
+                // 알파값 점차 1으로 변환
+                t += Time.deltaTime;
+                tempColor.a = t;
+                tmpList.ForEach(x => x.alpha = t);
+                imageList.ForEach(x => x.color = tempColor);
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.5f);
+
+            cardPopup.isEnmeySpawning = false;
+            cardPopup.gameObject.SetActive(false);
+        }
+    }
     public void ShowCardPopup(ref WeaponCardData data, Vector3 pos)
     {
         Stat.gameObject.SetActive(true);

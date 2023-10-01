@@ -2,10 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
 using System;
 using System.Linq;
-public class CardHand : CardEle
+using static Define;
+
+public class CardHand : CardEle, IBody
 {
     public Vector3  originRot, originScale;
     public int originOrder, originCost;
@@ -13,6 +14,86 @@ public class CardHand : CardEle
     public SpriteRenderer cardBackGround, cardImage;
     public GameObject TMPgo;
     public SpellCardData spellCardData { get; set; }
+
+    #region IBODY
+    [field: SerializeField] public int PunId { get; set; }
+    [field: SerializeField] public bool IsMine { get; set; }
+    public Transform TR { get { return this.transform; } }
+    public Define.ObjType objType { get; set; }
+    [field: SerializeField] public Collider2D Col { get; set; }
+    public bool Ray { set { if (Col == null) { Col = TR.GetComponent<Collider2D>(); } Col.enabled = value; } }
+
+    public Vector3 OriginPos { get; set; }
+    public IEnumerator onDead { get; set; }
+
+    [field : SerializeField] public int OriginAtt { get; set; }
+    [field: SerializeField] public int OriginHp { get; set; }
+
+    public int Att
+    {
+        get
+        {
+            if (data.cardType == cardType.spell) { return 0; }
+            else if (data.cardType == cardType.minion)
+            {
+                MinionCardData mc = (MinionCardData)data;
+                return mc.att;
+            }
+            else
+            {
+                WeaponCardData wc = (WeaponCardData)data;
+                return wc.att;
+            }
+        }
+        set
+        {
+            if (data.cardType == cardType.spell) { return; ; }
+            else if (data.cardType == cardType.minion)
+            {
+                MinionCardData mc = (MinionCardData)data;
+                mc.att = value;
+            }
+            else
+            {
+                WeaponCardData wc = (WeaponCardData)data;
+                wc.att = value;
+            }
+        }
+    }
+
+    public int HP
+    {
+        get
+        {
+            if (data.cardType == cardType.spell) { return 0; }
+            else if (data.cardType == cardType.minion)
+            {
+                MinionCardData mc = (MinionCardData)data;
+                return mc.hp;
+            }
+            else
+            {
+                WeaponCardData wc = (WeaponCardData)data;
+                return wc.durability;
+            }
+        }
+        set
+        {
+            if (data.cardType == cardType.spell) { return; ; }
+            else if (data.cardType == cardType.minion)
+            {
+                MinionCardData mc = (MinionCardData)data;
+                mc.hp = value;
+            }
+            else
+            {
+                WeaponCardData wc = (WeaponCardData)data;
+                wc.durability = value;
+            }
+        }
+    }
+
+    #endregion
 
     // OnHand이벤트가 존재시, 특정순간마다 이벤트를 실행 (이벤트 구독은 BattleManager.cs에서 등록)
     public Action<int,bool> HandCardChanged;
@@ -51,7 +132,7 @@ public class CardHand : CardEle
                 case Define.cardType.minion:
                     MinionCardData cardData = data as MinionCardData;
                     Stat.text = $"<color=green>ATT {cardData.att} <color=red>HP {cardData.hp} <color=black>몬스터";
-                    OriginAtt = cardData.att; OriginHp = cardData.hp;
+                    Att = OriginAtt = cardData.att; HP = OriginHp = cardData.hp;
                     break;
                 case Define.cardType.spell:
                     Stat.text = "<color=black>주문";
@@ -59,7 +140,7 @@ public class CardHand : CardEle
                 case Define.cardType.weapon:
                     WeaponCardData wData = (WeaponCardData)data;
                     Stat.text = $"<color=green>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
-                    OriginAtt = wData.att; OriginHp = wData.durability;
+                    Att = OriginAtt = wData.att; HP = OriginHp = wData.durability; 
                     break;
             }
             originCost = data.cost;
@@ -113,7 +194,7 @@ public class CardHand : CardEle
         SetOrder(originOrder * 10);
         transform.localScale = originScale * 1.5f;
         transform.localRotation = Quaternion.identity;
-        transform.localPosition = new Vector3(transform.localPosition.x, -1.75f,-0.5f);
+        transform.localPosition = new Vector3(transform.localPosition.x, -1.65f,-0.5f);
     }
     public void Exit(GameObject go)
     { 

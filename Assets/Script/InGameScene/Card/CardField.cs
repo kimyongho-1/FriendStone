@@ -6,25 +6,43 @@ using static Define;
 using System.Linq;
 using System;
 
-public class CardField : CardEle
+public class CardField : CardEle,IBody
 {
     public TextMeshPro AttTmp, HpTmp;
     public SpriteRenderer cardImage,attIcon, hpIcon;
     public bool attackable = true;
     public ParticleSystem sleep;
     public SpriteMask mask;
-    MinionCardData minionCardData { get; set; }
-    public override int Att
+    [field: SerializeField] public MinionCardData minionCardData { get; set; }
+
+    #region IBODY
+
+    [field: SerializeField] public int PunId { get; set; }
+    [field: SerializeField] public bool IsMine { get; set; }
+    public Transform TR { get { return this.transform; } }
+
+    [field: SerializeField] public Collider2D Col { get; set; }
+    public bool Ray { set { if (Col == null) { Col = TR.GetComponent<Collider2D>(); } Col.enabled = value; } }
+
+    public Vector3 OriginPos { get; set; }
+    public IEnumerator onDead { get; set; }
+    public Define.ObjType objType { get; set; }
+    [field : SerializeField] public int OriginAtt { get; set; }
+    [field: SerializeField] public int OriginHp { get; set; }
+
+    public int Att
     {
-        get { return minionCardData.att; }
+        get { AttTmp.text = minionCardData.att.ToString(); return minionCardData.att; }
         set { minionCardData.att = value; AttTmp.text = minionCardData.att.ToString(); }
     }
 
-    public override int HP
+    public int HP
     {
-        get { return OriginHp; }
-        set { OriginHp = value; HpTmp.text = OriginHp.ToString(); }
+        get { HpTmp.text = minionCardData.hp.ToString(); return minionCardData.hp; }
+        set { minionCardData.hp = value; HpTmp.text = minionCardData.hp.ToString(); }
     }
+    #endregion
+    
     // 미니언 카드가 공격을 한다 가정시, 부딪힐떄 위치가 겹치는 순간
     // 소팅 레이어가 동일하면 이미지가 겹치거나 꺠질 위험이 있어, 공격자가 최상단에 위치하도록 레이어 변경
     public void ChangeSortingLayer(bool isOn)
@@ -36,16 +54,15 @@ public class CardField : CardEle
         cardImage.sortingLayerID = layer.id;
         AttTmp.sortingLayerID = HpTmp.sortingLayerID = layer.id;
     }
-    public void Init(CardData dataParam, bool isMine)
+    public void Init(CardData datapar, bool isMine)
     {
-        data = dataParam;
+        data = datapar;
         IsMine = isMine;
+        
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe") ;
         
         Col = GetComponent<CircleCollider2D>();
         minionCardData = (MinionCardData)data;
-        Att = OriginAtt = minionCardData.att;
-        HP = OriginHp = minionCardData.hp;
         cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
         
         GAME.Manager.UM.BindCardPopupEvent(this.gameObject, CallPopup, 0.75f);
@@ -57,7 +74,7 @@ public class CardField : CardEle
         { 
             // 좌클릭시 카메라로 레이활성화하여 타겟팅 이벤트 시작
             GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL, Define.Sound.Ready);
-
+            
             // 소환시 , 손에서 낼떄 실행할 이벤트 있는지 확인
             List<CardBaseEvtData> list = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onPlayed);
 
@@ -160,6 +177,7 @@ public class CardField : CardEle
 
             Destroy(this.gameObject);
         }
+        AttTmp.text = minionCardData.att.ToString(); HpTmp.text = minionCardData.hp.ToString();
     }
 
     // 미니언 카드의 경우, 일정초 동안 커서를 가져다 댈시 카드의 정보를 보여주는 카드팝업 호출 이벤트

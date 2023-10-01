@@ -187,8 +187,8 @@ public partial class SpawnManager : MonoBehaviour
         cf.transform.localPosition = card.transform.localPosition;
         playerMinions.Insert(idx, cf);
 
-        // 상대에게 내 미니언 소환 이벤트 전파 [카드객체 식별자, 몇번쨰 필드에 소환인지, 실제 카드 데이터 식별자]
-        GAME.IGM.Packet.SendMinionSpawn(cf.PunId, idx, card.data.cardIdNum);
+        // 상대에게 내 미니언 소환 이벤트 전파 [카드객체 식별자, 몇번쨰 필드에 소환인지, 실제 카드 데이터 식별자 , 원본이 아닌 현재 공체비용]
+        GAME.IGM.Packet.SendMinionSpawn(cf.PunId, idx, card.data.cardIdNum , card.Att, card.HP , card.data.cost);
 
         // 필드 하수인들의 레이를 잠시 끄기
         playerMinions.ForEach(x=>x.Ray = false);
@@ -212,6 +212,10 @@ public partial class SpawnManager : MonoBehaviour
         }
         GAME.IGM.AddAction(waitPos(cf));
         cf.Init(card.data, true);
+        cf.OriginAtt = card.OriginAtt;
+        cf.OriginHp = card.OriginHp;
+        cf.minionCardData.cost = card.data.cost;
+
         IEnumerator waitPos(CardField cf)
         {
             // 현재 소환된 카드가, 정해진 위치로 이동을 끝맞출떄까지 대기

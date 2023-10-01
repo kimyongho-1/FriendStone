@@ -2,11 +2,12 @@
 using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public partial class SpawnManager 
 {
-    public IEnumerator EnemySpawn(int punID, int spawnIdx)
+    public IEnumerator EnemySpawn(int punID, int spawnIdx, int att, int hp, int cost ) // 카드 식별자번호, 필드 몇번쨰 소환, 원본의 공체비
     {
         #region 상대가 소환할것이기에, 추가 자리를 포함하여 적 미니언들 위치 계산
         // 움직일 적의 핸드카드 객체
@@ -46,6 +47,8 @@ public partial class SpawnManager
         // 현재 핸드카드 (미니언) 정보 토대로 스폰 시작
         CardField cf = GameObject.Instantiate(prefab, Enemies);
         cf.Init(card.data,false);
+        cf.OriginAtt = att; cf.OriginHp = hp;
+
         cf.PunId = card.PunId;
         cf.transform.localPosition = card.transform.localPosition;
         enemyMinions.Insert(spawnIdx, cf);
@@ -113,7 +116,7 @@ public partial class SpawnManager
             {
                 t += Time.deltaTime * 2.5f;
                 tr.transform.localPosition =
-                    Vector3.Lerp(startPos, spawnPoint[idx], t);
+                    Vector3.Lerp(startPos, enemyMinions[idx].OriginPos, t);
                 yield return null;
             }
         }
