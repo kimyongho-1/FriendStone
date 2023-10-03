@@ -15,9 +15,7 @@ public class DrawActionQueue : Editor
         BattleManager bm = (BattleManager)target;
 
         exCount = bm.ActionQueue.Count;
-        // 큐없을시 생략
-        if (exCount ==0)
-        { return; }
+       
         EditorGUILayout.LabelField("Action Queue Count: " + bm.ActionQueue.Count);
 
         // 현재 진행 코루틴

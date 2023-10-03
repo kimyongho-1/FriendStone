@@ -166,7 +166,9 @@ public class CardField : CardEle,IBody
                 // �� �ϼ��� �׾�����, ����Ʈ���� ���� �� ������ġ�� ������
                 GAME.IGM.Spawn.playerMinions.Remove(GAME.IGM.Spawn.playerMinions.Find(x => x.PunId == this.PunId));
                 // �ʵ� ������
-                yield return StartCoroutine(GAME.IGM.Spawn.AllPlayersAlignment());
+                GAME.IGM.Spawn.CalcSpawnPoint(false);
+                yield return new WaitForSeconds(1.5f);
+                //yield return StartCoroutine(GAME.IGM.Spawn.AllPlayersAlignment());
             }
             // �� �ϼ��ε� �� ����
             else

@@ -24,14 +24,11 @@ public class TurnEndBtn : MonoBehaviour
         btnTmp.text = "상대 턴";
         Debug.Log("TurnEnd!!");
 
-        // 내 턴 종료
-        GAME.IGM.Packet.isMyTurn = false;
-
         // 내 차례 종료 예약 (아직 안끝난 행동이 있을수도 있기에)
         GAME.IGM.AddAction(EndMyTurn());
     }
 
-    // 턴종료
+    // 턴종료 버튼 누른뒤, 모든 등록된 함수 실행후에 턴종료 시작
     public IEnumerator EndMyTurn()
     {
         // 모든 핸드 위치 크기 레이 초기화
@@ -40,6 +37,8 @@ public class TurnEndBtn : MonoBehaviour
         // 강제로 Exit함수로 초기화 실행
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Exit(null));
 
+        // 내 턴 종료
+        GAME.IGM.Packet.isMyTurn = false;
         // 상대에게 내 턴 종료 전파
         GAME.IGM.Packet.SendTurnEnd();
         yield break;
@@ -79,6 +78,8 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 내 턴 시작 알림 텍스트 시작
         StartCoroutine(ShowTurnMSG(true));
+        // 내 턴 시작
+        GAME.IGM.Packet.isMyTurn = true;
         // 상대의 화면에 내 턴 시작 띄우기 이벤트 전파
         GAME.IGM.Packet.SendMyTurnMSG();
 
@@ -93,7 +94,5 @@ public class TurnEndBtn : MonoBehaviour
         Col.enabled = true;
 
 
-        // 내 턴 시작
-        GAME.IGM.Packet.isMyTurn = true;
     }
 }

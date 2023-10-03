@@ -10,7 +10,7 @@
   "evtDatas": [
     {
       "$type": "RestoreHandler, Assembly-CSharp",
-      "restoreAutoMode": 0,
+      "restoreAutoMode": 1,
       "restoreFX": 0,
       "restoreAmount": 2,
       "when": 0,
@@ -28,7 +28,7 @@
       "utillAmount": 1,
       "when": 0,
       "targeting": 0,
-      "area": 0,
+      "area": 1,
       "faction": 0,
       "type": 3
     }

@@ -91,12 +91,13 @@ public class BattleManager : MonoBehaviour
     public void RegisterAttHandler(AttackHandler ah, IBody attacker, IBody searchedTarget)
     {
         // 유저가 직접 선택하는 타겟인지, 자동 선택되는 타겟인지 확인
-
+        // 주문카드의 경우 직접 타겟팅일시 자신의 영웅위치에서 시작하도록 실행
         // 유저가 직접 선택일시, 미니언 공격처럼 먼저 타겟팅 실행
         if (ah.targeting == Define.evtTargeting.Select)
         {
-            if (ah.attType == Define.attType.Damage) { ActionQueue.Enqueue(AttackEvt(attacker, searchedTarget)); }
-            else { ActionQueue.Enqueue(KillEvt(attacker, searchedTarget)); }
+            ActionQueue.Enqueue(AttackEvt((attacker.objType == Define.ObjType.Minion) ?
+                attacker : GAME.IGM.Hero.Player
+                , searchedTarget, ah.attAmount, ah.attType));
         }
 
         else
@@ -105,8 +106,8 @@ public class BattleManager : MonoBehaviour
             if (target == null) { Debug.Log($"attacker[{attacker.PunId}] 의 이벤트 타겟 존재 X"); return; }
 
             // 타겟있을시 이벤트 예약
-            if (ah.attType == Define.attType.Damage) { ActionQueue.Enqueue(AttackEvt(attacker, target)); }
-            else { ActionQueue.Enqueue(KillEvt(attacker, target)); }
+            ActionQueue.Enqueue(AttackEvt((attacker.objType == Define.ObjType.Minion) ?
+                attacker : GAME.IGM.Hero.Player, searchedTarget, ah.attAmount, ah.attType));
         }
 
         #region 자동 실행건
@@ -814,7 +815,6 @@ public class BattleManager : MonoBehaviour
             return targets;
         }
 
-        
     }
 
 
@@ -872,17 +872,20 @@ public class BattleManager : MonoBehaviour
     // 치료 코루틴
     public IEnumerator Restore(IBody caster, IBody target, int amount)
     {
-        if (caster == null || target == null)
+        Debug.Log($"치료이벤트 실행, target : {target}[{target.PunId}]");
+        target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
+
+        // 내턴이며 시전자가 내가 낸 하수인일떄만 상대에게 이벤트 전파
+        if (GAME.IGM.Packet.isMyTurn && caster.IsMine)
         {
-            Debug.Log($"caster[{caster.PunId}],  target{target}[{target.PunId}]");
+            GAME.IGM.Packet.SendRestoreEvt(caster.PunId, target.PunId, amount , (caster.objType == Define.ObjType.HandCard));
         }
 
-        target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
         yield break;
     }
    
     // 공격 코루틴
-    public IEnumerator AttackEvt(IBody attacker, IBody target)
+    public IEnumerator AttackEvt(IBody attacker, IBody target, int attAmount, Define.attType attType)
     {
         // 투사체 호출
         ParticleSystem pj = FX.GetPJ;
@@ -897,7 +900,7 @@ public class BattleManager : MonoBehaviour
         Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
         if (cross.y < 0) { angle *= -1; }
 
-
+        // 투사체 선형보간으로 타겟으로 향하며 이동
         float t = 0;
         while (t < 1f)
         {
@@ -909,36 +912,19 @@ public class BattleManager : MonoBehaviour
 
             yield return null;
         }
+
+        // 투사체 끄기
         pj.gameObject.SetActive(false);
-    }
 
-    // 강제 확정 킬 코루틴
-    public IEnumerator KillEvt(IBody attacker, IBody target)
-    { // 투사체 호출
-        ParticleSystem pj = FX.GetPJ;
-
-        // 공격자의 위치에서 시작하도록 위치 초기화
-        pj.transform.position = attacker.Pos;
-        pj.gameObject.SetActive(true);
-        Vector3 start = attacker.Pos;
-        Vector3 dest = target.Pos;
-        Vector3 dir = (dest - start).normalized; // 방향벡터
-        float angle = Vector3.Angle(attacker.TR.up, dir);
-        Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
-        if (cross.y < 0) { angle *= -1; }
-
-
-        float t = 0;
-        while (t < 1f)
+        // 나의 턴 + 나의 하수인 공격이벤트는 , 전파해야할 이벤트
+        if (GAME.IGM.Packet.isMyTurn == true && attacker.IsMine == true)
         {
-            t += Time.deltaTime;
-            pj.transform.rotation =
-                Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
-            pj.transform.position =
-                Vector3.Lerp(start, dest, t);
-
-            yield return null;
+            // 이 공격 이벤트를 상대에게도 전파
+            GAME.IGM.Packet.SendAttEvt(attacker.PunId, target.PunId, attType, attAmount, attacker.objType);
         }
-        pj.gameObject.SetActive(false);
+
+        target.HP -=  (attType == Define.attType.Damage) ? attAmount : 1000;
+        if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
     }
+
 }

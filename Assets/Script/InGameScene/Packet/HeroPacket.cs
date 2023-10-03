@@ -37,6 +37,9 @@ public partial class PacketManager
         // 핸드카드 객체 찾기
         CardHand ch = GAME.IGM.Hand.EnemyHand.Find(x=>x.PunId == punID);
 
+        // 적 핸드에서 사용했기에 리스트에서 제거
+        GAME.IGM.Hand.EnemyHand.Remove(ch);
+
         // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
         Define.cardType type = GAME.Manager.RM.PathFinder.Dic[cardID].type;
         string jsonFile = GAME.Manager.RM.PathFinder.Dic[cardID].GetJson();

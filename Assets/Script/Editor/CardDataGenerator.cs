@@ -187,7 +187,7 @@ public class CardDataGenerator : EditorWindow
                     }
                     #region RestoreHandler 속성 그리기
                     if (rh.targeting == evtTargeting.Auto)
-                    { rh.restoreAutoMode = (Define.restoreAutoMode)EditorGUILayout.EnumPopup("타겟팅 타입", rh.restoreAutoMode ); }
+                    { rh.restoreAutoMode = (Define.restoreAutoMode)EditorGUILayout.EnumPopup("자동 타입", rh.restoreAutoMode ); }
                     rh.restoreFX = (Define.restoreFX)EditorGUILayout.EnumPopup("재생할 효과", rh.restoreFX);
                     rh.restoreAmount = EditorGUILayout.IntField("회복량", rh.restoreAmount);
                     #endregion

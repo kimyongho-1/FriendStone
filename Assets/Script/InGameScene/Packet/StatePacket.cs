@@ -11,19 +11,21 @@ public partial class PacketManager
 {
     // 0 ~ 20
     const byte UserInfo = 0;
-    const byte StartIntro = 1;
-    const byte InitDraw = 2;
-    const byte IsOffensive = 3;
-    const byte UserDraw = 4;
+    const byte StartIntro = 1; // 인게임씬 시작시 화면이 밝아지는 인트로 동시실행 전파
+    const byte InitDraw = 2; //  초기 4장 드로우 상태로 게임시작 동시실행 전파
+    const byte IsOffensive = 3; // 선후공 결정 결과 동시실행 전파
+    const byte UserDraw = 4; // 상대가 카드를 뽑을떄마다 자동으로 내게도 이벤트가 전파
     const byte OtherTurnEnd = 5;
     const byte OtherTurnStartMSG = 6;
-    const byte DoDraw = 7;
+    const byte DoDraw = 7; // 드로우를 실행 전파
 
-    const byte FindEvt = 10;
-    const byte FindEvtResult = 11;
-    const byte AcqusitionEvt = 12;
+    const byte FindEvt = 10; // 발견 이벤트 시작 전파
+    const byte FindEvtResult = 11; // 발견 이벤트 실행자가 카드를 고르면 그 결과 전파
+    const byte AcqusitionEvt = 12; // 단순 획득 이벤트 실행시 전파
 
-    const byte BuffEvt = 14;
+    const byte BuffEvt = 14; // 버프 이벤트 전달받을시 동기화하기
+    const byte AttEvt = 15; // 공격 이벤트 전달받을시 동기화하기
+    const byte RestoreEvt = 16;
     public void InitStateDictionary()
     {
         dic.Add(UserInfo, ReceivedUserInfo);
@@ -38,6 +40,8 @@ public partial class PacketManager
         dic.Add(FindEvtResult, ReceivedResultFindEvt);
         dic.Add(AcqusitionEvt, ReceivedAcquisition );
         dic.Add(BuffEvt, ReceivedBuffEvt);
+        dic.Add(AttEvt, ReceivedAttEvt );
+        dic.Add(RestoreEvt, ReceivedRestoreEvt );
     }
 
     // 내턴 시작 전송
@@ -119,8 +123,17 @@ public partial class PacketManager
     // 상대로부터 펀넘버를 전달받아, 드로우 동기화 시작
     public void ReceivedOtherDraw(object[] data)
     {
-        // 상대의 드로우 진행
-        StartCoroutine(GAME.IGM.Hand.EnemyCardDrawing((int)data[0]));
+        Debug.Log($"상대로부터 드로우 이벤트 전달받음 {(int)data[0]}");
+        if (GAME.IGM.GameTurn < 2f)
+        {
+            // 상대의 드로우 진행
+            GAME.IGM.StartCoroutine(GAME.IGM.Hand.EnemyCardDrawing((int)data[0]));
+        }
+        else
+        { // 상대의 드로우 진행
+            GAME.IGM.AddAction(GAME.IGM.Hand.EnemyCardDrawing((int)data[0]));
+        }
+        
     }
 
     // 상대에게 드로우를 하라고 이벤트 전파 [상대만 시킬건지, 같이 드로우하는건지]
@@ -280,6 +293,57 @@ public partial class PacketManager
             yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.ReceivedBuff(type, GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID)
             , att, hp));
         }
+    }
+    #endregion
+
+    #region 공격 이벤트 전달 및 받기
+    public void SendAttEvt(int attackerPunID ,int targetPunID, Define.attType type, int attAmount , Define.ObjType objType)
+    {
+        object[] data = new object[] { attackerPunID, targetPunID, (int)type, attAmount ,(int)objType };
+        PhotonNetwork.RaiseEvent(AttEvt, data, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedAttEvt(object[] data)
+    {
+        int attackerPunID = (int)data[0];
+        int targetPunID = (int)data[1];
+        Define.attType attType = (Define.attType)data[2];
+        int attAmount = (int)data[3];
+        Define.ObjType objType = (Define.ObjType)data[4];
+
+        IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetPunID);
+        // 공격 이벤트를 받을시, 공격자의 obj타입이 미니언이라면 미니언을 찾고
+        // 그외에는 적 영웅을 공격자로 지정 (공격 이펙트의 시작위치가 적 영웅에서 시작하길 원하기에)
+        IBody attacker = (objType == Define.ObjType.Minion) ?
+            GAME.IGM.allIBody.Find(x => x.PunId == attackerPunID)
+            : GAME.IGM.Hero.Enemy ;
+
+        // 상대로부터 받은 공격이벤트 예약후 실행
+        GAME.IGM.AddAction(GAME.IGM.Battle.AttackEvt(attacker, target, attAmount, attType));
+    }
+
+    #endregion
+
+    #region 치료 이벤트 전파 및 전달받기
+    public void SendRestoreEvt(int casterID, int targetID, int amount, bool casterIsHandCard)
+    {
+        object[] data = new object[] { casterID, targetID, amount, (object)casterIsHandCard };
+        PhotonNetwork.RaiseEvent(RestoreEvt, data, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedRestoreEvt(object[] data)
+    {
+        int casterPunID = (int)data[0];
+        int targetPunID = (int)data[1];
+        int amount = (int)data[2];
+        bool casterIsHand = (bool)data[3];
+
+        // 시전자와 대상 찾기 (주문카드는 적 영웅 위치를 고정)
+        IBody caster = (casterIsHand == true) ?
+            GAME.IGM.Hero.Enemy
+            : GAME.IGM.allIBody.Find(x => x.PunId == casterPunID);
+        IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetPunID);
+
+        // 상대로부터 받은 치료이벤트 예약후 실행
+        GAME.IGM.AddAction(GAME.IGM.Battle.Restore(caster, target, amount));
     }
     #endregion
 }

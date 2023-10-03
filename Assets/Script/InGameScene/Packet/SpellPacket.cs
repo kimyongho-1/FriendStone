@@ -44,6 +44,7 @@ public partial class PacketManager
 
         // 미니언 소환전, 실제 카드데이터를 찾아 적용해주기
         CardHand ch = GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
+        GAME.IGM.Hand.EnemyHand.Remove(ch);
 
         // 어떠 주문카드인지 띄우기
         GAME.IGM.ShowSpellPopup((SpellCardData)card,new Vector3(3.5f, 2.8f, -0.5f) );
@@ -52,7 +53,6 @@ public partial class PacketManager
         ch.data = card;
         // 상대가 드래그를 끝낸 위치로 이동하는 애니메이션코루틴 먼저 예약
         GAME.IGM.AddAction(spellHandCardMove(ch, dest));
-
         // 상대의 핸드카드가 해당 위치로 이동하는 모션 따라하기
         IEnumerator spellHandCardMove(CardHand ch, Vector3 dest)
         {
@@ -79,14 +79,13 @@ public partial class PacketManager
         int punID = (int)data[0]; // 게임 화면내 어떤 카드 객체인지 식별자
 
         // 다시 카드 찾기
-        CardHand ch = GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
+        CardHand ch = GAME.IGM.Hand.AllCardHand.Find(x => x.PunId == punID);
         GAME.IGM.AddAction(RemoveSpellCard(ch));
         IEnumerator RemoveSpellCard(CardHand ch)
         {
             Debug.Log($"{punID}가 현재 {ch.data.cardName}로 존재 확인");
-            GAME.IGM.Hand.EnemyHand.Remove(ch);
             // 핸드매니저에서 적 핸드카드들 재정렬 시작
-            StartCoroutine(GAME.IGM.Hand.CardAllignment(false));
+            yield return StartCoroutine(GAME.IGM.Hand.CardAllignment(false));
             // 상대가 어떤 카드 사용했는지 보여주던 카드팝업 해제
             GAME.IGM.cardPopup.isEnmeySpawning = false;
             GAME.IGM.cardPopup.gameObject.SetActive(false);

@@ -88,8 +88,11 @@ public class TargetingCamera : MonoBehaviour
     {
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
         yield return new WaitForSeconds(0.15f);
-        // 공격궤적을 그리는 라인렌더러 실행
-        StartCoroutine(DrawLine(attacker.Pos));
+
+        // 공격궤적을 그리는 라인렌더러 실행, 시작 위치를 인자로
+        // 미니언카드는 자신의 위치, 그외 주문카드나 영웅은 자신의 영웅 고유위치에서 시작
+        Vector3 startPos = (attacker.objType == ObjType.Minion) ? attacker.Pos : new Vector3(GAME.IGM.Hero.Player.OriginPos.x, -0.9f, GAME.IGM.Hero.Player.OriginPos.z);
+        StartCoroutine(DrawLine(startPos));
 
         // 공격자가 미니언이나 영웅이면 공격자세 취하기
         if (attacker.objType != Define.ObjType.HandCard)

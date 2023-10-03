@@ -94,13 +94,15 @@ public partial class SpawnManager
     }
 
 
-    // 몬스터가 죽고나서 재정렬
+    // 적 몬스터가 죽고나서 재정렬
     public IEnumerator AllEnemiesAlignment()
     {
-        int count = enemyMinions.Count + 1;
+        // 적 미니언이 없으면 바로 취소
+        if (enemyMinions.Count == 0) { yield break;  }
+
         for (int i = 0; i < enemyMinions.Count; i++)
         {
-            float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
+            float x = 0.5f + 1.25f * (i - (enemyMinions.Count-1) / 2.0f);
 
             enemyMinions[i].OriginPos = new Vector3(x, 2.25f, -0.1f);
             StartCoroutine(move(enemyMinions[i].transform, i));
@@ -110,7 +112,7 @@ public partial class SpawnManager
         // �̵� �ִϸ��̼� �ڷ�ƾ
         IEnumerator move(Transform tr, int idx)
         {
-            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
+            float t = (tr.transform.localPosition == enemyMinions[idx].OriginPos) ? 1f : 0f;
             Vector3 startPos = tr.transform.localPosition;
             while (t < 1f)
             {

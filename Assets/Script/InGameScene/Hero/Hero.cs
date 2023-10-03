@@ -172,7 +172,7 @@ public class Hero : MonoBehaviour, IBody
         while (t < 1f)
         {
             t += Time.deltaTime * 1f;
-            playerMask.transform.localPosition = Vector3.Lerp(dest, OriginPos, t);
+            playerMask.transform.position = Vector3.Lerp(dest, OriginPos, t);
             yield return null;
         }
         ChangeSortingLayer(false); // 소팅레이어 초기화
@@ -186,6 +186,14 @@ public class Hero : MonoBehaviour, IBody
         if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
         {
             GAME.IGM.Packet.SendHeroAttack(attacker.PunId, target.PunId);
+        }
+
+        // 내구도 감소 및 내구도 0 도달시 무기 부서지는 애니메이션 코루틴 실행
+        weaponData.durability -= 1;
+        durTmp.text = weaponData.durability.ToString();
+        if (weaponData.durability <= 0)
+        {
+            StartCoroutine(BrokenWeaponCo());
         }
 
         if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
@@ -283,6 +291,23 @@ public class Hero : MonoBehaviour, IBody
                 Vector3.Lerp(Vector3.zero, Vector3.one, t);
             yield return null;
         }
+    }
+    public IEnumerator BrokenWeaponCo()
+    {
+        float t = 0;
+        
+        // 무기가 점차 작아지면서 없어지는 코루틴 실행
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 2f;
+            WpIcon.transform.localScale =
+                Vector3.Lerp(Vector3.one, Vector3.zero, t);
+            yield return null;
+        }
+        Att -= weaponData.att;
+        weaponData = null; 
+        
+        
     }
     #endregion
 

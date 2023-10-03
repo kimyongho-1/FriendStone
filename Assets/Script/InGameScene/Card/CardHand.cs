@@ -21,7 +21,22 @@ public class CardHand : CardEle, IBody
     public Transform TR { get { return this.transform; } }
     public Define.ObjType objType { get; set; }
     [field: SerializeField] public Collider2D Col { get; set; }
-    public bool Ray { set { if (Col == null) { Col = TR.GetComponent<Collider2D>(); } Col.enabled = value; } }
+    public bool Ray 
+    {
+        set 
+        { 
+            if (Col == null) 
+            {
+                if (TR == null)
+                {
+                    Debug.Log($"TR IS NULL ,{PunId}가..");
+                    Debug.Log($"{data.cardType.ToString()}, {data.cardName}");
+                }
+                Col = TR.GetComponent<Collider2D>(); 
+            }
+
+            Col.enabled = value; } 
+    }
 
     public Vector3 OriginPos { get; set; }
     public IEnumerator onDead { get; set; }
@@ -227,7 +242,7 @@ public class CardHand : CardEle, IBody
 
                 GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
                 ));
-
+            
             // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
             IEnumerator evt(IBody a, IBody t)
             {
@@ -250,18 +265,16 @@ public class CardHand : CardEle, IBody
                 // 나머지 핸드 레이 풀어주기
                 GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
 
-                //핸드매니저에서 핸드카드들 재정렬 시작
-                GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
-
                 // 상대에게 내 주문카드 사용 끝을 알리기
                 GAME.IGM.AddAction(EndSpell());
                 IEnumerator EndSpell()
                 {
-                    // 주문카드 사용 완료시, 모든 핸드카드 레이활성 초기화
-                    GAME.IGM.StartCoroutine(FadeOutCo(IsMine));
+                    //핸드매니저에서 핸드카드들 재정렬 시작
+                    yield return  GAME.IGM.Hand.CardAllignment(this.IsMine);
+                    // 주문카드 사용 끝을 전달
                     GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
-                    yield return null;
-
+                    // 주문카드 사용 완료시, 소멸 코루틴 애님 시작
+                    yield return GAME.IGM.StartCoroutine(FadeOutCo(IsMine));
                 }
             }
         }
@@ -312,7 +325,7 @@ public class CardHand : CardEle, IBody
     }
     public void Dragging(Vector3 worldPos)
     {
-        if (spellCardData != null && spellCardData.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select) != null) { return; }
+        if (spellCardData != null && GAME.IGM.TC.LR.gameObject.activeSelf == true) { return; }
         // 미니언 카드들만 정렬 실행
         if (data.cardType == Define.cardType.minion)
         {
@@ -376,6 +389,7 @@ public class CardHand : CardEle, IBody
                 yield return null;
             }
         }
+        GAME.IGM.Hand.AllCardHand.Remove(this);
         GameObject.Destroy(this.gameObject);
     }
     public void EndDrag(Vector3 v)
@@ -395,8 +409,7 @@ public class CardHand : CardEle, IBody
                     GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
                     // 미니언 스폰 시작 (카드 소멸화 애니메이션 및 삭제는 StartSpawn내부에서 실행)
                     GAME.IGM.Spawn.StartSpawn(this);
-                    //핸드매니저에서 핸드카드들 재정렬 시작
-                    GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
+                    //핸드매니저에서 핸드카드 재정렬은 위 스타트스폰함수 마지막에 실행
                     return;
                 }
                 break;
@@ -442,16 +455,16 @@ public class CardHand : CardEle, IBody
                     GAME.IGM.Hand.PlayerHand.Remove(this);
                     // a무기 착용, 모든 핸드카드 레이활성 초기화
                     GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-                    // 영웅 무기 착용 시작 ( 카드 소멸 애니메이션 코루틴은 함수 내부에서 실행)
-                    GAME.IGM.AddAction(GAME.IGM.Hero.Player.EquipWeapon(this));
+
+                    //핸드매니저에서 핸드카드들 재정렬 시작
+                    GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
 
                     // 상대에게 내 무기 착용 이벤트 전파
                     GAME.IGM.Packet.SendWeapon(PunId, data.cardIdNum, this.transform.position.x
                         , this.transform.position.y, this.transform.position.z);
 
-                    //핸드매니저에서 핸드카드들 재정렬 시작
-                    GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
-
+                    // 영웅 무기 착용 시작 ( 카드 소멸 애니메이션 코루틴은 함수 내부에서 실행)
+                    GAME.IGM.AddAction(GAME.IGM.Hero.Player.EquipWeapon(this));
                     return;
                 }
                 break;

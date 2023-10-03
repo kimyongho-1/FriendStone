@@ -23,75 +23,78 @@ public partial class SpawnManager : MonoBehaviour
         spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f));
     }
 
-    // 다음 미니언이 놓일 위치를 미리 계산
-    public void CalcSpawnPoint() 
+    // 미니언이 소환되거나 죽을떄 , 스폰포인트 재계산 및 잔존 미니언들 위치 재정렬
+    public void CalcSpawnPoint(bool isSpawn = true) 
     {
-        // 현재 드래깅커서가 필드범위에 없는것으로 초기화
-        idx = -1000;
-
-        // 최대 미니언의 갯수가 7이면 더 이상 공간 만들 필요 X
-        if (playerMinions.Count == 7 || spawnPoint.Count == playerMinions.Count+1) { return; }
-
-        // 현재 미니언이 없으면 언제나 고정된 위치로 다음 미니언 소환 위치 결정
-        if (playerMinions.Count == 0) { spawnPoint[0] = new Vector3(0.5f, 0.5f, -0.1f); return; }
-
-        // 미니언이 1개 이상부터는 SpawnPoint요소들이 변경되기전 위치 값으로 결정
-        else
+        // 몬스터가 스폰하는 순간이라면
+        if (isSpawn)
         {
-            for (int i = 0; i < playerMinions.Count; i++)
+            // 현재 드래깅커서가 필드범위에 없는것으로 초기화
+            idx = -1000;
+
+            // 최대 미니언의 갯수가 7이면 더 이상 공간 만들 필요 X
+            if (playerMinions.Count == 7) { return; }
+
+            // 현재 미니언이 없으면 언제나 고정된 위치로 다음 미니언 소환 위치 결정
+            if (playerMinions.Count == 0) { spawnPoint[0] = new Vector3(0.5f, 0.5f, -0.1f); return; }
+
+            // 미니언이 1개 이상부터는 SpawnPoint요소들이 변경되기전 위치 값으로 결정
+            else
             {
-                playerMinions[i].OriginPos = spawnPoint[i];
-                playerMinions[i].transform.localPosition = playerMinions[i].OriginPos;
+                for (int i = 0; i < playerMinions.Count; i++)
+                {
+                    playerMinions[i].OriginPos = spawnPoint[i];
+                    playerMinions[i].transform.localPosition = playerMinions[i].OriginPos;
+                }
             }
+            // 현재 미니언의 갯수 +1 한 여유 공간 만들기 (다음 미니언 소환될 공간을 미리 마련하는 개념)
+            spawnPoint.Add(new Vector3(0, 0, 0));
         }
 
-        // 현재 미니언의 갯수 +1 한 여유 공간 만들기 (다음 미니언 소환될 공간을 미리 마련하는 개념)
-        spawnPoint.Add(new Vector3(0, 0, 0));
-        int count = spawnPoint.Count;
+        // 몬스터가 죽어 재정렬을 하는거라면
+        else 
+        {
+            // 현재 미니언이 없으면 언제나 고정된 위치로 다음 미니언 소환 위치 결정
+            if (playerMinions.Count == 0) { spawnPoint.Clear(); spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f)); return; }
+
+            // 미니언이 줄은 상태로 위치 재설정
+            for (int i = 0; i < playerMinions.Count; i++)
+            {
+                // i - (count - 1) / 2 는 중심을 기준으로 -3, -2, -1, 0, 1, 2, 3 같은 변환을 유도
+                float x = 0.5f + 1.25f * (i - (playerMinions.Count-1) / 2.0f);
+                playerMinions[i].OriginPos = new Vector3(x, 0.5f, -0.1f);
+                StartCoroutine(move(playerMinions[i].transform, i));
+            }
+            // 이동 애니메이션 코루틴
+            IEnumerator move(Transform tr, int idx)
+            {
+                float t = (tr.transform.localPosition == playerMinions[idx].OriginPos) ? 1f : 0f;
+                Vector3 startPos = tr.transform.localPosition;
+                while (t < 1f)
+                {
+                    t += Time.deltaTime * 2.5f;
+                    tr.transform.localPosition =
+                        Vector3.Lerp(startPos, playerMinions[idx].OriginPos , t);
+                    yield return null;
+                }
+            }
+
+            // 미니언이 줄었기에 스폰포인트 한개 제거
+            spawnPoint.RemoveAt(spawnPoint.Count - 1);
+        }
+
+        // 스폰포인트 재정렬
         for (int i = 0; i < spawnPoint.Count; i++)
         {
             // i - (count - 1) / 2 는 중심을 기준으로 -3, -2, -1, 0, 1, 2, 3 같은 변환을 유도
-            float x = 0.5f + 1.25f * (i - (count - 1) / 2.0f);
-            spawnPoint[i] = new Vector3(x, 0.35f, -0.1f);
+            float x = 0.5f + 1.25f * (i - (playerMinions.Count) / 2.0f);
+            spawnPoint[i] = new Vector3(x, 0.5f, -0.1f);
         }
+
+        // 현재 드래깅커서가 필드범위에 없는것으로 초기화
+        idx = -1000;
     }
 
-    // 내 미니언이 죽고 재정렬
-    public IEnumerator AllPlayersAlignment()
-    {
-        spawnPoint.Clear();
-
-        if (playerMinions.Count == 0) { spawnPoint.Add(new Vector3(0.5f, 0.5f, -0.1f)); yield break; }
-
-        // ��� �ʵ� �̴Ͼ�� ��ġ ������
-        for (int i = 0; i < playerMinions.Count + 1; i++)
-        {
-            // �ִ��� ��� �ε����� ���ص� ���·�, �¿�� �������� ��ġ ����
-            float x = 0.5f + 1.25f * (i - (spawnPoint.Count - 1) / 2.0f);
-            spawnPoint.Add(new Vector3(x, 0.5f, -0.1f));
-        }
-        // ��� �ʵ� �̴Ͼ�� ��ġ ������
-        for (int i = 0; i < playerMinions.Count; i++)
-        {
-            playerMinions[i].OriginPos = spawnPoint[i];
-            StartCoroutine(move(playerMinions[i].transform, i));
-            yield return null;
-        }
-
-        // �̵� �ִϸ��̼� �ڷ�ƾ
-        IEnumerator move(Transform tr, int idx)
-        {
-            float t = (tr.transform.localPosition == spawnPoint[idx]) ? 1f : 0f;
-            Vector3 startPos = tr.transform.localPosition;
-            while (t < 1f)
-            {
-                t += Time.deltaTime * 2.5f;
-                tr.transform.localPosition =
-                    Vector3.Lerp(startPos, spawnPoint[idx], t);
-                yield return null;
-            }
-        }
-    }
     // 현재 유저의 미니언핸드카드가, 필드 범위에 들어왔는지 확인하는 함수
     public bool CheckInBox(Vector3 worldPos)
     {
@@ -210,18 +213,13 @@ public partial class SpawnManager : MonoBehaviour
             playerMinions[i].OriginPos = spawnPoint[i];
             StartCoroutine(move(playerMinions[i].transform, i));
         }
-        GAME.IGM.AddAction(waitPos(cf));
+
         cf.Init(card.data, true);
         cf.OriginAtt = card.OriginAtt;
         cf.OriginHp = card.OriginHp;
         cf.minionCardData.cost = card.data.cost;
-
-        IEnumerator waitPos(CardField cf)
-        {
-            // 현재 소환된 카드가, 정해진 위치로 이동을 끝맞출떄까지 대기
-            yield return new WaitUntil(() => (cf.transform.position == cf.OriginPos));
-        }
-        
+        GAME.IGM.AddAction(wait());
+     
         // 이동 애니메이션 코루틴
         IEnumerator move(Transform tr, int idx)
         {
@@ -237,19 +235,23 @@ public partial class SpawnManager : MonoBehaviour
             queue.Dequeue();
         }
 
-        StartCoroutine(wait());
+        //StartCoroutine(wait());
         IEnumerator wait()
         {
             // 모든 이동 코루틴 끝났을지, 다음 스폰포인트 위치값 초기화
             // 이동 코루틴을 모아둔 queue의 갯수가 0 => 현재 이동코루틴 모두 실행 완료
-            yield return new WaitUntil(() => (queue.Count == 0));
+            yield return new WaitUntil(() => (queue.Count == 0 && cf.transform.position == cf.OriginPos));
             // 필드 하수인들의 레이를 다시 켜기
             playerMinions.ForEach(x => x.Ray = true);
             // 새로운 위치 구하기
             CalcSpawnPoint();
 
             // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
-            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum, cf.IsMine));
+            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).
+                ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum, cf.IsMine));
+
+            // 핸드카드도 정렬 시작
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(true));
         }
         
     }

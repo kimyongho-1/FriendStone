@@ -10,13 +10,27 @@ using UnityEngine;
 
 // to do list
 // 1. 탈진과 10장 초과시 코루틴 애니메이션 필요
-
+public class CustomCardHand : List<CardHand>
+{
+    public new void Add(CardHand ch)
+    {
+        base.Add(ch);
+        GAME.IGM.Hand.AllCardHand.Add(ch);
+    }
+    public new void Remove(CardHand ch)
+    {
+        base.Remove(ch);
+    }
+}
 
 public class HandManager : MonoBehaviour
 {
     public GameObject PlayerHandGO, EnemyHandGO;
     public Transform PlayerDeck, EnemyDeck, PlayerDrawingCard, EnemyDrawingCard;
-    public List<CardHand> PlayerHand, EnemyHand;
+    public CustomCardHand PlayerHand = new CustomCardHand();
+    public CustomCardHand EnemyHand = new CustomCardHand();
+
+    public List<CardHand> AllCardHand = new List<CardHand>();
     public CardHand prefab;
     public int punConsist = 1;
     Queue<CardData> deckCards = new Queue<CardData>();
@@ -52,8 +66,6 @@ public class HandManager : MonoBehaviour
     // 내가 덱에서 카드 뽑기
     public IEnumerator CardDrawing(int count)
     {
-        // 상대에게 내 드로우 전파 및 동기화를 위해 펀식별자 먼저 카운팅
-        int[] puns = new int[count];
 
         // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
         IEnumerator DrawingCo;
@@ -111,7 +123,6 @@ public class HandManager : MonoBehaviour
                 {
                     GAME.IGM.Battle.Evt(evtList[j],ch);
                 }
-                
             }
 
             // 상대에게 내 드로우 정보 전달
@@ -188,7 +199,6 @@ public class HandManager : MonoBehaviour
     {
         // 현재 나 또는 적의 핸드중 무엇인지 확인
         List<CardHand> hand = (isMine) ? PlayerHand : EnemyHand;
-
         // 카드가 없으면 정렬을 수행할 필요가 없으므로 바로 취소
         if (hand.Count == 0) { yield break; }
 
@@ -220,7 +230,6 @@ public class HandManager : MonoBehaviour
             hand[i].originRot = new Vector3(0, 0,
                 (isMine) ? Mathf.Cos(ratio * Mathf.PI) * angle
                 : Mathf.Cos(ratio * Mathf.PI) * -angle);
-       
 
             // 위치로 이동시키기
             co.Enqueue(StartCoroutine(HandCardMove(hand[i])));
@@ -247,6 +256,7 @@ public class HandManager : MonoBehaviour
             { euler.x -= 360f; }
             if (euler.z > 180)
             { euler.z -= 360f; }
+            
             ch.Ray = false;
             Vector3 start = ch.transform.position;
             Vector3 startRpt = euler;
