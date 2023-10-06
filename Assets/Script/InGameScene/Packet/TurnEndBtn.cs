@@ -35,12 +35,20 @@ public class TurnEndBtn : MonoBehaviour
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = false);
 
         // 강제로 Exit함수로 초기화 실행
-        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Exit(null));
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Exit(null)) ;
+        // 필드 하수인 모두 공격중지
+        GAME.IGM.Spawn.playerMinions.ForEach(x => x.Attackable = false);
 
         // 내 턴 종료
         GAME.IGM.Packet.isMyTurn = false;
         // 상대에게 내 턴 종료 전파
         GAME.IGM.Packet.SendTurnEnd();
+
+        for (int i = 0; i < GAME.IGM.Spawn.enemyMinions.Count; i++)
+        {
+            GAME.IGM.Spawn.enemyMinions[i].Attackable = true;
+            GAME.IGM.Spawn.enemyMinions[i].sleep.gameObject.SetActive(false);
+        }
         yield break;
     }
 
@@ -78,6 +86,12 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 내 턴 시작 알림 텍스트 시작
         StartCoroutine(ShowTurnMSG(true));
+        for (int i = 0; i < GAME.IGM.Spawn.playerMinions.Count; i++)
+        {
+            GAME.IGM.Spawn.playerMinions[i].Attackable = true;
+            GAME.IGM.Spawn.playerMinions[i].sleep.gameObject.SetActive(false);
+        }
+
         // 내 턴 시작
         GAME.IGM.Packet.isMyTurn = true;
         // 상대의 화면에 내 턴 시작 띄우기 이벤트 전파

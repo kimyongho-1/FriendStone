@@ -22,10 +22,10 @@ public class Hero : MonoBehaviour, IBody
     public SpriteRenderer wpImg, skillImg, playerImg, AttIcon, HpIcon;
     public TextMeshPro hpTmp, weaponAttTmp, durTmp, replyTmp , mpTmp, attTmp, nickTmp;
     public GameObject Select, Reply, Speech;
-    public bool attackable = true;
-    public bool CanAttack { get { return (weaponData != null) && attackable == true; } }
+    public bool CanAttack { get { return (weaponData != null) && Attackable == true; } }
 
     #region IBODY
+    public bool Attackable { get; set; }
     public IEnumerator onDead { get; set; }
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
@@ -58,7 +58,7 @@ public class Hero : MonoBehaviour, IBody
         Col = GetComponent<Collider2D>();
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
-        attackable = true;
+        Attackable = true;
         att = 0; hp = 30;
         GAME.IGM.allIBody.Add(this);
         // 내 영웅만 필요한 클릭 이벤트들 
@@ -138,14 +138,27 @@ public class Hero : MonoBehaviour, IBody
         GAME.IGM.Spawn.SpawnRay = Ray = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
+        GAME.Manager.StartCoroutine(GAME.IGM.TC.MeeleTargettingCo
             (this,
-            (IBody a, IBody t) => { return AttackCo(a, t); },
-            new string[] { "foe", "foeHero" }
+            (IBody a, IBody t) => { return AttackCo(a, t); }
             ));
     }
     public IEnumerator AttackCo(IBody attacker, IBody target)
     {
+        // 타겟이 현재 없다면 , 제자리 위치후 끄기
+        if (target == null)
+        {
+            float time = 0;
+            Vector3 currPos = attacker.TR.position;
+            while (time < 1f)
+            {
+                time += Time.deltaTime * 1f;
+                this.transform.localPosition = Vector3.Lerp(currPos, OriginPos, time);
+                yield return null;
+            }
+            yield break;
+        }
+
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
         float t = 0;
@@ -198,6 +211,8 @@ public class Hero : MonoBehaviour, IBody
 
         if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
         if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
+
+        Attackable = false;
     }
 
     // 영웅 우클릭시 대화 이벤트
@@ -255,7 +270,7 @@ public class Hero : MonoBehaviour, IBody
     public IEnumerator EquipWeapon(CardHand card)
     {
         // 무기 데이터 초기화 및 공격 가능 설정
-        weaponData = (WeaponCardData)card.data;
+        weaponData = card.WC;
         wpImg.sprite = card.cardImage.sprite;
         Att += weaponData.att;
         durTmp.text = weaponData.durability.ToString();
@@ -295,7 +310,7 @@ public class Hero : MonoBehaviour, IBody
     public IEnumerator BrokenWeaponCo()
     {
         float t = 0;
-        
+        Att -= weaponData.att;
         // 무기가 점차 작아지면서 없어지는 코루틴 실행
         while (t < 1f)
         {
@@ -304,7 +319,6 @@ public class Hero : MonoBehaviour, IBody
                 Vector3.Lerp(Vector3.one, Vector3.zero, t);
             yield return null;
         }
-        Att -= weaponData.att;
         weaponData = null; 
         
         

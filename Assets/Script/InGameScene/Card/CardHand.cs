@@ -5,17 +5,19 @@ using TMPro;
 using System;
 using System.Linq;
 using static Define;
+using WebSocketSharp;
 
 public class CardHand : CardEle, IBody
 {
     public Vector3  originRot, originScale;
-    public int originOrder, originCost;
+    public int originOrder;
     public TextMeshPro cardName, Description, Stat, Type, Cost;
     public SpriteRenderer cardBackGround, cardImage;
     public GameObject TMPgo;
-    public SpellCardData spellCardData { get; set; }
+    [SerializeField] int currAtt, currHp, currCost;
 
     #region IBODY
+    public bool Attackable { get; set; }
     [field: SerializeField] public int PunId { get; set; }
     [field: SerializeField] public bool IsMine { get; set; }
     public Transform TR { get { return this.transform; } }
@@ -27,15 +29,10 @@ public class CardHand : CardEle, IBody
         { 
             if (Col == null) 
             {
-                if (TR == null)
-                {
-                    Debug.Log($"TR IS NULL ,{PunId}가..");
-                    Debug.Log($"{data.cardType.ToString()}, {data.cardName}");
-                }
                 Col = TR.GetComponent<Collider2D>(); 
             }
-
-            Col.enabled = value; } 
+            Col.enabled = value; 
+        } 
     }
 
     public Vector3 OriginPos { get; set; }
@@ -43,95 +40,75 @@ public class CardHand : CardEle, IBody
 
     [field : SerializeField] public int OriginAtt { get; set; }
     [field: SerializeField] public int OriginHp { get; set; }
-
     public int Att
     {
         get
-        {
-            if (data.cardType == cardType.spell) { return 0; }
-            else if (data.cardType == cardType.minion)
-            {
-                MinionCardData mc = (MinionCardData)data;
-                return mc.att;
-            }
-            else
-            {
-                WeaponCardData wc = (WeaponCardData)data;
-                return wc.att;
-            }
-        }
+        { return currAtt; }
         set
         {
-            if (data.cardType == cardType.spell) { return; ; }
-            else if (data.cardType == cardType.minion)
-            {
-                MinionCardData mc = (MinionCardData)data;
-                mc.att = value;
-            }
-            else
-            {
-                WeaponCardData wc = (WeaponCardData)data;
-                wc.att = value;
-            }
+            if (CardEleType == cardType.spell) { return; }
+            currAtt = value;
+            DrawVar(); // tmp 조정
         }
     }
-
     public int HP
     {
         get
-        {
-            if (data.cardType == cardType.spell) { return 0; }
-            else if (data.cardType == cardType.minion)
-            {
-                MinionCardData mc = (MinionCardData)data;
-                return mc.hp;
-            }
-            else
-            {
-                WeaponCardData wc = (WeaponCardData)data;
-                return wc.durability;
-            }
-        }
+        { return currHp; }
         set
         {
-            if (data.cardType == cardType.spell) { return; ; }
-            else if (data.cardType == cardType.minion)
-            {
-                MinionCardData mc = (MinionCardData)data;
-                mc.hp = value;
-            }
-            else
-            {
-                WeaponCardData wc = (WeaponCardData)data;
-                wc.durability = value;
-            }
+            if (CardEleType == cardType.spell) { return; }
+            currHp = Mathf.Clamp(value,0, value) ;
+            DrawVar(); // tmp 조정
+        }
+    }
+    #endregion
+    [field: SerializeField] public int OriginCost { get; set; }
+    public int CurrCost
+    {
+        get
+        { return currCost; }
+        set
+        {
+            currCost = Mathf.Clamp(value, 0, value);
+            Cost.text = currCost.ToString();
         }
     }
 
-    #endregion
-
     // OnHand이벤트가 존재시, 특정순간마다 이벤트를 실행 (이벤트 구독은 BattleManager.cs에서 등록)
     public Action<int,bool> HandCardChanged;
-
+    public void DrawVar() // 벨류 변경뒤, tmp자동 변경
+    {
+        switch (CardEleType)
+        {
+            case Define.cardType.minion:
+                Stat.text = $"<color=green>ATT {Att} <color=red>HP {HP} <color=black>몬스터";return;
+            case Define.cardType.spell:
+                Stat.text = "<color=black>주문";return;
+            case Define.cardType.weapon:
+                Stat.text = $"<color=green>ATT {Att} <color=red>dur {HP} <color=black>무기"; return;
+        }
+    }
     public void Awake()
     {
         originScale = 0.3f * Vector3.one;
         Col = GetComponent<BoxCollider2D>();
     }
-    public void Init(CardData dataParam , bool isMine = true)
+    public void Init(CardData data, bool isMine = true)
     {
+        base.Init(data);
         IsMine = isMine;
         cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(IsMine);
         originScale = Vector3.one * 0.3f;
         transform.localScale = originScale;
-
+        objType = ObjType.HandCard;
+        
         // 나의 카드라면 모든 데이터 초기화
         if (IsMine)
         {
-            data = dataParam;
             cardName.text = data.cardName;
             Description.text = data.cardDescription;
-            Description.fontSize = (data.cardDescription.Length > 25) ? 18 : 15;
+            Description.fontSize = ( data.cardDescription == null || data.cardDescription.Length > 25) ? 18 : 15;
             // 카드 희귀도 표시
             switch (data.cardRarity)
             {
@@ -145,21 +122,19 @@ public class CardHand : CardEle, IBody
             switch (data.cardType)
             {
                 case Define.cardType.minion:
-                    MinionCardData cardData = data as MinionCardData;
-                    Stat.text = $"<color=green>ATT {cardData.att} <color=red>HP {cardData.hp} <color=black>몬스터";
-                    Att = OriginAtt = cardData.att; HP = OriginHp = cardData.hp;
+                    Stat.text = $"<color=green>ATT {MC.att} <color=red>HP {MC.hp} <color=black>몬스터";
+                    Att = OriginAtt = MC.att; HP = OriginHp = MC.hp;
                     break;
                 case Define.cardType.spell:
                     Stat.text = "<color=black>주문";
                     break;
                 case Define.cardType.weapon:
-                    WeaponCardData wData = (WeaponCardData)data;
-                    Stat.text = $"<color=green>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
-                    Att = OriginAtt = wData.att; HP = OriginHp = wData.durability; 
+                    Stat.text = $"<color=green>ATT {WC.att} <color=red>dur {WC.durability} <color=black>무기";
+                    Att = OriginAtt = WC.att; HP = OriginHp = WC.durability; 
                     break;
             }
-            originCost = data.cost;
-            Cost.text = originCost.ToString();
+
+            CurrCost = OriginCost = data.cost;
             cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
 
             // 드래그 이벤트 연결
@@ -170,12 +145,6 @@ public class CardHand : CardEle, IBody
             GAME.Manager.UM.BindEvent(this.gameObject, Enter, Define.Mouse.Enter, Define.Sound.None);
             GAME.Manager.UM.BindEvent(this.gameObject, Exit, Define.Mouse.Exit, Define.Sound.None);
 
-            // 주문카드라면 그에 맞게 바인딩 ( 미니언카드와 무기카드는 실제로 필드에소환 하거나 착용시 데이타 캐스팅)
-            if (dataParam is SpellCardData)
-            {
-                spellCardData = (SpellCardData)dataParam;
-                objType = Define.ObjType.HandCard;
-            }
         }
 
         // 상대 카드라면 꺼두기
@@ -184,7 +153,6 @@ public class CardHand : CardEle, IBody
             cardImage.gameObject.SetActive(false);
             TMPgo.gameObject.SetActive(false);  
         }
-
 
     }
 
@@ -225,11 +193,18 @@ public class CardHand : CardEle, IBody
     public void StartDrag(Vector3 v)
     {
         // 주문카드이며 직접 타겟팅하는 경우, 카드를 움직이지않고 현재 핸드카드에서 타겟팅 화살표 실행
-        if (spellCardData != null &&
-            spellCardData.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select) != null)
+        if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select)
         {
             // 이벤트중에 선택 이벤트 찾기
-            CardBaseEvtData selectEvt = spellCardData.evtDatas.Find(x => x.targeting == Define.evtTargeting.Select);
+            CardBaseEvtData selectEvt = SC.evtDatas[0];
+
+            // 만약 직접 타겟팅을 하는 주문이지만
+            // 대상이 적 미니언 뿐이고, 적 미니언이 없으면
+            // 강제로 드로우 끝 함수를 호출하여 사용 강제취소
+            string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
+            if (layers.Length == 1 && layers[0] == "foe"
+                && GAME.IGM.Spawn.enemyMinions.Count == 0)
+            { EndDrag(default); return; }
 
             // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 실행함수 예약 실행
             GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
@@ -241,6 +216,7 @@ public class CardHand : CardEle, IBody
                 },
 
                 GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+               
                 ));
             
             // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
@@ -250,15 +226,15 @@ public class CardHand : CardEle, IBody
                 // 현재 핸드목록에서 사용할 주문 카드 제거
                 GAME.IGM.Hand.PlayerHand.Remove(this);
 
-                // 상대에게 내가 주문 카드를 사용한걸 알리기
-                GAME.IGM.Packet.SendUseSpellCard(this.PunId, spellCardData.cardIdNum);
+                // 완전 삭제가 아닌 투명화만 진행
+                GAME.IGM.AddAction(FadeOutCo(true, false));
 
-                // 유저 선택건 , 자동 순서로 변경 [true,true,false,false]
-                data.evtDatas =  data.evtDatas.OrderByDescending(x => x.targeting == Define.evtTargeting.Select).ToList();
-              
-                for (int i = 0; i < data.evtDatas.Count; i++)
+                // 상대에게 내가 주문 카드를 사용한걸 알리기
+                GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum);
+
+                for (int i = 0; i < SC.evtDatas.Count; i++)
                 {
-                    GAME.IGM.Battle.Evt(data.evtDatas[i], this, t);
+                    GAME.IGM.Battle.Evt(SC.evtDatas[i], this, t);
                     yield return null;
                 }
 
@@ -273,8 +249,9 @@ public class CardHand : CardEle, IBody
                     yield return  GAME.IGM.Hand.CardAllignment(this.IsMine);
                     // 주문카드 사용 끝을 전달
                     GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
-                    // 주문카드 사용 완료시, 소멸 코루틴 애님 시작
-                    yield return GAME.IGM.StartCoroutine(FadeOutCo(IsMine));
+                    // 주문카드 완전 사용하였기에 삭제 진행
+                    GAME.IGM.Hand.AllCardHand.Remove(this);
+                    GameObject.Destroy(this.gameObject);
                 }
             }
         }
@@ -325,9 +302,9 @@ public class CardHand : CardEle, IBody
     }
     public void Dragging(Vector3 worldPos)
     {
-        if (spellCardData != null && GAME.IGM.TC.LR.gameObject.activeSelf == true) { return; }
-        // 미니언 카드들만 정렬 실행
-        if (data.cardType == Define.cardType.minion)
+        if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select) { return; }
+
+        if (MC != null)
         {
             GAME.IGM.Spawn.MinionAlignment(this, worldPos);
         }
@@ -353,7 +330,7 @@ public class CardHand : CardEle, IBody
     }
 
     // 카드 투명화로 소멸 코루틴 : 주로 카드 삭제 또는 미니언카드를 필드로 소환할떄 사용
-    public IEnumerator FadeOutCo(bool isMine = true)
+    public IEnumerator FadeOutCo(bool isMine = true, bool bothDelete = true)
     {
         if (IsMine)
         {
@@ -389,15 +366,20 @@ public class CardHand : CardEle, IBody
                 yield return null;
             }
         }
-        GAME.IGM.Hand.AllCardHand.Remove(this);
-        GameObject.Destroy(this.gameObject);
+
+        // 삭제도 진행할건지
+        if (bothDelete)
+        {
+            GAME.IGM.Hand.AllCardHand.Remove(this);
+            GameObject.Destroy(this.gameObject);
+        }
     }
     public void EndDrag(Vector3 v)
     {
         Ray = false; // Ray를 비활성화시 Exit가 호출되지만, DragCo를 뒤에서 null로 초기화하여서 Exit 먼저 실행을 막기
         StopAllCoroutines();
      
-        switch (data.cardType)
+        switch (CardEleType)
         {
             case Define.cardType.minion:
                 if (GAME.IGM.Spawn.CheckInBox(
@@ -414,18 +396,17 @@ public class CardHand : CardEle, IBody
                 }
                 break;
             case Define.cardType.spell:
-                if (GAME.IGM.Spawn.CheckInBox(
-                 new Vector2(this.transform.localPosition.x, this.transform.localPosition.y))
-                    && spellCardData.evtDatas.Find(x=>x.targeting == Define.evtTargeting.Select) == null)
+                if (SC.evtDatas[0].targeting != evtTargeting.Select
+                     && GAME.IGM.Spawn.CheckInBox( new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
                     GAME.IGM.Hand.PlayerHand.Remove(this);
 
                     // 상대에게 내가 주문 카드를 사용한걸 알리기
-                    GAME.IGM.Packet.SendUseSpellCard(this.PunId, spellCardData.cardIdNum);
+                    GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum);
                     // 이벤트 실행
-                    for (int i = 0; i < data.evtDatas.Count; i++)
+                    for (int i = 0; i < SC.evtDatas.Count; i++)
                     {
-                        GAME.IGM.Battle.Evt(data.evtDatas[i], this);
+                        GAME.IGM.Battle.Evt(SC.evtDatas[i], this);
                     }
 
                     GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
@@ -460,7 +441,7 @@ public class CardHand : CardEle, IBody
                     GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
 
                     // 상대에게 내 무기 착용 이벤트 전파
-                    GAME.IGM.Packet.SendWeapon(PunId, data.cardIdNum, this.transform.position.x
+                    GAME.IGM.Packet.SendWeapon(PunId, WC.cardIdNum, this.transform.position.x
                         , this.transform.position.y, this.transform.position.z);
 
                     // 영웅 무기 착용 시작 ( 카드 소멸 애니메이션 코루틴은 함수 내부에서 실행)

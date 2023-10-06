@@ -20,10 +20,6 @@ public partial class PacketManager
 
     #region 미니언 소환 이벤트 전파 받기
 
-    // 상대에게 내 미니언 소환 전파 
-    // punID : 손에서 어떤 카드인지 식별
-    // fieldIDX : 몇번쨰 필드에 소환했는지 
-    // cardID : 실제 카드 데이터 넘버
     public void SendMinionSpawn(int punID, int fieldIdx, int cardID , int currAtt, int currHp, int currCost ) // 현재 att hp cost
     {
         object[] data = new object[] { punID , fieldIdx , cardID, currAtt, currHp, currCost};
@@ -40,33 +36,29 @@ public partial class PacketManager
         // 변경되었을지 모를 현재의 공체비 받기
         int currAtt = (int)data[3];
         int currHp = (int)data[4];
-        int currCost = (int)data[5];    
+        int currCost = (int)data[5];
 
-        // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
-        Define.cardType type = GAME.Manager.RM.PathFinder.Dic[cardID].type;
-        string jsonFile = GAME.Manager.RM.PathFinder.Dic[cardID].GetJson();
-
-        // 카드 데이터 생성
-        CardData card = JsonConvert.DeserializeObject<MinionCardData>
-            (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-        
-        // 원본 공 체 비용을 찾기
-        MinionCardData mc = (MinionCardData)card;
-        int originCost = mc.cost;
-        int originHp = mc.hp;
-        int originAtt = mc.att;
-        mc.cost = currCost;
-        mc.att = currAtt;
-        mc.hp = currHp;
-
-        // 어떠 미니언 카드인지 띄우기
-        GAME.IGM.ShowSpawningMinionPopup(mc, new Vector3(3.5f, 2.8f, -0.5f));
-
-        // 미니언 소환전, 실제 카드데이터를 찾아 적용해주기
-        GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID).data = card;
-         
         // 데이터가 존재하기에, 소환 이벤트 예약
-        GAME.IGM.AddAction(GAME.IGM.Spawn.EnemySpawn(punID, fieldIdx ,originAtt, originHp, originCost ));
+        GAME.IGM.AddAction(MakeEnemyData(punID, fieldIdx, cardID, currAtt, currHp, currCost));
+
+        IEnumerator MakeEnemyData(int punID, int fieldIdx, int cardID, int currAtt, int currHp, int currCost)
+        {
+            // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
+            Define.cardType type = GAME.Manager.RM.PathFinder.Dic[cardID].type;
+            string jsonFile = GAME.Manager.RM.PathFinder.Dic[cardID].GetJson();
+
+            // 카드 데이터 생성
+            MinionCardData mc = JsonConvert.DeserializeObject<MinionCardData>
+                (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+
+            // 상대가 소환한 미니언의 현재 데이터 표기
+            GAME.IGM.ShowSpawningMinionPopup(mc, currAtt, currHp, currCost);
+
+            // 미니언 소환전, 실제 카드데이터를 찾아 적용해주기
+            GAME.IGM.Hand.EnemyHand.Find(punID).MC = mc;
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Spawn.EnemySpawn(punID, fieldIdx, currAtt, currHp, currCost));
+        }
+
     }
     #endregion
 

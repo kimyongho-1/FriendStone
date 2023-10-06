@@ -40,6 +40,7 @@ public class InGameManager : MonoBehaviour
     public BattleManager Battle { get; set; }
     public TurnEndBtn Turn { get; set; }
     public PacketManager Packet { get; set; }
+    public PostCamera Post { get; set; }
     private void Awake()
     {
         GAME.IGM = this;
@@ -115,17 +116,17 @@ public class InGameManager : MonoBehaviour
             }
         }
     }
-    public void ShowSpawningMinionPopup(MinionCardData data, Vector3 pos)
+    public void ShowSpawningMinionPopup(MinionCardData data, int att, int hp, int cost)
     {
         // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
         cardPopup.isEnmeySpawning = true;
 
-        cardPopup.transform.position = pos;
+        cardPopup.transform.position = new Vector3(3.5f, 2.8f, -0.5f);
         cardName.text = data.cardName;
         Description.text = data.cardDescription;
-        Stat.text = $"<color=green>ATT {data.att} <color=red>HP {data.hp} <color=black>몬스터";
+        Stat.text = $"<color=green>ATT {att} <color=red>HP {hp} <color=black>몬스터";
         Type.text = data.cardType.ToString();
-        Cost.text = data.cost.ToString();
+        Cost.text = cost.ToString();
         cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
         StartCoroutine(FadeIn());
         IEnumerator FadeIn()

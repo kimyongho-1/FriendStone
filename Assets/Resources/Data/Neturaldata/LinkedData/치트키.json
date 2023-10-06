@@ -6,7 +6,6 @@
   "cardClass": 3,
   "cardType": 1,
   "cardRarity": 2,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",

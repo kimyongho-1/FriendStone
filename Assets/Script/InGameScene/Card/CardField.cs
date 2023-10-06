@@ -10,13 +10,11 @@ public class CardField : CardEle,IBody
 {
     public TextMeshPro AttTmp, HpTmp;
     public SpriteRenderer cardImage,attIcon, hpIcon;
-    public bool attackable = true;
     public ParticleSystem sleep;
     public SpriteMask mask;
-    [field: SerializeField] public MinionCardData minionCardData { get; set; }
-
+    [SerializeField] int currAtt, currHp;
     #region IBODY
-
+    public bool Attackable { get; set; }
     [field: SerializeField] public int PunId { get; set; }
     [field: SerializeField] public bool IsMine { get; set; }
     public Transform TR { get { return this.transform; } }
@@ -32,17 +30,27 @@ public class CardField : CardEle,IBody
 
     public int Att
     {
-        get { AttTmp.text = minionCardData.att.ToString(); return minionCardData.att; }
-        set { minionCardData.att = value; AttTmp.text = minionCardData.att.ToString(); }
+        get
+        { return currAtt; }
+        set
+        {
+            currAtt = value;
+            AttTmp.text = currAtt.ToString();
+        }
     }
 
     public int HP
     {
-        get { HpTmp.text = minionCardData.hp.ToString(); return minionCardData.hp; }
-        set { minionCardData.hp = value; HpTmp.text = minionCardData.hp.ToString(); }
+        get
+        { return currHp; }
+        set
+        {
+            currHp = value;
+            HpTmp.text = currHp.ToString();
+        }
     }
     #endregion
-    
+
     // 미니언 카드가 공격을 한다 가정시, 부딪힐떄 위치가 겹치는 순간
     // 소팅 레이어가 동일하면 이미지가 겹치거나 꺠질 위험이 있어, 공격자가 최상단에 위치하도록 레이어 변경
     public void ChangeSortingLayer(bool isOn)
@@ -54,42 +62,76 @@ public class CardField : CardEle,IBody
         cardImage.sortingLayerID = layer.id;
         AttTmp.sortingLayerID = HpTmp.sortingLayerID = layer.id;
     }
+    public void SetLayerRecursive(int layers)
+    {
+        this.gameObject.layer =
+        mask.gameObject.layer =
+        cardImage.gameObject.layer =
+        attIcon.gameObject.layer =
+        AttTmp.gameObject.layer =
+        hpIcon.gameObject.layer =
+        HpTmp.gameObject.layer = layers;
+    }
     public void Init(CardData datapar, bool isMine)
     {
-        data = datapar;
-        IsMine = isMine;
-        
-        gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe") ;
-        
+        base.Init(datapar);
+        // 손에 있을때 실행해야할 이벤트들 제거
+        MC.evtDatas.RemoveAll(x=>x.when == evtWhen.onHand);
+
         Col = GetComponent<CircleCollider2D>();
-        minionCardData = (MinionCardData)data;
-        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
-        
+        IsMine = isMine;
+        onDead = Dead(IsMine);
+        objType = ObjType.Minion;
+        SetLayerRecursive(LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe"));
+        cardImage.sprite = GAME.Manager.RM.GetImage(MC.cardClass, MC.cardIdNum);
+
+        // 커서를 가져다 댈시 나올 팝업 이벤트 연결
         GAME.Manager.UM.BindCardPopupEvent(this.gameObject, CallPopup, 0.75f);
         
-        //attackable = (minionCardData.isCharge) ? true : false;
-        //sleep.gameObject.SetActive((attackable)? true : false);
-      
+        Attackable = (MC.isCharge) ? true : false;
+        sleep.gameObject.SetActive((MC.isCharge) ? false : true);
+       
+        Att = OriginAtt = MC.att;
+        HP = OriginHp = MC.hp;
         if (IsMine)
-        { 
-            // 좌클릭시 카메라로 레이활성화하여 타겟팅 이벤트 시작
+        {
+            // 좌클릭시 공격 타겟팅 이벤트 시작을 연결
             GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL, Define.Sound.Ready);
-            
-            // 소환시 , 손에서 낼떄 실행할 이벤트 있는지 확인
-            List<CardBaseEvtData> list = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onPlayed);
 
-            // 이벤트 없으면 자동 취소
-            if (list == null) { return; }
-
+            #region 이벤트 보유 여부 확인 
             // 먼저 유저가 직접 타겟팅하는 이벤트가 존재하는지 확인
-            CardBaseEvtData selectEvt = list.Find(x => x.targeting == evtTargeting.Select);
+            List<CardBaseEvtData> evtList = MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
+            
+            // 이벤트 자체가 없으면 취소
+            if (evtList.Count == 0) { return;  }
+            #endregion
+
+            #region 직접 타겟팅하는 이벤트 존재 여부 확인 및 나눠 실행
+
+            // 존재하는 이벤트중, 유저가 직접 선택하는 이벤트포함 확인
+            CardBaseEvtData selectEvt = evtList.Find(x => x.targeting == evtTargeting.Select);
+
+            // 선택 이벤트 없으면 순서대로 자동실행
+            if (selectEvt == null) 
+            {
+                PlayEvt();
+                return;
+            }
+
+            // 유저가 직접 선택하는 이벤트 존재 확인시
+            // 적 미니언만이 타겟대상이지만, 적 미니언이 없는 상황 확인
+            string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
+            if (layers.Length == 1 && layers[0] == "foe"
+                && GAME.IGM.Spawn.enemyMinions.Count == 0)
+            {
+                // 그러면 선택 이벤트 삭제후, 나머지 기존처럼 순서대로 자동실행
+                MC.evtDatas.Remove(selectEvt);
+                PlayEvt();
+            }
 
             // 유저가 직접 찾는 타겟팅 방식이 있다면
-            if (selectEvt != null)
+            else
             {
-                // 전체 이벤트에서 직접 수동으로 타겟팅하는 이벤트만 제거
-                list.Remove(selectEvt);
-
                 // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
                 GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
                     (this,
@@ -99,32 +141,51 @@ public class CardField : CardEle,IBody
                         return evt(a, t);
                     },
 
-                    GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+                    layers // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+                  
                     ));
 
                 // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
                 IEnumerator evt(IBody a, IBody t)
                 {
-                    GAME.IGM.Battle.Evt(selectEvt, a,t);
-                    yield return null;
+                    List<CardBaseEvtData> list =
+                    MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed).OrderByDescending(x=>x.targeting == evtTargeting.Select).ToList();
+                    
                     for (int i = 0; i < list.Count; i++)
                     {
-                        GAME.IGM.Battle.Evt(list[i], this);
+                        GAME.IGM.Battle.Evt(list[i], this, t);
                         yield return null;
+                    }
+                    GAME.IGM.AddAction(DeleteOnPlayedEvts());
+                    IEnumerator DeleteOnPlayedEvts()
+                    {
+                        yield return null;
+                        // 등장시 실행할 이벤트들은 모두 제거
+                        MC.evtDatas.RemoveAll(x => x.when == evtWhen.onPlayed);
                     }
                 }
             }
 
-            else
+            #endregion
+
+            // 타겟팅없는 이벤트뿐이면 순서대로 이벤트 재생
+            void PlayEvt()
             {
+                List<CardBaseEvtData> list =
+                    MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
                 for (int i = 0; i < list.Count; i++)
                 {
                     GAME.IGM.Battle.Evt(list[i], this);
                 }
+                GAME.IGM.AddAction(DeleteOnPlayedEvts());
+                IEnumerator DeleteOnPlayedEvts()
+                {
+                    yield return null;
+                    // 등장시 실행할 이벤트들은 모두 제거
+                    MC.evtDatas.RemoveAll(x => x.when == evtWhen.onPlayed);
+                }
             }
-            
         }
-        onDead = Dead(IsMine);
         IEnumerator Dead(bool isMine)
         {
             // ���� ����������
@@ -163,9 +224,12 @@ public class CardField : CardEle,IBody
             // ���� ���� �ϼ����� ������ �������� ���� �������� �����ϱ�
             if (isMine)
             {
-                // �� �ϼ��� �׾�����, ����Ʈ���� ���� �� ������ġ�� ������
-                GAME.IGM.Spawn.playerMinions.Remove(GAME.IGM.Spawn.playerMinions.Find(x => x.PunId == this.PunId));
-                // �ʵ� ������
+                CardField cf = GAME.IGM.Spawn.playerMinions.Find(x => x.PunId == this.PunId);
+                GAME.IGM.Spawn.playerMinions.Remove(cf);
+
+                // 핸드 관련된 이벤트를 실행해야하는 카드가 있는지 확인후 실행
+                GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.PunId, cf.IsMine));
+
                 GAME.IGM.Spawn.CalcSpawnPoint(false);
                 yield return new WaitForSeconds(1.5f);
                 //yield return StartCoroutine(GAME.IGM.Spawn.AllPlayersAlignment());
@@ -173,40 +237,36 @@ public class CardField : CardEle,IBody
             // �� �ϼ��ε� �� ����
             else
             {
-                GAME.IGM.Spawn.enemyMinions.Remove(GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == this.PunId));
+                CardField cf = GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == this.PunId);
+                GAME.IGM.Spawn.enemyMinions.Remove(cf);
+                // 핸드 관련된 이벤트를 실행해야하는 카드가 있는지 확인후 실행
+                GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.PunId, cf.IsMine));
                 yield return StartCoroutine(GAME.IGM.Spawn.AllEnemiesAlignment());
             }
 
             Destroy(this.gameObject);
         }
-        AttTmp.text = minionCardData.att.ToString(); HpTmp.text = minionCardData.hp.ToString();
     }
 
     // 미니언 카드의 경우, 일정초 동안 커서를 가져다 댈시 카드의 정보를 보여주는 카드팝업 호출 이벤트
     public void CallPopup()
     {
-        Debug.Log(data.cardType.ToString());
-
-        if (this.data is MinionCardData == false)
+        if (MC == null)
         {
             Debug.Log("ERROR : 왜 데이터가 미니언타입이 아닌지");
         }
 
-        else
-        {
-            // 몇번쨰 인지 인덱스 찾기
-            int idx = (this.IsMine) ? GAME.IGM.Spawn.playerMinions.IndexOf(this)
-                : GAME.IGM.Spawn.enemyMinions.IndexOf(this) ;
+        // 몇번쨰 인지 인덱스 찾기
+        int idx = (this.IsMine) ? GAME.IGM.Spawn.playerMinions.IndexOf(this)
+            : GAME.IGM.Spawn.enemyMinions.IndexOf(this);
 
-            // 우측으로 너무 밀린 미니언의 경우 왼쪽으로 카드팝업을 띄어주기
-            Vector3 pos = transform.position + Vector3.right * 2f;
-            if (this.transform.position.x > 3f)
-            { pos = transform.position - Vector3.right * 2f; }
-            
-            // 보여질 데이터와 위치 구해지면, 카드팝업 띄우기
-            GAME.IGM.ShowMinionPopup((MinionCardData)data, pos, cardImage.sprite); 
-        }
-        
+        // 우측으로 너무 밀린 미니언의 경우 왼쪽으로 카드팝업을 띄어주기
+        Vector3 pos = transform.position + Vector3.right * 2f;
+        if (this.transform.position.x > 3f)
+        { pos = transform.position - Vector3.right * 2f; }
+
+        // 보여질 데이터와 위치 구해지면, 카드팝업 띄우기
+        GAME.IGM.ShowMinionPopup(MC, pos, cardImage.sprite);
     }
 
     // 미니언 공격시도 함수 (좌클릭 마우스 이벤트)
@@ -214,23 +274,37 @@ public class CardField : CardEle,IBody
     {
         // 공격 가능한 상태가 아니거나
         // 이미 다른 객체가 타겟팅 중인데 이 객체를 클릭시 취소
-        if (!attackable || GAME.IGM.TC.LR.gameObject.activeSelf == true
+        if (!Attackable || GAME.IGM.TC.LR.gameObject.activeSelf == true
             || sleep.gameObject.activeSelf == true)
         { return; }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
         GAME.IGM.Spawn.SpawnRay = Ray = false;
+        Attackable = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
+        GAME.Manager.StartCoroutine(GAME.IGM.TC.MeeleTargettingCo
             (this,
-            (IBody a, IBody t) => { return AttackCo(a, t); },
-            new string[] { "foe", "foeHero" }
+            (IBody a, IBody t) => { return AttackCo(a, t); }
             ));
     }
 
     public IEnumerator AttackCo(IBody attacker, IBody target)
     {
+        // 타겟이 현재 없다면 , 제자리 위치후 끄기
+        if (target == null)
+        {
+            float time = 0;
+            Vector3 currPos = attacker.TR.position;
+            while (time < 1f)
+            {
+                time += Time.deltaTime * 1f;
+                this.transform.localPosition = Vector3.Lerp(currPos, OriginPos, time);
+                yield return null;
+            }
+            yield break;
+        }
+
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
         float t = 0;
@@ -272,9 +346,13 @@ public class CardField : CardEle,IBody
         {
             GAME.IGM.Packet.SendMinionAttack(attacker.PunId, target.PunId);
         }
+        this.Attackable = false;
 
-        if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
-        if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
+        Debug.Log($"target {target}, attacker {attacker}");
+        Debug.Log($"target {target.onDead}, attacker {attacker.onDead}");
+        if (target.HP <= 0) { yield return GAME.IGM.StartCoroutine(target.onDead); }
+        if (attacker.HP <= 0) { yield return GAME.IGM.StartCoroutine(attacker.onDead); }
+
     }
 
 }

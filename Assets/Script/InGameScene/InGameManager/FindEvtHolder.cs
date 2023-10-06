@@ -23,13 +23,14 @@ public class FindEvtHolder : MonoBehaviour
     private void OnDisable()
     {
         int start = Mathf.Clamp(list.Count,0,3);
-        for (int i = start; i < 3; i++) 
-        {
+      
+        for (int i = start; i < 3; i++)
+        { 
             // 인게임 카드 프리팹 생성
             CardHand ch = GameObject.Instantiate(prefab, this.transform);
-            ch.transform.localScale = Vector3.one * 0.75f;
-            ch.transform.localPosition = new Vector3( (i-1) * 4f, 1.25f, -1);
             list.Add(ch);
+            list[i].transform.localScale = Vector3.one * 0.75f;
+            list[i].transform.localPosition = new Vector3((i - 1) * 4f, 1.25f, -1);
         }
     }
 
@@ -38,6 +39,7 @@ public class FindEvtHolder : MonoBehaviour
     // 발견 이벤트 시작시, 데이터 준비
     public void ReadyFindEvt(int[] puns)
     {
+        Debug.Log($"시전자의 발견이벤트 실행. 리스트 : {list.Count}");
         CurrSelected = false;
         // 발견 카드풀 데이터 초기화
         for (int i = 0; i < 3; i++)
@@ -46,7 +48,8 @@ public class FindEvtHolder : MonoBehaviour
             list[i].cardImage.gameObject.SetActive(true);
             list[i].TMPgo.gameObject.SetActive(true);
             list[i].cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(true);
-
+            Debug.Log($"스케일 : {list[i].transform.localScale}");
+            Debug.Log($"위치 : {list[i].transform.localPosition}");
             // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
             Define.cardType type = GAME.Manager.RM.PathFinder.Dic[puns[i]].type;
             string jsonFile = GAME.Manager.RM.PathFinder.Dic[puns[i]].GetJson();
@@ -71,8 +74,9 @@ public class FindEvtHolder : MonoBehaviour
             }
 
             CardHand ch = list[i];
-            
             ch.Init(card);
+            ch.transform.localScale = Vector3.one * 0.75f;
+            ch.transform.localPosition = new Vector3((i - 1) * 4f, 1.25f, -1);
             ch.PunId = GAME.IGM.Hand.CreatePunNumber();
             ch.SetOrder(1000);
         }
@@ -134,6 +138,7 @@ public class FindEvtHolder : MonoBehaviour
             // 모두 카드 뒷면으로 표시
             list[i].cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(false);
             list[i].cardBackGround.sortingOrder = 1000;
+            list[i].transform.localPosition = new Vector3((i - 1) * 4f, 1.25f, -1);
             // 뒷면만 나오면 되기에, 나머지 꺼주기
             list[i].cardImage.gameObject.SetActive(false);
             list[i].TMPgo.gameObject.SetActive(false);

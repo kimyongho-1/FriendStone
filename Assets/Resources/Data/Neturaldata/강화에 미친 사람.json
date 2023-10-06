@@ -1,6 +1,6 @@
 {
   "att": 1,
-  "hp": 2,
+  "hp": 1,
   "isTaunt": false,
   "isCharge": false,
   "cardName": "강화에 미친 사람",
@@ -10,11 +10,10 @@
   "cardClass": 3,
   "cardType": 0,
   "cardRarity": 1,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffTargeting": 1,
+      "buffAutoMode": 0,
       "buffType": 2,
       "buffFX": 0,
       "relatedIds": [],
@@ -22,6 +21,7 @@
       "buffHp": 3,
       "costCount": 0,
       "when": 0,
+      "targeting": 1,
       "area": 1,
       "faction": 1,
       "type": 0

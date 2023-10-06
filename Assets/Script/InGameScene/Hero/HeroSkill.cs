@@ -7,7 +7,9 @@ public class HeroSkill : MonoBehaviour, IBody
 {
     Func<IBody, IBody, IEnumerator> skillFunc;
     public SkillData data ;
-    # region
+    
+    #region
+    [field : SerializeField]public bool Attackable { get; set; }
     public IEnumerator onDead { get; set; }
     public bool IsMine { get; set; }
     public int PunId { get; set; }
@@ -99,11 +101,18 @@ public class HeroSkill : MonoBehaviour, IBody
         if (Col.enabled == false || GAME.IGM.TC.Arrow.gameObject.activeSelf == true)
         { return; }
 
+        // 적미니언 선택 조건인데 없으면 강제 사용 취소
+        if (GAME.IGM.Spawn.enemyMinions.Count == 0)
+        {
+            return;
+        }
+
+
         // 공격자 자신과, 스폰영역 레이 비활성화
         GAME.IGM.Spawn.SpawnRay = Ray = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-        GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" }));
+        GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" } ));
     }
 
 

@@ -3,6 +3,7 @@ using Photon.Realtime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -107,7 +108,7 @@ public class BattleManager : MonoBehaviour
 
             // 타겟있을시 이벤트 예약
             ActionQueue.Enqueue(AttackEvt((attacker.objType == Define.ObjType.Minion) ?
-                attacker : GAME.IGM.Hero.Player, searchedTarget, ah.attAmount, ah.attType));
+                attacker : GAME.IGM.Hero.Player, target, ah.attAmount, ah.attType));
         }
 
         #region 자동 실행건
@@ -256,7 +257,7 @@ public class BattleManager : MonoBehaviour
                         // 손에 있는 핸드카드일떄  특정순간마다 실행할 이벤트 예약 실시
                         ch.HandCardChanged += BuffHandle(ch, ch.PunId, bh);
                         // 이벤트 등록시 최초 실행
-                        ch.HandCardChanged.Invoke(ch.data.cardIdNum, true);
+                        ch.HandCardChanged.Invoke(ch.Data.cardIdNum, true);
                     }
 
                     // 손에서 낼떄, 즉 필드 미니언이 객체
@@ -279,19 +280,16 @@ public class BattleManager : MonoBehaviour
                             switch (bh.area)
                             {
                                 case Define.evtArea.Enemy:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
+                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false && x.objType == Define.ObjType.Minion).Count(); break;
                                 case Define.evtArea.Player:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true && x.PunId != caster.PunId).Count() - 1; break;
+                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true && x.PunId != caster.PunId && x.objType == Define.ObjType.Minion).Count(); break;
                                 case Define.evtArea.All:
-                                    count = GAME.IGM.allIBody.Count() - 2; break;
+                                    count = GAME.IGM.allIBody.FindAll(x=>x.objType == Define.ObjType.Minion && x.PunId != caster.PunId).Count(); break;
                             }
                         }
 
-                        // 구해진 count수만큼 배수로 진행
-                        bh.buffAtt *= count;
-                        bh.buffHp *= count;
                         // 이벤트 예약
-                        GAME.IGM.AddAction(Buff(caster, caster, bh));
+                        GAME.IGM.AddAction(Buff(caster, caster, bh, count));
                     }
                     break;
                     #endregion
@@ -369,199 +367,72 @@ public class BattleManager : MonoBehaviour
                 case Define.buffType.att:
                     return (int id, bool IsMine) =>
                     {
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
-                        int origin = target.OriginAtt;
-                        int[] relatedID = bh.relatedIds;
-
-                        // 미니언카드 소환이지만 명확한 카드타겟 범위가 아니라면 이벤트 실행 취소
-                        if (bh.relatedIds.Length > 0 && !relatedID.Contains(id)) { return; }
-
-                        int count = 0;
-                        // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
-                        if (bh.relatedIds.Length > 0)
-                        {
-                            for (int i = 0; i < relatedID.Length; i++)
-                            {
-                                count += GAME.IGM.allIBody.FindAll(x => x.PunId == relatedID[i]).Count();
-                            }
-                        }
-
-                        // count 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
-                        else
-                        {
-                            switch (bh.area)
-                            {
-                                case Define.evtArea.Enemy:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
-                                case Define.evtArea.Player:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true).Count() - 1; break;
-                                case Define.evtArea.All:
-                                    count = GAME.IGM.allIBody.Count() - 2; break;
-                            }
-                        }
-
-                        switch (target.data.cardType)
-                        {
-                            case Define.cardType.minion:
-                                MinionCardData mc = (MinionCardData)target.data;
-                                mc.att = origin + bh.buffAtt * count;
-                                target.Stat.text = $"<color=yellow>ATT {mc.att} <color=red>HP {mc.hp} <color=black>몬스터";
-                                break;
-                            case Define.cardType.spell: break;
-                            case Define.cardType.weapon:
-                                WeaponCardData wData = (WeaponCardData)target.data;
-                                wData.att = origin + bh.buffAtt * count;
-                                target.Stat.text = $"<color=yellow>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
-                                break;
-                        }
+                        int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        target.Att = target.Att + bh.buffAtt * count;
                     };
 
                 case Define.buffType.hp:
                     return (int id, bool IsMine) =>
                     {
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
-                        int origin = target.OriginHp;
-                        int[] relatedID = bh.relatedIds;
-
-                        // 미니언카드 소환이지만 명확한 카드타겟 범위가 아니라면 이벤트 실행 취소
-                        if (bh.relatedIds.Length > 0 && !relatedID.Contains(id)) { return; }
-
-                        int count = 0;
-                        // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
-                        if (bh.relatedIds.Length > 0 )
-                        {
-                            for (int i = 0; i < relatedID.Length; i++)
-                            {
-                                count += GAME.IGM.allIBody.FindAll(x => x.PunId == relatedID[i]).Count();
-                            }
-                        }
-
-                        // count 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
-                        else
-                        {
-                            switch (bh.area)
-                            {
-                                case Define.evtArea.Enemy:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
-                                case Define.evtArea.Player:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true).Count() - 1; break;
-                                case Define.evtArea.All:
-                                    count = GAME.IGM.allIBody.Count() - 2; break;
-                            }
-                        }
-
-                        switch (target.data.cardType)
-                        {
-                            case Define.cardType.minion:
-                                MinionCardData mc = (MinionCardData)target.data;
-                                mc.hp = origin + bh.buffHp * count;
-                                target.Stat.text = $"<color=yellow>ATT {mc.att} <color=red>HP {mc.hp} <color=black>몬스터";
-                                break;
-                            case Define.cardType.spell: break;
-                            case Define.cardType.weapon:
-                                WeaponCardData wData = (WeaponCardData)target.data;
-                                wData.durability = origin + bh.buffHp * count;
-                                target.Stat.text = $"<color=yellow>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
-                                break;
-                        }
+                        int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        target.HP = target.HP + bh.buffHp * count;
                     };
 
                 case Define.buffType.atthp:
                     return (int id, bool IsMine) =>
                     {
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
-                        int[] relatedID = bh.relatedIds;
-                        int count = 0;
-                        
-                        // 미니언카드 소환이지만 명확한 카드타겟 범위가 아니라면 이벤트 실행 취소
-                        if (bh.relatedIds.Length > 0 && !relatedID.Contains(id)) { return; }
-
-                        // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
-                        if (bh.relatedIds.Length > 0 )
-                        {
-                            for (int i = 0; i < relatedID.Length; i++)
-                            {
-                                count += GAME.IGM.allIBody.FindAll(x => x.PunId == relatedID[i]).Count();
-                            }
-                        }
-
-                        // count 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
-                        else
-                        {
-                            switch (bh.area)
-                            {
-                                case Define.evtArea.Enemy:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
-                                case Define.evtArea.Player:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true).Count() - 1; break;
-                                case Define.evtArea.All:
-                                    count = GAME.IGM.allIBody.Count() - 2; break;
-                            }
-                        }
-
-                        switch (target.data.cardType)
-                        {
-                            case Define.cardType.minion:
-                                MinionCardData mc = (MinionCardData)target.data;
-                                mc.att = target.OriginAtt + bh.buffAtt * count;
-                                mc.hp = target.OriginHp + bh.buffHp * count;
-                                target.Stat.text = $"<color=yellow>ATT {mc.att} <color=red>HP {mc.hp} <color=black>몬스터";
-                                break;
-                            case Define.cardType.spell: break;
-                            case Define.cardType.weapon:
-                                WeaponCardData wData = (WeaponCardData)target.data;
-                                wData.att = target.OriginAtt + bh.buffAtt * count; 
-                                wData.durability = target.OriginHp + bh.buffHp * count;
-                                target.Stat.text = $"<color=yellow>ATT {wData.att} <color=red>dur {wData.durability} <color=black>무기";
-                                break;
-                        }
+                        int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        target.Att = target.Att + bh.buffAtt * count;
+                        target.HP = target.HP + bh.buffHp * count;
                     };
 
                 case Define.buffType.cost:
                     return (int id, bool IsMine) =>
                     {
-                        if (IsMine == true && bh.area == Define.evtArea.Enemy) { return; }
-                        if (IsMine == false && bh.area == Define.evtArea.Player) { return; }
-                        int[] relatedID = bh.relatedIds;
-                        int count = 0;
-                        
-                        // 미니언카드 소환이지만 명확한 카드타겟 범위가 아니라면 이벤트 실행 취소
-                        if (bh.relatedIds.Length > 0 && !relatedID.Contains(id)) { return; }
-
-                        // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
-                        if (bh.relatedIds.Length > 0 )
-                        {
-                            for (int i = 0; i < relatedID.Length; i++)
-                            {
-                                count += GAME.IGM.allIBody.FindAll(x => x.PunId == relatedID[i]).Count();
-                            }
-                        }
-
-                        // related 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
-                        else
-                        {
-                            switch (bh.area)
-                            {
-                                case Define.evtArea.Enemy:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
-                                case Define.evtArea.Player:
-                                    count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true).Count() - 1; break;
-                                case Define.evtArea.All:
-                                    count = GAME.IGM.allIBody.Count() - 2; break;
-                            }
-                        }
-
-                        target.data.cost = target.originCost + bh.costCount * count;
-                        target.Cost.text = target.data.cost.ToString();
+                        int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        target.CurrCost = target.OriginCost - bh.costCount * count;
                     };
 
                 default: return null;
             }
         }
 
+        // 손에 있을떄 실행할 버프이벤트 분류함수
+        int SortHandEvt(ref bool IsMine, ref BuffHandler bh, ref CardHand target, ref int id)
+        {
+            if (IsMine == true && bh.area == Define.evtArea.Enemy) { return 0; }
+            if (IsMine == false && bh.area == Define.evtArea.Player) { return 0; }
+            int origin = target.OriginAtt;
+            int[] relatedID = bh.relatedIds;
+
+            // 미니언카드 소환이지만 명확한 카드타겟 범위가 아니라면 이벤트 실행 취소
+            if (bh.relatedIds.Length > 0 && !relatedID.Contains(id)) { return 0; }
+
+            int count = 0;
+            // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
+            if (bh.relatedIds.Length > 0)
+            {
+                for (int i = 0; i < relatedID.Length; i++)
+                {
+                    count += GAME.IGM.allIBody.FindAll(x => x.PunId == relatedID[i]).Count();
+                }
+            }
+
+            // count 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
+            else
+            {
+                switch (bh.area)
+                {
+                    case Define.evtArea.Enemy:
+                        count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false).Count() - 1; break;
+                    case Define.evtArea.Player:
+                        count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true).Count() - 1; break;
+                    case Define.evtArea.All:
+                        count = GAME.IGM.allIBody.Count() - 2; break;
+                }
+            }
+            return count;
+        }
     }
 
     public void RegisterUtillHandler(UtillHandler uh, IBody caster)
@@ -819,33 +690,27 @@ public class BattleManager : MonoBehaviour
 
 
     // 실행할 버프 코루틴
-    public IEnumerator Buff(IBody caster, IBody target, BuffHandler bh)
+    public IEnumerator Buff(IBody caster, IBody target, BuffHandler bh, int multiPly = 1)
     {
         // 어떠한 부여 효과인지
         switch (bh.buffType)
         {
             case Define.buffType.att:
-                target.Att += bh.buffAtt;
+                target.Att += bh.buffAtt* multiPly;
                 break;
             case Define.buffType.hp:
-                target.HP += bh.buffHp;
+                target.HP += bh.buffHp * multiPly;
                 break;
             case Define.buffType.atthp:
-                target.Att += bh.buffAtt;
-                target.HP += bh.buffHp;
+                target.Att += bh.buffAtt * multiPly;
+                target.HP += bh.buffHp * multiPly;
                 break;
             case Define.buffType.cost:
                 break;
         }
-
-        if (bh.when == Define.evtWhen.onHand)
-        {
-            Debug.Log(bh);
-            Debug.Log("OnHand 이벤트네..");
-        }
-
+        Debug.Log($"타겟 : {target.PunId}, 시전자 : {caster.PunId}");
         // 버프 이벤트 동기화를 위해 전달 
-        GAME.IGM.Packet.SendBuffEvt(target.PunId, bh.buffType, bh.buffAtt, bh.buffHp);
+        GAME.IGM.Packet.SendBuffEvt(target.PunId, bh.buffType , bh.buffAtt * multiPly, bh.buffHp * multiPly);
         yield break;
     }
     public IEnumerator ReceivedBuff(Define.buffType type, IBody target,int att, int hp)
@@ -923,8 +788,12 @@ public class BattleManager : MonoBehaviour
             GAME.IGM.Packet.SendAttEvt(attacker.PunId, target.PunId, attType, attAmount, attacker.objType);
         }
 
+        Debug.Log($"attacker : {attacker}[{attacker.PunId}], target : {target}[{target.PunId}]");
         target.HP -=  (attType == Define.attType.Damage) ? attAmount : 1000;
-        if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
+        if (target.HP <= 0) 
+        { 
+            yield return StartCoroutine(target.onDead); 
+        }
     }
-
+   
 }

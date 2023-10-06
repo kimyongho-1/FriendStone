@@ -19,6 +19,7 @@ public interface IBody // 공격을 받을수 있는 모든 객체에 부착
     public int OriginAtt { get; set; }
     public int Att { get; set;  }
     public int HP { get; set; }
+    public bool Attackable { get; set; }
     #endregion
 
 
@@ -27,6 +28,6 @@ public interface IBody // 공격을 받을수 있는 모든 객체에 부착
     public bool Ray { set; }
     #endregion
 
-
     public IEnumerator onDead { get; set; }
+
 }

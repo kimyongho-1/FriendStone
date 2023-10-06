@@ -219,7 +219,7 @@ public partial class PacketManager
         // 시전자 찾기 + 카드넘버 + 식별넘버 
         int punID = (int)data[1];
         Debug.Log($"획득이벤트 시전자 punID : {punID}");
-        IBody caster = (isMinionAct) ? GAME.IGM.allIBody.Find(x=>x.PunId == punID) : GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
+        IBody caster = (isMinionAct) ? GAME.IGM.allIBody.Find(x=>x.PunId == punID) : GAME.IGM.Hand.EnemyHand.Find(punID);
         
         int[] cardIDs = (int[])data[2];
         int[] puns = (int[])data[3];
@@ -286,12 +286,16 @@ public partial class PacketManager
         Define.buffType type = (Define.buffType)data[1];
         int att = (int)data[2];
         int hp = (int)data[3];
-
-        GAME.IGM.AddAction(DelayedBuff(targetPunID, type, att, hp));
-        IEnumerator DelayedBuff(int targetPunID, Define.buffType type , int att, int hp)
+        
+        GAME.IGM.AddAction( DelayedBuff(targetPunID, att, hp, type));
+        IEnumerator DelayedBuff(int targetPunID, int att, int hp , Define.buffType type)
         {
-            yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.ReceivedBuff(type, GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID)
-            , att, hp));
+            CardField cf1 = GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID);
+            CardHand cf2 = GAME.IGM.Hand.EnemyHand.Find(targetPunID);
+            Debug.Log($"cardField : {cf1}, cardHand : {cf2}");
+            yield return GAME.IGM.StartCoroutine(
+                GAME.IGM.Battle.ReceivedBuff(type, GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID)
+                , att, hp));
         }
     }
     #endregion

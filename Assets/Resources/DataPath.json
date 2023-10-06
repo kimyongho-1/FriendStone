@@ -213,20 +213,16 @@
       "type": "spell"
     },
     "10000": {
-      "path": "발견테스트1",
+      "path": "Data/Neturaldata/공격타겟팅",
       "type": "minion"
     },
     "10001": {
-      "path": "획득테스트",
+      "path": "Data/Neturaldata/치료타겟팅",
       "type": "minion"
     },
-    "10003": {
-      "path": "새로운 카드 데이터",
-      "type": "weapon"
-    },
     "10002": {
-      "path": "새로운 카드 데이터",
-      "type": "weapon"
+      "path": "Data/Neturaldata/버프타겟팅",
+      "type": "minion"
     }
   }
 }

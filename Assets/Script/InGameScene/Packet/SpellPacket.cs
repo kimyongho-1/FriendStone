@@ -39,18 +39,18 @@ public partial class PacketManager
         string jsonFile = GAME.Manager.RM.PathFinder.Dic[cardID].GetJson();
 
         // 카드 데이터 생성
-        CardData card = JsonConvert.DeserializeObject<SpellCardData>
+        SpellCardData card = JsonConvert.DeserializeObject<SpellCardData>
             (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 
-        // 미니언 소환전, 실제 카드데이터를 찾아 적용해주기
-        CardHand ch = GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
+        // 핸드카드, 실제 카드데이터를 찾아 적용해주기
+        CardHand ch = GAME.IGM.Hand.EnemyHand.Find(punID);
         GAME.IGM.Hand.EnemyHand.Remove(ch);
 
         // 어떠 주문카드인지 띄우기
-        GAME.IGM.ShowSpellPopup((SpellCardData)card,new Vector3(3.5f, 2.8f, -0.5f) );
+        GAME.IGM.ShowSpellPopup(card,new Vector3(3.5f, 2.8f, -0.5f) );
 
         Debug.Log($"{punID}가 현재 {ch}로 {ch.cardName}존재 확인");
-        ch.data = card;
+        ch.SC = card;
         // 상대가 드래그를 끝낸 위치로 이동하는 애니메이션코루틴 먼저 예약
         GAME.IGM.AddAction(spellHandCardMove(ch, dest));
         // 상대의 핸드카드가 해당 위치로 이동하는 모션 따라하기
@@ -64,6 +64,8 @@ public partial class PacketManager
                 ch.transform.position = Vector3.Lerp(start, dest, t);
                 yield return null;
             }
+            // 완전 삭제가 아닌 투명화만 진행
+            yield return GAME.IGM.StartCoroutine(ch.FadeOutCo(false, false));
         }
     }
     #endregion
@@ -83,15 +85,16 @@ public partial class PacketManager
         GAME.IGM.AddAction(RemoveSpellCard(ch));
         IEnumerator RemoveSpellCard(CardHand ch)
         {
-            Debug.Log($"{punID}가 현재 {ch.data.cardName}로 존재 확인");
+            Debug.Log($"{punID}가 현재 {ch.SC.cardName}로 존재 확인");
             // 핸드매니저에서 적 핸드카드들 재정렬 시작
             yield return StartCoroutine(GAME.IGM.Hand.CardAllignment(false));
             // 상대가 어떤 카드 사용했는지 보여주던 카드팝업 해제
             GAME.IGM.cardPopup.isEnmeySpawning = false;
             GAME.IGM.cardPopup.gameObject.SetActive(false);
-            // 사라지는 연출 시작
-            yield return StartCoroutine(ch.FadeOutCo(false)) ;
-
+            
+            // 주문카드 완전 사용하였기에 삭제 시작
+            GAME.IGM.Hand.AllCardHand.Remove(ch);
+            GameObject.Destroy(ch.gameObject);
         }
 
     }

@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public partial class SpawnManager 
+public partial class SpawnManager
 {
-    public IEnumerator EnemySpawn(int punID, int spawnIdx, int att, int hp, int cost ) // 카드 식별자번호, 필드 몇번쨰 소환, 원본의 공체비
+    // 카드 식별자번호, 필드 몇번쨰 소환, 원본의 공체비
+    public IEnumerator EnemySpawn(int punID, int spawnIdx, int att, int hp, int cost )
     {
         #region 상대가 소환할것이기에, 추가 자리를 포함하여 적 미니언들 위치 계산
         // 움직일 적의 핸드카드 객체
-        CardHand card = GAME.IGM.Hand.EnemyHand.Find(x => x.PunId == punID);
+        CardHand card = GAME.IGM.Hand.EnemyHand.Find(punID);
         // 총 에너미 미니언 갯수 (늘어날것을 추가하여 계산)
         int count = enemyMinions.Count + 1;
         List<Vector3> pointList = new List<Vector3>();
@@ -46,10 +47,10 @@ public partial class SpawnManager
         #region 상대의 핸드 카드소멸 코루틴 및 필드카드 프리팹 생성
         // 현재 핸드카드 (미니언) 정보 토대로 스폰 시작
         CardField cf = GameObject.Instantiate(prefab, Enemies);
-        cf.Init(card.data,false);
-        cf.OriginAtt = att; cf.OriginHp = hp;
-
         cf.PunId = card.PunId;
+        cf.Init(card.MC,false);
+        cf.Att = att; cf.HP = hp; // 현재 변경됬을지 모를 실제 공/체
+
         cf.transform.localPosition = card.transform.localPosition;
         enemyMinions.Insert(spawnIdx, cf);
         // 현재 적 핸드목록에서 소환할 이 미니언카드 제거
@@ -86,10 +87,11 @@ public partial class SpawnManager
         }
 
         // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
-        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.data.cardIdNum, cf.IsMine));
+        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.MC.cardIdNum, cf.IsMine));
 
         // 현재 소환된 카드가, 정해진 위치로 이동을 끝맞출떄까지 대기
         yield return new WaitUntil(()=>(cf.transform.position == cf.OriginPos));
+        yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(false));
         // 연이어 공격 이벤트 전파시, 위치를 다 끝 맞춘 상태에서 진행되는것이 자연스럽기에
     }
 

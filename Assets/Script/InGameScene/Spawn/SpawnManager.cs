@@ -190,8 +190,8 @@ public partial class SpawnManager : MonoBehaviour
         cf.transform.localPosition = card.transform.localPosition;
         playerMinions.Insert(idx, cf);
 
-        // 상대에게 내 미니언 소환 이벤트 전파 [카드객체 식별자, 몇번쨰 필드에 소환인지, 실제 카드 데이터 식별자 , 원본이 아닌 현재 공체비용]
-        GAME.IGM.Packet.SendMinionSpawn(cf.PunId, idx, card.data.cardIdNum , card.Att, card.HP , card.data.cost);
+        // 상대에게 내 미니언 소환 이벤트 전파 [카드객체 식별자, 몇번쨰 필드에 소환인지, 실제 카드 데이터 , 원본이 아닌 현재 공체비용]
+        GAME.IGM.Packet.SendMinionSpawn(cf.PunId, idx, card.MC.cardIdNum , card.Att, card.HP , card.CurrCost);
 
         // 필드 하수인들의 레이를 잠시 끄기
         playerMinions.ForEach(x=>x.Ray = false);
@@ -214,12 +214,6 @@ public partial class SpawnManager : MonoBehaviour
             StartCoroutine(move(playerMinions[i].transform, i));
         }
 
-        cf.Init(card.data, true);
-        cf.OriginAtt = card.OriginAtt;
-        cf.OriginHp = card.OriginHp;
-        cf.minionCardData.cost = card.data.cost;
-        GAME.IGM.AddAction(wait());
-     
         // 이동 애니메이션 코루틴
         IEnumerator move(Transform tr, int idx)
         {
@@ -235,7 +229,11 @@ public partial class SpawnManager : MonoBehaviour
             queue.Dequeue();
         }
 
-        //StartCoroutine(wait());
+        // 미니언카드 생성
+        cf.Init(card.MC, true);
+        // 미니언이 위치를 잡을떄까지 대기 예약 (이벤트가 있고 곧바로 이벤트 실행시 부자연스럽기에)
+        GAME.IGM.AddAction(wait());
+
         IEnumerator wait()
         {
             // 모든 이동 코루틴 끝났을지, 다음 스폰포인트 위치값 초기화
@@ -248,7 +246,7 @@ public partial class SpawnManager : MonoBehaviour
 
             // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
             GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).
-                ForEach(x=>x.HandCardChanged.Invoke(cf.data.cardIdNum, cf.IsMine));
+                ForEach(x=>x.HandCardChanged.Invoke(cf.MC.cardIdNum, cf.IsMine));
 
             // 핸드카드도 정렬 시작
             yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(true));

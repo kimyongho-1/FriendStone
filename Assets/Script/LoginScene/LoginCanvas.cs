@@ -57,7 +57,7 @@ public class LoginCanvas : MonoBehaviour
             // TEST 버전 ,no php
             GAME.Manager.NM.playerInfo = new PlayerInfo() { ID = "123", NickName = "test" };
             GAME.Manager.RM.GameDeck = new DeckData();
-            for (int i = 1; i < 11; i++)
+            for (int i = 33; i < 43; i++)
             {
                 // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
                 Define.cardType type = GAME.Manager.RM.PathFinder.Dic[i].type;
@@ -80,12 +80,10 @@ public class LoginCanvas : MonoBehaviour
                         break;
                     default: break;
                 }
-
                 GAME.Manager.RM.GameDeck.cards.Add(card, 2);
 
             }
-
-
+         
             // 랜덤매칭 시작
             Photon.Pun.PhotonNetwork.JoinRandomRoom();
 

@@ -1,8 +1,10 @@
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class cardInfo
@@ -27,8 +29,23 @@ public class CardData
     public Define.classType cardClass;
     public Define.cardType cardType;
     public Define.cardRarity cardRarity;
-    public string associatedHandler; // 기타 이벤트의 경우, 컴포넌트를 붙여 실행하기로 결정
     public List<CardBaseEvtData> evtDatas = new List<CardBaseEvtData>();
+
+    public CardData() { }
+    public CardData(CardData cd)
+    {
+        cardName = cd.cardName;
+        cardDescription = cd.cardDescription;
+        cardIdNum = cd.cardIdNum;
+        cost =cd.cost;
+        cardClass = cd.cardClass;
+        cardType = cd.cardType;
+        cardRarity = cd.cardRarity;
+        evtDatas = cd.evtDatas;
+
+        // 이벤트데이터, 유저선택 타겟팅을 항상 0번쨰 순위로 옮겨주기
+        evtDatas = evtDatas.OrderByDescending(x => x.targeting == Define.evtTargeting.Select).ToList();
+    }
 
     #region GPT도움
     // 사유 : php로부터 기존 유저가만든 덱데이터를 형성할??
@@ -62,16 +79,37 @@ public class MinionCardData : CardData
     public int att, hp;
     public bool isTaunt; // 도발 유닛인지
     public bool isCharge; // 돌진 유닛인지
+
+    public MinionCardData() { }
+    public MinionCardData(CardData cd) : base(cd)
+    {
+        MinionCardData mc = (MinionCardData)cd;
+        att = mc.att;
+        hp = mc.hp;
+        isTaunt = mc.isTaunt;
+        isCharge = mc.isCharge;
+    }
 }
 
 [Serializable]
 public class SpellCardData : CardData
 {
-
+    public SpellCardData() { }
+    public SpellCardData(CardData cd) : base(cd)
+    {
+    }
 }
 
 [Serializable]
 public class WeaponCardData : CardData
 {
     public int att, durability;
+
+    public WeaponCardData() { }
+    public WeaponCardData(CardData cd) : base(cd)
+    {
+        WeaponCardData wc = (WeaponCardData)cd;
+        att = wc.att;
+        durability = wc.durability; 
+    }
 }

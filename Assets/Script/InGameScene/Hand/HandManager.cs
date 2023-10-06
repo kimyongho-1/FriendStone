@@ -1,26 +1,59 @@
 using Newtonsoft.Json;
-using Photon.Pun.Demo.Procedural;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using System.Data;
 using System.IO;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
+using WebSocketSharp;
 
 // to do list
 // 1. 탈진과 10장 초과시 코루틴 애니메이션 필요
-public class CustomCardHand : List<CardHand>
+public class CustomCardHand
 {
-    public new void Add(CardHand ch)
+    [field: SerializeField] private List<CardHand> cardHand = new List<CardHand>();
+    Dictionary< int, CardHand> cardHandDic = new Dictionary<int,CardHand>();
+    public void Add(CardHand ch)
     {
-        base.Add(ch);
+        cardHand.Add(ch);
+        cardHandDic.Add(ch.PunId,ch);
         GAME.IGM.Hand.AllCardHand.Add(ch);
     }
-    public new void Remove(CardHand ch)
+    public void Remove(CardHand ch)
     {
-        base.Remove(ch);
+        cardHand.Remove(ch);
+        cardHandDic.Remove(ch.PunId);
     }
+    public CardHand Find(int punID)
+    {
+        cardHandDic.TryGetValue(punID, out CardHand FoundedCard);
+        return FoundedCard;
+    }
+    public CustomCardHand FindAll(System.Func<CardHand,bool> act )
+    {
+        CustomCardHand tempList = new CustomCardHand();
+        for (int i = 0; i < cardHand.Count; i++)
+        {
+            if (act.Invoke(cardHand[i]) == true)
+            { tempList.Add(cardHand[i]); }
+        }
+
+        return tempList;
+    }
+
+    public void ForEach(System.Action<CardHand> act)
+    {
+        for (int i = 0; i < cardHand.Count; i++)
+        {
+            act.Invoke(cardHand[i]);
+        }
+    }
+    public List<CardHand> ToList()
+    { return cardHand; }
+    public int IndexOf(CardHand ch)
+    { return cardHand.IndexOf(ch); }
+    public int Count { get { return cardHand.Count(); } }
 }
 
 public class HandManager : MonoBehaviour
@@ -29,8 +62,8 @@ public class HandManager : MonoBehaviour
     public Transform PlayerDeck, EnemyDeck, PlayerDrawingCard, EnemyDrawingCard;
     public CustomCardHand PlayerHand = new CustomCardHand();
     public CustomCardHand EnemyHand = new CustomCardHand();
-
     public List<CardHand> AllCardHand = new List<CardHand>();
+
     public CardHand prefab;
     public int punConsist = 1;
     Queue<CardData> deckCards = new Queue<CardData>();
@@ -45,6 +78,7 @@ public class HandManager : MonoBehaviour
         {
             for (int j = 0; j < counts[i]; j++)
             {
+                // 새로운 원본을 생성하여 덱에 추가해주기 ( 모든 데이터가 원본으로 지정하여 데이터 겹침 현상 방지)
                 list.Add(cards[i]);
             }
         }
@@ -107,6 +141,13 @@ public class HandManager : MonoBehaviour
 
             // 덱에서 실질적으로 뽑힌 카드의 데이터
             CardData cd = deckCards.Dequeue();
+            switch (cd.cardType)
+            {
+                case Define.cardType.weapon: cd = new WeaponCardData(cd); break;
+                case Define.cardType.minion: cd = new MinionCardData(cd); break;
+                case Define.cardType.spell: cd = new SpellCardData(cd); break;
+            }
+
             // 인게임 카드 프리팹 생성
             CardHand ch = GameObject.Instantiate(prefab, PlayerHandGO.transform);
             // 인게임 카드 초기화
@@ -121,9 +162,10 @@ public class HandManager : MonoBehaviour
             {
                 for (int j = 0; j < evtList.Count; j++)
                 {
-                    GAME.IGM.Battle.Evt(evtList[j],ch);
+                    GAME.IGM.Battle.Evt(evtList[j], ch);
                 }
             }
+
 
             // 상대에게 내 드로우 정보 전달
             GAME.IGM.Packet.SendDrawInfo(ch.PunId);
@@ -198,7 +240,7 @@ public class HandManager : MonoBehaviour
     public IEnumerator CardAllignment(bool isMine = true)
     {
         // 현재 나 또는 적의 핸드중 무엇인지 확인
-        List<CardHand> hand = (isMine) ? PlayerHand : EnemyHand;
+        List<CardHand> hand = (isMine) ? PlayerHand.ToList() : EnemyHand.ToList();
         // 카드가 없으면 정렬을 수행할 필요가 없으므로 바로 취소
         if (hand.Count == 0) { yield break; }
 

@@ -35,7 +35,7 @@ public partial class PacketManager
         Vector3 dest = new Vector3((float)data[2], (float)data[3], (float)data[4]);
 
         // 핸드카드 객체 찾기
-        CardHand ch = GAME.IGM.Hand.EnemyHand.Find(x=>x.PunId == punID);
+        CardHand ch = GAME.IGM.Hand.EnemyHand.Find(punID);
 
         // 적 핸드에서 사용했기에 리스트에서 제거
         GAME.IGM.Hand.EnemyHand.Remove(ch);
