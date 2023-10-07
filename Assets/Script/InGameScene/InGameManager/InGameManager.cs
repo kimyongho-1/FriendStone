@@ -8,8 +8,10 @@ public class CustomList : List<CardField>
 {
     public new void Insert(int idx ,CardField ele)
     {
+        int newIdx = Mathf.Clamp(idx, 0, this.Count);
+        Debug.Log($"리스트삽입, 원본idx:{idx},  변경idx:{newIdx}");
         // 기본 Insert 함수 실행후
-        base.Insert(idx, ele);
+        base.Insert(newIdx, ele);
         // 총 관리 목적의 LIST에도 추가
         GAME.IGM.allIBody.Add(ele);
     }
@@ -49,8 +51,8 @@ public class InGameManager : MonoBehaviour
 
 
     // BattleManager의 액션큐 빠르게 접근용도
-    public void AddAction(IEnumerator co) { Battle.ActionQueue.Enqueue(co); }
-
+    public void AddAction(IEnumerator co) { if (co != null) { Battle.ActionQueue.Enqueue(co); } }
+    public void AddDeathAction(IEnumerator co) { if (co != null) { Battle.PlayDeathRattle(co); } }
     // 영웅 능력 팝업창 호출
     public void ShowHeroSkill(Vector3 pos, SkillData skill)
     {

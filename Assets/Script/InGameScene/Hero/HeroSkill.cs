@@ -108,8 +108,8 @@ public class HeroSkill : MonoBehaviour, IBody
         }
 
 
-        // 공격자 자신과, 스폰영역 레이 비활성화
-        GAME.IGM.Spawn.SpawnRay = Ray = false;
+        // 공격자 자신 레이 비활성화
+        Ray = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
         GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingCo(this, skillFunc, new string[] { "foe" } ));

@@ -192,6 +192,9 @@ public class CardHand : CardEle, IBody
     IEnumerator DragCo = null;
     public void StartDrag(Vector3 v)
     {
+        // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
+        GAME.IGM.Spawn.playerMinions.ForEach(x=>x.Ray = false);
+
         // 주문카드이며 직접 타겟팅하는 경우, 카드를 움직이지않고 현재 핸드카드에서 타겟팅 화살표 실행
         if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select)
         {
@@ -234,7 +237,7 @@ public class CardHand : CardEle, IBody
 
                 for (int i = 0; i < SC.evtDatas.Count; i++)
                 {
-                    GAME.IGM.Battle.Evt(SC.evtDatas[i], this, t);
+                   GAME.IGM.AddAction(GAME.IGM.Battle.Evt(SC.evtDatas[i], this, t));
                     yield return null;
                 }
 
@@ -378,7 +381,8 @@ public class CardHand : CardEle, IBody
     {
         Ray = false; // Ray를 비활성화시 Exit가 호출되지만, DragCo를 뒤에서 null로 초기화하여서 Exit 먼저 실행을 막기
         StopAllCoroutines();
-     
+        // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
+        GAME.IGM.Spawn.playerMinions.ForEach(x => x.Ray = true);
         switch (CardEleType)
         {
             case Define.cardType.minion:
@@ -406,7 +410,7 @@ public class CardHand : CardEle, IBody
                     // 이벤트 실행
                     for (int i = 0; i < SC.evtDatas.Count; i++)
                     {
-                        GAME.IGM.Battle.Evt(SC.evtDatas[i], this);
+                        GAME.IGM.AddAction(GAME.IGM.Battle.Evt(SC.evtDatas[i], this)) ;
                     }
 
                     GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);

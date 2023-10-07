@@ -5,6 +5,7 @@ using TMPro;
 using static Define;
 using System.Linq;
 using System;
+using Unity.VisualScripting;
 
 public class CardField : CardEle,IBody
 {
@@ -13,6 +14,7 @@ public class CardField : CardEle,IBody
     public ParticleSystem sleep;
     public SpriteMask mask;
     [SerializeField] int currAtt, currHp;
+    public bool waitDeathRattleEnd = false;
     #region IBODY
     public bool Attackable { get; set; }
     [field: SerializeField] public int PunId { get; set; }
@@ -22,7 +24,7 @@ public class CardField : CardEle,IBody
     [field: SerializeField] public Collider2D Col { get; set; }
     public bool Ray { set { if (Col == null) { Col = TR.GetComponent<Collider2D>(); } Col.enabled = value; } }
 
-    public Vector3 OriginPos { get; set; }
+    [field: SerializeField] public Vector3 OriginPos { get; set; }
     public IEnumerator onDead { get; set; }
     public Define.ObjType objType { get; set; }
     [field : SerializeField] public int OriginAtt { get; set; }
@@ -62,6 +64,8 @@ public class CardField : CardEle,IBody
         cardImage.sortingLayerID = layer.id;
         AttTmp.sortingLayerID = HpTmp.sortingLayerID = layer.id;
     }
+
+    // 소유여부로 자신과 자식 모두 레이어 통일 (포스트 프로세싱 작업위해)
     public void SetLayerRecursive(int layers)
     {
         this.gameObject.layer =
@@ -75,11 +79,15 @@ public class CardField : CardEle,IBody
     public void Init(CardData datapar, bool isMine)
     {
         base.Init(datapar);
+        // 소환시, 이벤트 타겟에 포함안되도록 체력을 0으로 설정후, 밑 InvokeEvt에서 다시 원래의 체력으로 복구
+        HP = 0;
+        HpTmp.text = MC.hp.ToString();
         // 손에 있을때 실행해야할 이벤트들 제거
         MC.evtDatas.RemoveAll(x=>x.when == evtWhen.onHand);
 
         Col = GetComponent<CircleCollider2D>();
         IsMine = isMine;
+        // 죽었을시 이벤트 재생
         onDead = Dead(IsMine);
         objType = ObjType.Minion;
         SetLayerRecursive(LayerMask.NameToLayer((IsMine == true) ? "ally" : "foe"));
@@ -92,103 +100,56 @@ public class CardField : CardEle,IBody
         sleep.gameObject.SetActive((MC.isCharge) ? false : true);
        
         Att = OriginAtt = MC.att;
-        HP = OriginHp = MC.hp;
         if (IsMine)
         {
             // 좌클릭시 공격 타겟팅 이벤트 시작을 연결
             GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL, Define.Sound.Ready);
-
-            #region 이벤트 보유 여부 확인 
-            // 먼저 유저가 직접 타겟팅하는 이벤트가 존재하는지 확인
-            List<CardBaseEvtData> evtList = MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
-            
-            // 이벤트 자체가 없으면 취소
-            if (evtList.Count == 0) { return;  }
-            #endregion
-
-            #region 직접 타겟팅하는 이벤트 존재 여부 확인 및 나눠 실행
-
-            // 존재하는 이벤트중, 유저가 직접 선택하는 이벤트포함 확인
-            CardBaseEvtData selectEvt = evtList.Find(x => x.targeting == evtTargeting.Select);
-
-            // 선택 이벤트 없으면 순서대로 자동실행
-            if (selectEvt == null) 
-            {
-                PlayEvt();
-                return;
-            }
-
-            // 유저가 직접 선택하는 이벤트 존재 확인시
-            // 적 미니언만이 타겟대상이지만, 적 미니언이 없는 상황 확인
-            string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
-            if (layers.Length == 1 && layers[0] == "foe"
-                && GAME.IGM.Spawn.enemyMinions.Count == 0)
-            {
-                // 그러면 선택 이벤트 삭제후, 나머지 기존처럼 순서대로 자동실행
-                MC.evtDatas.Remove(selectEvt);
-                PlayEvt();
-            }
-
-            // 유저가 직접 찾는 타겟팅 방식이 있다면
-            else
-            {
-                // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-                GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
-                    (this,
-
-                    (IBody a, IBody t) =>
-                    {
-                        return evt(a, t);
-                    },
-
-                    layers // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
-                  
-                    ));
-
-                // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
-                IEnumerator evt(IBody a, IBody t)
-                {
-                    List<CardBaseEvtData> list =
-                    MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed).OrderByDescending(x=>x.targeting == evtTargeting.Select).ToList();
-                    
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        GAME.IGM.Battle.Evt(list[i], this, t);
-                        yield return null;
-                    }
-                    GAME.IGM.AddAction(DeleteOnPlayedEvts());
-                    IEnumerator DeleteOnPlayedEvts()
-                    {
-                        yield return null;
-                        // 등장시 실행할 이벤트들은 모두 제거
-                        MC.evtDatas.RemoveAll(x => x.when == evtWhen.onPlayed);
-                    }
-                }
-            }
-
-            #endregion
-
-            // 타겟팅없는 이벤트뿐이면 순서대로 이벤트 재생
-            void PlayEvt()
-            {
-                List<CardBaseEvtData> list =
-                    MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
-                for (int i = 0; i < list.Count; i++)
-                {
-                    GAME.IGM.Battle.Evt(list[i], this);
-                }
-                GAME.IGM.AddAction(DeleteOnPlayedEvts());
-                IEnumerator DeleteOnPlayedEvts()
-                {
-                    yield return null;
-                    // 등장시 실행할 이벤트들은 모두 제거
-                    MC.evtDatas.RemoveAll(x => x.when == evtWhen.onPlayed);
-                }
-            }
         }
         IEnumerator Dead(bool isMine)
         {
-            // ���� ����������
+            #region 죽는 하수인이 죽을떄 실행할 이벤트 있는지 확인 및 실행
+            // 만약 죽는 이 하수인에게 죽을때 실행할 이벤트가 있다면
+            if (MC != null && MC.evtDatas.Find(x => x.when == evtWhen.onDead) != null)
+            {
+                // 현재 나의 턴이고 미니언이 죽었으며 죽을떄 실행할 이벤트가 있다면
+                if (GAME.IGM.Packet.isMyTurn == true)
+                {
+                  //  GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Ray =false);
+                  //  GAME.IGM.Turn.Col .enabled= false;
+                    // 죽을떄 실행할 이벤트를 모두 찾아
+                    // 예약이 아닌 이 자리에서 모두 실행
+                    List<CardBaseEvtData> list =
+                        MC.evtDatas.FindAll(x => x.when == evtWhen.onDead);
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        IEnumerator co = GAME.IGM.Battle.Evt(list[i], this);
+                        if (co == null) { continue; }
+                        yield return GAME.IGM.StartCoroutine(co);
+                    }
+
+                    // 죽을떄 실행할 이벤트가 모두 끝났음을 전파 (상대 입장에선 몬스터가 죽으면서 이벤트들이 모두 실행된후 몬스터가 소멸되야하기에)
+                    GAME.IGM.Packet.SendDeathRattleEnd(this.PunId);
+                   
+                     Debug.Log("죽메 전송 끝");
+                     //GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                     //GAME.IGM.Turn.Col.enabled = true;
+                }
+
+                // 나의 턴이 아닐시, 상대방이 보내는 이벤트를 계속 받아 실행하며 끝나는 신호를 받을떄까지 대기
+                else
+                {
+                    // 위의 if문은 현재 공격자가 자신의 턴에 미니언이 죽을시,
+                    // 해당 미니언이 죽을떄 이벤트를 순차적으로 실행후
+                    // 마지막으로 모든 죽음 이벤트가 끝난 신호를 전파 => " GAME.IGM.Packet.SendDeathRattleEnd(this.PunId) "
+                    // 위 이벤트를 전파 받은 타클라이언트는 waitDeathRattleEnd를 true로 변경하여 동기화를 진행
+                    yield return new WaitUntil(() => (this.waitDeathRattleEnd == true));
+                    Debug.Log("죽메 받기 성공");
+                }
+            }
+            #endregion
+
+            #region 코루틴 애니메이션 (점점 투명화 + 흔들기)
+            // 투명도를 증가시켜 점차 사라지는 코루틴 애니메이션
             StartCoroutine(FadeOut());
             IEnumerator FadeOut()
             {
@@ -205,7 +166,7 @@ public class CardField : CardEle,IBody
                 mask.enabled = false;
             }
 
-            // �¿�� �Դٰ��ٷ� �״� �ڷ�ƾ �ִ�
+            // 좌우로 죽는 코루틴 애니메이션
             yield return StartCoroutine(Wiggle());
             IEnumerator Wiggle()
             {
@@ -220,33 +181,122 @@ public class CardField : CardEle,IBody
                     yield return null;
                 }
             }
+            #endregion
 
-            // ���� ���� �ϼ����� ������ �������� ���� �������� �����ϱ�
+            // 소유여부로 게임내에서 완전제거
             if (isMine)
             {
-                CardField cf = GAME.IGM.Spawn.playerMinions.Find(x => x.PunId == this.PunId);
-                GAME.IGM.Spawn.playerMinions.Remove(cf);
-
+                GAME.IGM.Spawn.playerMinions.Remove(this);
                 // 핸드 관련된 이벤트를 실행해야하는 카드가 있는지 확인후 실행
-                GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.PunId, cf.IsMine));
+                GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(PunId, IsMine));
 
-                GAME.IGM.Spawn.CalcSpawnPoint(false);
-                yield return new WaitForSeconds(1.5f);
-                //yield return StartCoroutine(GAME.IGM.Spawn.AllPlayersAlignment());
+                yield return StartCoroutine(GAME.IGM.Spawn.CalcSpawnPoint());
+                
             }
             // �� �ϼ��ε� �� ����
             else
             {
-                CardField cf = GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == this.PunId);
-                GAME.IGM.Spawn.enemyMinions.Remove(cf);
+                GAME.IGM.Spawn.enemyMinions.Remove(this);
                 // 핸드 관련된 이벤트를 실행해야하는 카드가 있는지 확인후 실행
-                GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.PunId, cf.IsMine));
+                GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(PunId, IsMine));
                 yield return StartCoroutine(GAME.IGM.Spawn.AllEnemiesAlignment());
             }
-
+            Debug.Log("삭제도 실행");
             Destroy(this.gameObject);
         }
     }
+    public IEnumerator InvokeEvt()
+    {
+        HP = OriginHp = MC.hp;
+        #region 이벤트 보유 여부 확인 
+        // 먼저 유저가 직접 타겟팅하는 이벤트가 존재하는지 확인
+        List<CardBaseEvtData> evtList = MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
+
+        // 이벤트 자체가 없으면 취소
+        if (evtList.Count == 0) { yield break; }
+        #endregion
+
+        #region 직접 타겟팅하는 이벤트 존재 여부 확인 및 나눠 실행
+
+        // 존재하는 이벤트중, 유저가 직접 선택하는 이벤트포함 확인
+        CardBaseEvtData selectEvt = evtList.Find(x => x.targeting == evtTargeting.Select);
+
+        // 선택 이벤트 없으면 순서대로 자동실행
+        if (selectEvt == null)
+        {
+            PlayEvt();
+            yield break;
+        }
+
+        // 유저가 직접 선택하는 이벤트 존재 확인시
+        // 적 미니언만이 타겟대상이지만, 적 미니언이 없는 상황 확인
+        string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
+        if (layers.Length == 1 && layers[0] == "foe"
+            && GAME.IGM.Spawn.enemyMinions.Count == 0)
+        {
+            // 그러면 선택 이벤트 삭제후, 나머지 기존처럼 순서대로 자동실행
+            MC.evtDatas.Remove(selectEvt);
+            PlayEvt();
+        }
+
+        // 유저가 직접 찾는 타겟팅 방식이 있다면
+        else
+        {
+            // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
+            GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
+                (this,
+
+                (IBody a, IBody t) =>
+                {
+                    return evt(a, t);
+                },
+
+                layers // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+
+                ));
+
+            // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
+            IEnumerator evt(IBody a, IBody t)
+            {
+                List<CardBaseEvtData> list =
+                MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed).OrderByDescending(x => x.targeting == evtTargeting.Select).ToList();
+
+                for (int i = 0; i < list.Count; i++)
+                {
+                    GAME.IGM.AddAction(GAME.IGM.Battle.Evt(list[i], this, t));
+                    yield return null;
+                }
+                GAME.IGM.AddAction(DeleteOnPlayedEvts());
+                IEnumerator DeleteOnPlayedEvts()
+                {
+                    yield return null;
+                    // 등장시 실행할 이벤트들은 모두 제거
+                    MC.evtDatas.RemoveAll(x => x.when == evtWhen.onPlayed);
+                }
+            }
+        }
+
+        #endregion
+
+        // 타겟팅없는 이벤트뿐이면 순서대로 이벤트 재생
+        void PlayEvt()
+        {
+            List<CardBaseEvtData> list =
+                MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
+            for (int i = 0; i < list.Count; i++)
+            {
+                GAME.IGM.AddAction(GAME.IGM.Battle.Evt(list[i], this));
+            }
+            GAME.IGM.AddAction(DeleteOnPlayedEvts());
+            IEnumerator DeleteOnPlayedEvts()
+            {
+                yield return null;
+                // 등장시 실행할 이벤트들은 모두 제거
+                MC.evtDatas.RemoveAll(x => x.when == evtWhen.onPlayed);
+            }
+        }
+    }
+
 
     // 미니언 카드의 경우, 일정초 동안 커서를 가져다 댈시 카드의 정보를 보여주는 카드팝업 호출 이벤트
     public void CallPopup()
@@ -279,7 +329,7 @@ public class CardField : CardEle,IBody
         { return; }
 
         // 공격자 자신과, 스폰영역 레이 비활성화
-        GAME.IGM.Spawn.SpawnRay = Ray = false;
+        Ray = false;
         Attackable = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
@@ -304,6 +354,8 @@ public class CardField : CardEle,IBody
             }
             yield break;
         }
+
+        GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Ray =false);
 
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
@@ -342,17 +394,15 @@ public class CardField : CardEle,IBody
         target.HP -= attacker.Att;
         // 나의 턴이고, 나의 소유 미니언이 공격했다면
         // 현재 내가 조종한 행동으로 확인 및 공격 이벤트 상대에게 전파
-        if (GAME.IGM.Packet.isMyTurn && attacker.IsMine)
+        if (GAME.IGM.Packet.isMyTurn)
         {
             GAME.IGM.Packet.SendMinionAttack(attacker.PunId, target.PunId);
         }
         this.Attackable = false;
 
-        Debug.Log($"target {target}, attacker {attacker}");
-        Debug.Log($"target {target.onDead}, attacker {attacker.onDead}");
-        if (target.HP <= 0) { yield return GAME.IGM.StartCoroutine(target.onDead); }
         if (attacker.HP <= 0) { yield return GAME.IGM.StartCoroutine(attacker.onDead); }
-
+        if (target.HP <= 0) { yield return GAME.IGM.StartCoroutine(target.onDead); }
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
     }
 
 }

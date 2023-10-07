@@ -102,6 +102,7 @@ public partial class SpawnManager
         // 적 미니언이 없으면 바로 취소
         if (enemyMinions.Count == 0) { yield break;  }
 
+        int animCount = enemyMinions.Count;
         for (int i = 0; i < enemyMinions.Count; i++)
         {
             float x = 0.5f + 1.25f * (i - (enemyMinions.Count-1) / 2.0f);
@@ -111,7 +112,7 @@ public partial class SpawnManager
             yield return null;
         }
 
-        // �̵� �ִϸ��̼� �ڷ�ƾ
+        // 정렬 코루틴
         IEnumerator move(Transform tr, int idx)
         {
             float t = (tr.transform.localPosition == enemyMinions[idx].OriginPos) ? 1f : 0f;
@@ -123,6 +124,10 @@ public partial class SpawnManager
                     Vector3.Lerp(startPos, enemyMinions[idx].OriginPos, t);
                 yield return null;
             }
+            animCount -= 1;
         }
+
+        // 위 정렬 코루틴 모두 끝날떄까지 대기
+        yield return new WaitUntil(()=>(animCount == 0));
     }
 }

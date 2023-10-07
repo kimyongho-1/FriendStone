@@ -157,7 +157,7 @@ public class TargetingCamera : MonoBehaviour
             yield return null;
         }
         // 레이 모두 다시 활성화
-        GAME.IGM.Spawn.SpawnRay = attacker.Ray = true;
+        attacker.Ray = true;
         GAME.IGM.Post.ExitMaskingArea();
         GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
         yield break;
@@ -230,7 +230,7 @@ public class TargetingCamera : MonoBehaviour
 
         GAME.IGM.Post.ExitMaskingArea();
         // 레이 모두 다시 활성화
-        GAME.IGM.Spawn.SpawnRay = attacker.Ray = true;
+        attacker.Ray = true;
         GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = true);
         // 라인궤적 그리는 코루틴 종료위해 갯수 초기화

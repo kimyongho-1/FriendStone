@@ -11,11 +11,19 @@ public partial class PacketManager
     // 21 ~ 40
     const byte EnemySpawn = 21;
     const byte EnemyAtt = 22;
+    const byte WaitDeathRattleEnd = 23;
 
+    const byte DeathRattleRestoreEvt = 24;
+    const byte DeathRattleAttEvt = 25;
+    const byte DeathRattleBuffEvt = 26;
     public void InitMinionDictionary()
     {
         dic.Add(EnemySpawn, ReceivedMinionSpawn);
-        dic.Add(EnemyAtt, ReceivedMinionAttack); 
+        dic.Add(EnemyAtt, ReceivedMinionAttack);
+        dic.Add(WaitDeathRattleEnd , DeathRattleEnd );
+        dic.Add(DeathRattleRestoreEvt , ReceivedDeathRestoreEvt);
+        dic.Add(DeathRattleAttEvt , ReceivedDeathAttEvt);
+        dic.Add(DeathRattleBuffEvt, ReceivedDeathBuffEvt);
     }
 
     #region 미니언 소환 이벤트 전파 받기
@@ -37,7 +45,7 @@ public partial class PacketManager
         int currAtt = (int)data[3];
         int currHp = (int)data[4];
         int currCost = (int)data[5];
-
+        Debug.Log($"미니언 소환 전달 받기 성공, punID {punID}");
         // 데이터가 존재하기에, 소환 이벤트 예약
         GAME.IGM.AddAction(MakeEnemyData(punID, fieldIdx, cardID, currAtt, currHp, currCost));
 
@@ -87,6 +95,111 @@ public partial class PacketManager
 
         // 그리고 공격 이벤트 예약
         GAME.IGM.AddAction(minion.AttackCo(attacker, target));
+    }
+    #endregion
+
+    #region 미니언이 죽을떄 실행할 버프 이벤트 전달 및 받기
+    public void SendDeathBuffEvt(int targetPunID, Define.buffType type, int att, int hp)
+    {
+        object[] data = new object[] { targetPunID, (int)type, att, hp };
+        // 전파 실행
+        PhotonNetwork.RaiseEvent(DeathRattleBuffEvt, data, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedDeathBuffEvt(object[] data)
+    {
+        int targetPunID = (int)data[0];
+        Define.buffType type = (Define.buffType)data[1];
+        int att = (int)data[2];
+        int hp = (int)data[3];
+
+        GAME.IGM.AddDeathAction(DelayedBuff(targetPunID, att, hp, type));
+        IEnumerator DelayedBuff(int targetPunID, int att, int hp, Define.buffType type)
+        {
+            CardField cf1 = GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID);
+            CardHand cf2 = GAME.IGM.Hand.EnemyHand.Find(targetPunID);
+            Debug.Log($"cardField : {cf1}, cardHand : {cf2}");
+            yield return GAME.IGM.StartCoroutine(
+                GAME.IGM.Battle.ReceivedBuff(type, GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID)
+                , att, hp));
+        }
+    }
+    #endregion
+
+    #region 미니언이 죽을떄 실행할 치료 이벤트 전파 및 전달받기
+    public void SendDeathRestoreEvt(int casterID, int targetID, int amount, bool casterIsHandCard)
+    {
+        object[] data = new object[] { casterID, targetID, amount, (object)casterIsHandCard };
+        PhotonNetwork.RaiseEvent(DeathRattleRestoreEvt, data, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedDeathRestoreEvt(object[] data)
+    {
+        int casterPunID = (int)data[0];
+        int targetPunID = (int)data[1];
+        int amount = (int)data[2];
+        bool casterIsHand = (bool)data[3];
+
+        // 시전자와 대상 찾기 (주문카드는 적 영웅 위치를 고정)
+        IBody caster = (casterIsHand == true) ?
+            GAME.IGM.Hero.Enemy
+            : GAME.IGM.allIBody.Find(x => x.PunId == casterPunID);
+        IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetPunID);
+
+        // 상대로부터 받은 치료이벤트 예약후 실행
+        GAME.IGM.AddDeathAction(GAME.IGM.Battle.Restore(caster, target, amount, true));
+    }
+    #endregion
+
+
+    #region 미니언이 죽을떄 실행할 공격 이벤트 전달 및 받기
+    public void SendDeathAttEvt(int attackerPunID, int targetPunID, Define.attType type, int attAmount, Define.ObjType objType)
+    {
+        object[] data = new object[] { attackerPunID, targetPunID, (int)type, attAmount, (int)objType };
+        PhotonNetwork.RaiseEvent(DeathRattleAttEvt, data, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedDeathAttEvt(object[] data)
+    {
+        int attackerPunID = (int)data[0];
+        int targetPunID = (int)data[1];
+        Define.attType attType = (Define.attType)data[2];
+        int attAmount = (int)data[3];
+        Define.ObjType objType = (Define.ObjType)data[4];
+
+        IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetPunID);
+        // 공격 이벤트를 받을시, 공격자의 obj타입이 미니언이라면 미니언을 찾고
+        // 그외에는 적 영웅을 공격자로 지정 (공격 이펙트의 시작위치가 적 영웅에서 시작하길 원하기에)
+        IBody attacker = (objType == Define.ObjType.Minion) ?
+            GAME.IGM.allIBody.Find(x => x.PunId == attackerPunID)
+            : GAME.IGM.Hero.Enemy;
+
+        // 상대로부터 받은 공격이벤트 예약후 실행
+        GAME.IGM.AddDeathAction(
+            GAME.IGM.Battle.AttackEvt(attacker, target, attAmount, attType, true)
+            );
+    }
+
+    #endregion
+
+    #region 죽음의 메아리 종료를 기다리기
+    public void SendDeathRattleEnd(int punID)
+    {
+        Debug.Log("Send EndOfDeathRattle");
+        PhotonNetwork.RaiseEvent(WaitDeathRattleEnd, new object[] { punID}, Other, SendOptions.SendReliable);
+    }
+    public void DeathRattleEnd(object[] data)
+    {
+        Debug.Log("Received EndOfDeathRattle");
+        int punID = (int)data[0];
+        // 이 이벤트를 받을떄쯤, 순차적으로 먼저 죽을떄 실행할 이벤트를 받아 실행중일것이므로
+        // 마지막으로 모든 죽을때 이벤트 실행 완료 신호를 전달받아 동기화해주기
+        GAME.IGM.AddDeathAction(FinishingDeathRattle(punID));
+        IEnumerator FinishingDeathRattle(int punID)
+        {
+            yield return null;
+            IBody deadMan = GAME.IGM.allIBody.Find(x=>x.PunId == punID);
+
+            // 현재 미니언만 죽을떄 이벤트 실행이 가능하기에
+            deadMan.TR.GetComponent<CardField>().waitDeathRattleEnd = true;
+        }
     }
     #endregion
 }

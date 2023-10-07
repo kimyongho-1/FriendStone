@@ -162,7 +162,7 @@ public class HandManager : MonoBehaviour
             {
                 for (int j = 0; j < evtList.Count; j++)
                 {
-                    GAME.IGM.Battle.Evt(evtList[j], ch);
+                    GAME.IGM.AddAction(GAME.IGM.Battle.Evt(evtList[j], ch));
                 }
             }
 

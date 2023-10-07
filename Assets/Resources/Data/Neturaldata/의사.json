@@ -10,7 +10,6 @@
   "cardClass": 3,
   "cardType": 0,
   "cardRarity": 0,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "RestoreHandler, Assembly-CSharp",
