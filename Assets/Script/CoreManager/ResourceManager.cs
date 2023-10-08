@@ -19,15 +19,29 @@ public class ResourceManager
     // 언제든지 접근해서 사용할수있도록 만든 유저의 모든 덱 List
     public List<DeckData> userDecks = new List<DeckData>();
     public DeckData GameDeck;
-    // 유저의 기존덱들 모두 가져오기
-    public void LoadUsersDeck()
-    { }
-    
 
+    // InGameScene 진입시, 영웅데이터 생성
+    public HeroData GetHeroData(Define.classType type)
+    {
+        switch (type)
+        {
+            case Define.classType.HJ:
+                return JsonConvert.DeserializeObject<HeroData>(GAME.Manager.RM.PathFinder.Dic[10000].GetJson()
+                       , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            case Define.classType.HZ:
+                return JsonConvert.DeserializeObject<HeroData>(GAME.Manager.RM.PathFinder.Dic[10001].GetJson()
+                        , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            default:
+                return JsonConvert.DeserializeObject<HeroData>(GAME.Manager.RM.PathFinder.Dic[10002].GetJson()
+                        , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+        }
+
+    }
     // 영웅 이미지 가져오기
     public Sprite GetHeroImage(Define.classType type)
     { return Resources.Load<Sprite>($"Texture/CardImage/heroImage/{type.ToString()}"); }
-
+    public Sprite GetHeroSkillIcon(Define.classType type)
+    { return Resources.Load<Sprite>($"Texture/CardImage/heroImage/{type.ToString()}SkillIcon"); }
     // 카드직업과 고유번호 통해서 이미지 찾기
     public Sprite GetImage(Define.classType type, int id)
     { return Resources.Load<Sprite>($"Texture/CardImage/{type.ToString()}/{type.ToString()}{id}"); }

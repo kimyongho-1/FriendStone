@@ -87,7 +87,10 @@ public partial class PacketManager
         // 적 닉네임 초기화
         GAME.IGM.Hero.Enemy.nickTmp.text = nickName;
         // 적 영웅 캔버스 초기화
-        GAME.IGM.Hero.Enemy.heroSkill.InitEnemySkill(GAME.IGM.Hero.Enemy, classType);
+        Debug.Log(GAME.Manager.RM.GetHeroData(classType));
+        GAME.IGM.Hero.Enemy.heroData = GAME.Manager.RM.GetHeroData(classType);
+        GAME.IGM.Hero.Enemy.heroData.Init(GAME.IGM.Hero.Enemy.playerImg, GAME.IGM.Hero.Enemy.skillImg,false);
+        GAME.IGM.Hero.Enemy.heroSkill.InitSkill(false);
     }
 
     // 선후공 결과 마스터로부터 받기 (마스터는 자신 내부에서 적용)

@@ -33,7 +33,9 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 모든 핸드 위치 크기 레이 초기화
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = false);
-
+        // 내 턴 끝
+        GAME.IGM.Hero.Player.Attackable = GAME.IGM.Hero.Player.heroSkill.Attackable =false;
+        
         // 강제로 Exit함수로 초기화 실행
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Exit(null)) ;
         // 필드 하수인 모두 공격중지
@@ -94,6 +96,10 @@ public class TurnEndBtn : MonoBehaviour
 
         // 내 턴 시작
         GAME.IGM.Packet.isMyTurn = true;
+        // 영웅의 공격상태 초기화
+        GAME.IGM.Hero.Player.heroSkill.Attackable =  GAME.IGM.Hero.Player.Attackable = true;
+        GAME.IGM.Hero.Player.skillImg.color = Color.white;
+        
         // 상대의 화면에 내 턴 시작 띄우기 이벤트 전파
         GAME.IGM.Packet.SendMyTurnMSG();
 

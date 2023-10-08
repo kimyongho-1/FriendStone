@@ -1,0 +1,22 @@
+{
+  "IsMine": false,
+  "classType": 0,
+  "outSpeech": {
+    "Hello": "형주안녕",
+    "WellPlayed": "형주칭찬",
+    "Thanks": "형주감사",
+    "Wow": "형주감탄",
+    "Oops": "형주이런",
+    "Threat": "형주위협",
+    "AlreadyAttacked": "개는 이미 공격했어",
+    "CantAttack": "개는 공격을 못해",
+    "ThereTaunt": "도발하수인이 가로막고있어",
+    "TimeLimitStart": "시간이 벌써 이렇게 됬나",
+    "TimeLess": "안돼 조금만 더..",
+    "NotReady": "그 하수인은 다음 차례에 준비될거야"
+  },
+  "skillName": "소주먹이기",
+  "skillDesc": "대상을 선택해 피해를 2줍니다.",
+  "skillCost": 2,
+  "SkillCo": null
+}

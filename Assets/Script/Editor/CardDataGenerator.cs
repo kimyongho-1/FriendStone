@@ -35,6 +35,15 @@ public class CardDataGenerator : EditorWindow
             File.WriteAllText(path, json);
             AssetDatabase.Refresh();
         }
+        if (heroData != null && heroJsonFile != null)
+        {
+            string json = JsonConvert.SerializeObject(heroData, Formatting.Indented
+                           , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+
+            // 기존 제이슨파일 바뀐 내역 상태로 저장
+            File.WriteAllText(path, json);
+            AssetDatabase.Refresh();
+        }
     }
 
     TextAsset jsonFile; // 기존 파일을 재참조하여 편집할경우
@@ -44,23 +53,79 @@ public class CardDataGenerator : EditorWindow
 
     int selectedIdx; // 현재 참조 및 편집중인 이벤트데이터 클래스 인덱스
 
-   
+    private int tabIndex = 0;
+    private string[] tabs = { "카드 데이타 생성편집기", "영웅 데이타 생성편집기" };
 
     void OnGUI()
     {
-        EditorGUILayout.BeginHorizontal();
+        int clickedIDX  = tabIndex;
+        clickedIDX = GUILayout.Toolbar(clickedIDX, tabs);
 
-        EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(position.width / 2));
-        GUILayout.Label("카드 데이터 편집");
-        CardDataEditor();
-        EditorGUILayout.EndVertical();
+        if (clickedIDX != tabIndex)
+        {
+            tabIndex = clickedIDX;
+            if (tabIndex == 0) 
+            {
+                if (heroData != null && heroJsonFile != null)
+                {
+                    string json = JsonConvert.SerializeObject(heroData, Formatting.Indented
+                                   , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 
-        EditorGUILayout.BeginVertical("box");
-        GUILayout.Label("이벤트 데이터 편집");
-        EvtDataEditor();
-        EditorGUILayout.EndVertical();
+                    // 기존 제이슨파일 바뀐 내역 상태로 저장
+                    File.WriteAllText(path, json);
+                    AssetDatabase.Refresh();
+                    heroData = null; heroJsonFile = null;
+                }
+            }
+            else if (tabIndex == 1)
+            {
+                // 에디터창 바뀔떄, 현재 참조중인 제이슨파일있을시 바뀐 사항 강제저장
+                if (cardData != null && jsonFile != null)
+                {
+                    string json = JsonConvert.SerializeObject(cardData, Formatting.Indented
+                                   , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 
-        EditorGUILayout.EndHorizontal();
+                    // 기존 제이슨파일 바뀐 내역 상태로 저장
+                    File.WriteAllText(path, json);
+                    AssetDatabase.Refresh();
+                    cardData = null; jsonFile = null;
+                }
+            }
+        }
+
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
+        switch (tabIndex)
+        {
+            case 0:
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(position.width / 2));
+                GUILayout.Label("카드 데이터 편집", EditorStyles.boldLabel);
+                CardDataEditor();
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(position.width / 2));
+                GUILayout.Label("이벤트 데이터 편집", EditorStyles.boldLabel);
+                EvtDataEditor();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+                break;
+            case 1:
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(position.width / 2));
+                GUILayout.Label("영웅 데이터 편집", EditorStyles.boldLabel);
+                HeroDataEditor();
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(position.width / 2));
+                GUILayout.Label("영웅 대사 편집", EditorStyles.boldLabel);
+                HeroSpeechEditor();
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+                break;
+        }
+      
     }
     void EvtDataEditor()
     {
@@ -257,7 +322,6 @@ public class CardDataGenerator : EditorWindow
     void CardDataEditor()
     {
         #region CODE
-        GUILayout.Label("카드 생성기", EditorStyles.boldLabel);
         // 현재 편집중이던 아니든, 새 파일 생성시 클릭
         if (GUILayout.Button("새 데이타 파일 만들기"))
         {
@@ -434,4 +498,122 @@ public class CardDataGenerator : EditorWindow
 
         path = EditorGUILayout.TextField("Path ", path);
     }
+
+    HeroData heroData;
+    TextAsset heroJsonFile;
+    void HeroDataEditor()
+    {
+        if (GUILayout.Button("새 영웅 파일 만들기"))
+        {
+            // 새 데이터 생성 및 저장 => 디폴트 HJData로 선택
+            heroData = new HeroData();
+            string newFile = JsonConvert.SerializeObject(heroData, Formatting.Indented
+                     , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            path = $"Assets/Resources/Data/HeroData/{"신규"}.json";
+            File.WriteAllText(path, newFile);
+            heroJsonFile = new TextAsset(newFile);
+            AssetDatabase.Refresh();
+        }
+
+        // 현재 참조(작업)중인 데이터 파일 보여주는 오브젝트 필드 생성
+        TextAsset file = (TextAsset)EditorGUILayout.
+            ObjectField("기존 영웅데이터 편집(편집할것 드래그) ", heroJsonFile, typeof(TextAsset), false);
+
+        // 현재 작업중인, 참조 하는 데이터 없으면 에디터 더이상 그리지 말기
+        if (file == null)
+        { return; }
+
+        // 참조파일이 변경되었다면, 현재 에디터창을 변경된 파일로 바꾸기 위해 작업
+        if (file != heroJsonFile)
+        {
+            // 참조파일 변경시 기존 참조값이 바뀐경우를 대비해,
+            // 먼저 기존 참조파일을 저장하고 변경작업 시작
+            if (heroJsonFile != null && heroData != null)
+            {
+                string json = JsonConvert.SerializeObject(heroData, Formatting.Indented
+                     , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                // 기존 제이슨파일 바뀐 내역 상태로 저장
+                File.WriteAllText(path, json);
+                AssetDatabase.Refresh();
+                heroData = null; path = null;
+            }
+
+
+            // 바뀐 파일로 참조 변경 및 클래스화 다시 시작
+            heroJsonFile = file;
+            // 현재 파일의 경로로 초기화
+            path = AssetDatabase.GetAssetPath(file);
+
+            #region HeroData 제이슨파일 클래스화
+            // 제이슨 파일 클래스화 및 변수 heroData 초기화 (실패시 heroData가 null참조)
+            try
+            {
+                HeroData hero = JsonConvert.DeserializeObject<HeroData>
+                    (heroJsonFile.text, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                heroData = hero;
+            }
+            catch
+            {
+                EditorGUILayout.HelpBox("올바르지 않은 JSON 파일입니다. CardData 클래스로 생성된 파일을 사용해 주세요.", MessageType.Warning);
+                heroJsonFile = null;
+                heroData = null;
+            }
+            #endregion
+
+            // 위함수에서 어떠한 이유로 클래스화가 실패할시 다시 처음부터 진행하도록 유도
+            if (heroData == null || heroJsonFile == null)
+            {
+                heroData = null;
+                heroJsonFile = null;
+                 path = null;
+                return;
+            }
+        }
+
+        #region 프로퍼티 드로우어
+        heroData.classType = (Define.classType)EditorGUILayout.EnumPopup("직업 : ", heroData.classType);
+        heroData.skillName = EditorGUILayout.TextField("스킬이름: ", heroData.skillName);
+        heroData.skillDesc = EditorGUILayout.TextField("스킬설명: ", heroData.skillDesc);
+        GUILayoutOption[] options = { GUILayout.Width(200), GUILayout.Height(50) };
+       // heroData.skillImagePath = EditorGUILayout.TextField("스킬아이콘경로",heroData.skillImagePath);
+       // heroData.heroImagePath = EditorGUILayout.TextField("영웅이미지", heroData.heroImagePath);
+        heroData.skillCost = EditorGUILayout.IntField("스킬 비용 : ", heroData.skillCost);
+        path = EditorGUILayout.TextField("Path ", path);
+        #endregion
+
+        // 클릭시 , Path경로로 이름포함하여 저장
+        if (GUILayout.Button("현재 저장"))
+        {
+            string json = JsonConvert.SerializeObject(heroData, Formatting.Indented
+                   , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            // 기존 제이슨파일 바뀐 내역 상태로 저장
+            File.WriteAllText(path, json);
+            AssetDatabase.Refresh();
+        }
+    }
+
+    void HeroSpeechEditor()
+    {
+        if (heroData == null || heroJsonFile == null)
+        { return; }
+        GUILayout.Label("감정표현", EditorStyles.boldLabel);
+        heroData.outSpeech[Define.Emotion.Hello] = EditorGUILayout.TextField("인사: ", heroData.outSpeech[Define.Emotion.Hello]);
+        heroData.outSpeech[Define.Emotion.WellPlayed] = EditorGUILayout.TextField("칭찬: ", heroData.outSpeech[Define.Emotion.WellPlayed]);
+        heroData.outSpeech[Define.Emotion.Thanks] = EditorGUILayout.TextField("감사: ", heroData.outSpeech[Define.Emotion.Thanks]);
+        heroData.outSpeech[Define.Emotion.Wow] = EditorGUILayout.TextField("감탄: ", heroData.outSpeech[Define.Emotion.Wow]);
+        heroData.outSpeech[Define.Emotion.Oops] = EditorGUILayout.TextField("이런: ", heroData.outSpeech[Define.Emotion.Oops]);
+        heroData.outSpeech[Define.Emotion.Threat] = EditorGUILayout.TextField("위협: ", heroData.outSpeech[Define.Emotion.Threat]);
+
+        EditorGUILayout.Space();
+
+        GUILayout.Label("상호작용대사", EditorStyles.boldLabel);
+        heroData.outSpeech[Define.Emotion.AlreadyAttacked] = EditorGUILayout.TextField("이미 공격한 미니언 클릭시: ", heroData.outSpeech[Define.Emotion.AlreadyAttacked]);
+        heroData.outSpeech[Define.Emotion.CantAttack] = EditorGUILayout.TextField("공격불가 상태 미니언 클릭시 : ", heroData.outSpeech[Define.Emotion.CantAttack]);
+        heroData.outSpeech[Define.Emotion.NotReady] = EditorGUILayout.TextField("지금 소환된 하수인 공격클릭 : ", heroData.outSpeech[Define.Emotion.NotReady]);
+        heroData.outSpeech[Define.Emotion.ThereTaunt] = EditorGUILayout.TextField("도발 하수인 알릴떄 : ", heroData.outSpeech[Define.Emotion.ThereTaunt]);
+        heroData.outSpeech[Define.Emotion.TimeLimitStart] = EditorGUILayout.TextField("시간제한 시작 : ", heroData.outSpeech[Define.Emotion.TimeLimitStart]);
+        heroData.outSpeech[Define.Emotion.TimeLess] = EditorGUILayout.TextField("시간마감 임박 : ", heroData.outSpeech[Define.Emotion.TimeLess]);
+        
+    }
+
 }

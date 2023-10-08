@@ -14,6 +14,7 @@ using System;
 
 public class Hero : MonoBehaviour, IBody
 {
+    public HeroData heroData;
     public GameObject skillIcon, WpIcon;
     public SpriteMask playerMask;
     public HeroSkill heroSkill;
@@ -25,7 +26,7 @@ public class Hero : MonoBehaviour, IBody
     public bool CanAttack { get { return (weaponData != null) && Attackable == true; } }
 
     #region IBODY
-    public bool Attackable { get; set; }
+    [field:SerializeField] public bool Attackable { get; set; }
     public IEnumerator onDead { get; set; }
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
@@ -66,13 +67,21 @@ public class Hero : MonoBehaviour, IBody
         {
             // 내 닉네임 표기
             nickTmp.text = GAME.Manager.NM.playerInfo.NickName;
+            
+            heroData = GAME.Manager.RM.GetHeroData(GAME.Manager.RM.GameDeck.ownerClass);
+            heroData.Init(playerImg , skillImg, IsMine);
             // 영웅 이미지 초기화
-            playerImg.sprite = GAME.Manager.RM.GetHeroImage(GAME.Manager.RM.GameDeck.ownerClass);
+            
+            // 영웅 스킬란 초기화 및 이미지 적용
+            heroSkill.InitSkill(IsMine);
+
             // 영웅 아이콘 좌클릭 => 무기공격
             GAME.Manager.UM.BindEvent(this.gameObject, HeroAttack, Define.Mouse.ClickL, Define.Sound.Ready);
 
             // 영웅 아이콘 우클릭 => 감정표현
             GAME.Manager.UM.BindEvent(this.gameObject, HeroSpeech, Define.Mouse.ClickR, Define.Sound.None);
+            // 스킬 아이콘 클릭시, 타겟팅 이벤트 실행 연결
+            GAME.Manager.UM.BindEvent(heroSkill.Col.gameObject, ClickedOnSkill, Define.Mouse.ClickL, Define.Sound.None);
 
             // 각각의 말풍선에 이벤트 연결
             for (int i = 0; i < Select.gameObject.transform.childCount; i++)
@@ -84,8 +93,6 @@ public class Hero : MonoBehaviour, IBody
             // 선택대사 나올떄, 배경클릭시 대사 즉각 종료
             GAME.Manager.UM.BindEvent(Reply.gameObject, OffReply, Mouse.ClickL, Sound.None);
             
-            // 영웅 스킬란 초기화
-            heroSkill.InitSkill(this);
         }
         
         // 카드팝업 이벤트 연결 (마우스 엔터로 구현)
@@ -109,16 +116,58 @@ public class Hero : MonoBehaviour, IBody
     public void ShowWeaponIcon() // 무기아이콘에 커서를 일정시간 가져다 댈시
     {
         // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.IGM.ShowCardPopup(ref weaponData, new Vector3(-3f, -1.1f, 0));
+        GAME.IGM.ShowCardPopup(ref weaponData, (IsMine == true) ? new Vector3(-3f, -1.1f, 0) : new Vector3(4f, 3.3f, 0));
     }
     public void ShowSkillIcon() // 영웅능력 아이콘에 커서를 일정시간 가져다 댈시
     {
         // 카드팝업 호출 + 보여질 데이터와 위치값 함께
-        GAME.IGM.ShowHeroSkill(new Vector3(4f, -1.3f, 0), heroSkill.data);
+        GAME.IGM.ShowHeroSkill((IsMine == true) ? new Vector3(4f, -1.3f, 0) : new Vector3(4f, 3.3f, 0), heroData);
     }
     #endregion
 
     #region 영웅 이벤트
+
+    // 적의 영웅 능력 사용을 내 화면에서 동기화할떄, 강제 호출하여 사용
+    public void CallHeroSkillAttack(IBody target)
+    {
+
+        GAME.IGM.AddAction(heroData.SkillCo(heroSkill , target));
+    }
+    // 영웅의 스킬 아이콘 클릭시, 스킬이벤트 시작
+    public void ClickedOnSkill(GameObject go)
+    {
+        if (heroSkill.Attackable == false || GAME.IGM.TC.LR.gameObject.activeSelf == true)
+        { 
+            return; 
+        }
+
+        // 영웅 능력이 선택타겟팅이라면 : 타겟이 성공할떄만 사용으로 간주
+        if (heroData.skillTargeting == evtTargeting.Select)
+        {
+            // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
+            GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingCo
+                (heroSkill,
+                (IBody a, IBody t) =>
+                {
+                    // 사용하였기에, 색상을 검게 칠해 사용한것 표현
+                    skillImg.color = Color.black;
+                    heroSkill.Attackable = false;
+                    return heroData.SkillCo(a, t);
+                },
+                new string[] { "foe", "foeHero", "ally", "allyHero" }
+                ));
+        }
+        // 영웅 능력이 자동실행건이라면 : 자동 실행 + 영능 잠그기
+        else
+        {
+            // 사용하였기에, 색상을 검게 칠해 사용한것 표현
+            skillImg.color = Color.black;
+            heroSkill.Attackable = false;
+            // 영웅능력 잠그기 예약 실행
+            GAME.IGM.AddAction (heroData.SkillCo(heroSkill, null)) ;
+            
+        }
+    }
 
     // 영웅 좌클릭시 공격
     public void HeroAttack(GameObject go)
@@ -229,39 +278,38 @@ public class Hero : MonoBehaviour, IBody
     // 유저가 선택하는 말풍선중 하나를 클릭하였을떄
     public void SelectedSpeech(GameObject go)
     {
-        // 클릭된 객체의 자식 순서로 파악
-        switch (go.transform.GetSiblingIndex())
+        int index = go.transform.GetSiblingIndex();
+
+        // 0번은 배경 , 배경 클릭시 감정표현 이벤트 강제 종료
+        if (index == 0)
+        { Speech.gameObject.SetActive(false); }
+        else
         {
-            // 0 번자식 취소
-            case 0:
-                Debug.Log("종료 호출");
-                Speech.gameObject.SetActive(false);
-                return;
-            case 1:
-                replyTmp.text = "안녕!";
-                break;
-            case 2:
-                replyTmp.text = "잘헀네";
-                break;
-            case 3:
-                replyTmp.text = "고마워";
-                break;
-            case 4:
-                replyTmp.text = "이야!";
-                break;
-            case 5:
-                replyTmp.text = "이런..";
-                break;
-            case 6:
-                replyTmp.text = "죽을래?";
-                break;
+            // Emotion이넘 인덱스 0부터 시작하기위해 -1한 값을 적용
+            replyTmp.text = heroData.outSpeech[(Define.Emotion)(index-1)];
         }
         Select.gameObject.SetActive(false);
-        Reply.gameObject.SetActive(true);   
+        Reply.gameObject.SetActive(true);
+        return;
     }
     public void OffReply(GameObject go)
     {
         Speech.gameObject.SetActive(false);
+    }
+    public void HeroSaying(Define.Emotion e)
+    {
+        // 이미 대사를 진행중이었다면
+        if (Speech.gameObject.activeSelf == true)
+        {
+            // 강제 종료후, 다시 세팅
+            Speech.gameObject.SetActive(false);
+        }
+
+        // 말풍선 선택 이벤트시, 선택창만 켜져있도록 Defalut상태로 변경
+        Select.gameObject.SetActive(false);
+        replyTmp.text = heroData.outSpeech[e];
+        Reply.gameObject.SetActive(true);
+        Speech.gameObject.SetActive(true);
     }
     #endregion
 

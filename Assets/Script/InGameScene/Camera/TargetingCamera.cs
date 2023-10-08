@@ -119,17 +119,54 @@ public class TargetingCamera : MonoBehaviour
             // 마우스 클릭과 충돌체 확인시 성공
             if (waitInput.Invoke())
             {
-                Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
+                Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); 
                 if (hit != null)
                 {
-                    // 실행 코루틴 예약 실행
-                    GAME.IGM.AddAction(RegisterCo(attacker, hit.transform.GetComponent<IBody>()));
-                    // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
+                    // 근접 공격 타겟팅은 미니언과 영웅들만이 타겟범위
+                    IBody targetBody  = hit.transform.GetComponent<IBody>();
 
-                    Debug.Log("충돌체 이름 : " + hit.name);
+                    #region 상대에게 도발 하수인이 있는데, 현재 타겟이 도발 하수인이 맞는지 확인
+                    // 먼저 도발 하수인들이 상대에게 있는지 확인
+                    List<CardField> FindTauntList = GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.isTaunt == true);
 
-                    // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
-                    LR.positionCount = 0;
+                    // 상대에게 도발하수인이 존재하며, 현재 공격하기로한 타겟이 도발하수인이 아니라면 공격 불가능 (언제나 도발 하수인 먼저 공격)
+                    if (FindTauntList != null &&
+                        FindTauntList.Contains(targetBody) == false)
+                    {
+                        // 라인렌더러 그리는 궤적코루틴 중지위해 라인렌더러 갯수 줄이기
+                        LR.positionCount = 0;
+                        // 상대에게 도발하수인이 있는데, 도발하수인이 아닌 다른 타겟을 공격할수없기에
+                        // 공격 강제 취소
+                        Debug.Log("충돌체는 있으나, 도발하수인이 존재해서 직접공격 불가");
+                        t = 0;
+                        Vector3 start = attacker.Pos;
+                        dest = attacker.OriginPos;
+                        while (t < 1f)
+                        {
+                            t += Time.deltaTime * 2.5f;
+                            attacker.TR.position = Vector3.Lerp(start, dest, t);
+                            yield return null;
+                        }
+                        // 플레이어에게 현재 도발하수인떄문에 공격할수 없다 알리기 ( 이벤트 전파 X )
+                        GAME.IGM.Hero.Player.HeroSaying(Define.Emotion.ThereTaunt);
+
+                        // 결과적으로 공격을 안하였기에 attackable을 다시 복구
+                        attacker.Attackable = true;
+                    }
+                    #endregion
+                    // 타겟을 찾았고, 상대에게 도발하수인도 없다면
+                    else 
+                    {
+                        // 실행 코루틴 예약 실행
+                        GAME.IGM.AddAction(RegisterCo(attacker, targetBody));
+                        // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
+
+                        Debug.Log("충돌체 이름 : " + hit.name);
+
+                        // 라인렌더러 그리는 궤적코루틴 중지위해 라인렌더러 갯수 줄이기
+                        LR.positionCount = 0;
+                    }
+
                     break;
                 }
 

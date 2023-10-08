@@ -213,16 +213,17 @@
       "type": "spell"
     },
     "10000": {
-      "path": "Data/Neturaldata/공격타겟팅",
+      "path": "Data/HeroData/HJheroData",
       "type": "minion"
     },
     "10001": {
-      "path": "Data/Neturaldata/치료타겟팅",
+      "path": "Data/HeroData/HZheroData",
       "type": "minion"
     },
     "10002": {
-      "path": "Data/Neturaldata/버프타겟팅",
+      "path": "Data/HeroData/KHheroData",
       "type": "minion"
     }
+
   }
 }

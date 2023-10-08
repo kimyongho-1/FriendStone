@@ -54,15 +54,15 @@ public class InGameManager : MonoBehaviour
     public void AddAction(IEnumerator co) { if (co != null) { Battle.ActionQueue.Enqueue(co); } }
     public void AddDeathAction(IEnumerator co) { if (co != null) { Battle.PlayDeathRattle(co); } }
     // ¿µ¿õ ´É·Â ÆË¾÷Ã¢ È£Ãâ
-    public void ShowHeroSkill(Vector3 pos, SkillData skill)
+    public void ShowHeroSkill(Vector3 pos, HeroData skill)
     {
         cardPopup.transform.position = pos;
-        cardName.text = skill.Name;
-        Description.text = skill.Desc;
+        cardName.text = skill.skillName;
+        Description.text = skill.skillDesc;
         Stat.gameObject.SetActive(false);
         Type.text = "skill";
-        Cost.text = "2";
-        cardImage.sprite = skill.Image;
+        Cost.text = skill.skillCost.ToString();
+        cardImage.sprite = (skill.IsMine) ? GAME.IGM.Hero.Player.skillImg.sprite : GAME.IGM.Hero.Enemy.skillImg.sprite;
         cardPopup.gameObject.SetActive(true);
     }
 

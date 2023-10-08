@@ -16,7 +16,7 @@ public class CardField : CardEle,IBody
     [SerializeField] int currAtt, currHp;
     public bool waitDeathRattleEnd = false;
     #region IBODY
-    public bool Attackable { get; set; }
+    [field: SerializeField] public bool Attackable { get; set; }
     [field: SerializeField] public int PunId { get; set; }
     [field: SerializeField] public bool IsMine { get; set; }
     public Transform TR { get { return this.transform; } }
@@ -322,11 +322,32 @@ public class CardField : CardEle,IBody
     // 미니언 공격시도 함수 (좌클릭 마우스 이벤트)
     public void StartAttack(GameObject go)
     {
-        // 공격 가능한 상태가 아니거나
-        // 이미 다른 객체가 타겟팅 중인데 이 객체를 클릭시 취소
-        if (!Attackable || GAME.IGM.TC.LR.gameObject.activeSelf == true
-            || sleep.gameObject.activeSelf == true)
-        { return; }
+        #region 예외사항 (공격이 정말 가능한지 확인)
+        // 현재 타겟팅 카메라가 켜져있으면 현재 공격준비중인 미니언이 있기에
+        // 다른 모든 미니언들의 클릭이벤트 무시
+        if (GAME.IGM.TC.LR.gameObject.activeSelf == true)
+        {
+            return;
+        }
+
+        // 수명상태시, 현재 소환한 하수인 : 공격불가 판정
+        if (sleep.gameObject.activeSelf == true)
+        {
+            // 내 영웅 대사 시작, 공격불가라고 플레이어에게 알리기 (이벤트 전파할 필요는 X )
+            GAME.IGM.Hero.Player.HeroSaying(Define.Emotion.NotReady);
+            // 그후 공격 취소
+            return;
+        }
+
+        // 이미 공격을 한 상태라면 : 공격불가 판정
+        if (Attackable == false)
+        {
+            // 해당 하수인이 이미 공격해서 , 공격 불가능하다고 말하기 (이벤트 전파할 필요는 X )
+            GAME.IGM.Hero.Player.HeroSaying(Define.Emotion.AlreadyAttacked);
+            // 공격 실행 취소
+            return;
+        }
+        #endregion
 
         // 공격자 자신과, 스폰영역 레이 비활성화
         Ray = false;

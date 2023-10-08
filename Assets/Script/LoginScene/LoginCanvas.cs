@@ -57,6 +57,11 @@ public class LoginCanvas : MonoBehaviour
             // TEST 버전 ,no php
             GAME.Manager.NM.playerInfo = new PlayerInfo() { ID = "123", NickName = "test" };
             GAME.Manager.RM.GameDeck = new DeckData();
+            int rand = UnityEngine.Random.Range(0, 2);
+            GAME.Manager.RM.GameDeck.ownerClass =
+                (rand == 0) ?
+                Define.classType.HJ :
+                Define.classType.HZ ;
             for (int i = 34; i < 36; i++)
             {
                 // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기

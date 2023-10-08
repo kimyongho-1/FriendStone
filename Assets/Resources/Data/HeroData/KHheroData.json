@@ -1,0 +1,22 @@
+{
+  "IsMine": false,
+  "classType": 2,
+  "outSpeech": {
+    "Hello": "",
+    "WellPlayed": "",
+    "Thanks": "",
+    "Wow": "",
+    "Oops": "",
+    "Threat": "",
+    "AlreadyAttacked": "",
+    "CantAttack": "",
+    "ThereTaunt": "",
+    "TimeLimitStart": "",
+    "TimeLess": "",
+    "NotReady": ""
+  },
+  "skillName": "감자탕 먹이기",
+  "skillDesc": "대상을 선택하면 3치료합니다.",
+  "skillCost": 3,
+  "SkillCo": null
+}

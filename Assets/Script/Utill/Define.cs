@@ -50,10 +50,16 @@ public class Define
     public enum restoreFX { None, Blink}
     #endregion
 
-
-
     #endregion
 
+    #region 영웅 데이터
+    // 영웅의 감정표현 선택 카테고리
+    public enum Emotion
+    { 
+        Hello, WellPlayed, Thanks, Wow, Oops, Threat,
+        AlreadyAttacked, NotReady, CantAttack, ThereTaunt, TimeLimitStart, TimeLess ,
+    }
+    #endregion
 
     public enum Scene { Login, Lobby, InGame }
 

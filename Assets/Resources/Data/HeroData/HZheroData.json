@@ -1,0 +1,22 @@
+{
+  "IsMine": false,
+  "classType": 1,
+  "outSpeech": {
+    "Hello": "현조안녕",
+    "WellPlayed": "현조칭찬",
+    "Thanks": "현조감사",
+    "Wow": "현조감탄",
+    "Oops": "현조이런",
+    "Threat": "현조위협",
+    "AlreadyAttacked": "개 아까 공격했자나?",
+    "CantAttack": "개는 좀..",
+    "ThereTaunt": "적 도발 하수인 먼저!",
+    "TimeLimitStart": "내 시간이 곧 끝나가..",
+    "TimeLess": "으악 조금만 더!",
+    "NotReady": "이제 태어난 애야 그만.."
+  },
+  "skillName": "배달 도착",
+  "skillDesc": "카드를 한장 뽑습니다.",
+  "skillCost": 3,
+  "SkillCo": null
+}
