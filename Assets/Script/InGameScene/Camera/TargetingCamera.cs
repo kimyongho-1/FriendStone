@@ -125,7 +125,7 @@ public class TargetingCamera : MonoBehaviour
                     // 근접 공격 타겟팅은 미니언과 영웅들만이 타겟범위
                     IBody targetBody  = hit.transform.GetComponent<IBody>();
 
-                    #region 상대에게 도발 하수인이 있는데, 현재 타겟이 도발 하수인이 맞는지 확인
+                    #region 상대 도발 하수인 존재 + 선택한 타겟이 도발하수인이 아닌 경우 : 공격취소로 간주                   
                     // 먼저 도발 하수인들이 상대에게 있는지 확인
                     List<CardField> FindTauntList = GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.isTaunt == true);
                     Debug.Log("적 도발수 : " + FindTauntList.Count);
@@ -155,22 +155,25 @@ public class TargetingCamera : MonoBehaviour
                         attacker.Attackable = true;
                     }
                     #endregion
+
+                    #region 상대 도발하수인 없음 + 선택한 타겟 존재 : 평범한 공격코루틴 Queue에 이벤트 예약실행
                     // 타겟을 찾았고, 상대에게 도발하수인도 없다면
-                    else 
+                    else
                     {
+                        // 라인렌더러 그리는 궤적코루틴 중지위해 라인렌더러 갯수 줄이기
+                        LR.positionCount = 0;
                         // 실행 코루틴 예약 실행
                         GAME.IGM.AddAction(RegisterCo(attacker, targetBody));
                         // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
 
                         Debug.Log("충돌체 이름 : " + hit.name);
-
-                        // 라인렌더러 그리는 궤적코루틴 중지위해 라인렌더러 갯수 줄이기
-                        LR.positionCount = 0;
                     }
+                    #endregion
 
-                    break;
+                    break; // 반복문 빠져나가기
                 }
-
+                
+                // 잘못된 타겟 클릭시 
                 else
                 {
                     // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
@@ -194,8 +197,6 @@ public class TargetingCamera : MonoBehaviour
 
             yield return null;
         }
-        // 레이 모두 다시 활성화
-        attacker.Ray = true;
         GAME.IGM.Post.ExitMaskingArea();
         GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
         yield break;
@@ -246,17 +247,17 @@ public class TargetingCamera : MonoBehaviour
                 Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
                 if (hit != null)
                 {
-                    // 실행 코루틴 예약 실행
-                    GAME.IGM.AddAction(RegisterCo(attacker, hit.transform.GetComponent<IBody>()));
-                    // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
-
-                    Debug.Log("충돌체 이름 : " + hit.name);
                     // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
                     LR.positionCount = 0;
+                    // 실행 코루틴 예약 실행
+                    GAME.IGM.AddAction(RegisterCo(attacker, hit.transform.GetComponent<IBody>()));
+                    Debug.Log("충돌체 이름 : " + hit.name);
                     break;
                 }
                 else
                 {
+                    // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                    LR.positionCount = 0;
                     // 손에서 사용하는, 주문카드의 경우 잘못된 곳을 클릭시 취소하도록 변경
                     if (attacker.objType == ObjType.HandCard)
                     { break; }
@@ -271,8 +272,6 @@ public class TargetingCamera : MonoBehaviour
         attacker.Ray = true;
         GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = true);
-        // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
-        LR.positionCount = 0;
         yield break;
     }
     public IEnumerator TargettingHeroSkillCo(IBody attacker)
@@ -308,6 +307,8 @@ public class TargetingCamera : MonoBehaviour
                 Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
                 if (hit != null && hit.TryGetComponent<IBody>(out IBody targetFounded))
                 {
+                    // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                    LR.positionCount = 0;
                     attacker.Attackable = false;
                     // 실행 코루틴 예약 실행
                     GAME.IGM.AddAction(player.heroData.SkillCo(player.heroSkill, targetFounded));
@@ -318,6 +319,8 @@ public class TargetingCamera : MonoBehaviour
                 }
                 else
                 {
+                    // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                    LR.positionCount = 0;
                     Debug.Log("충돌체 찾기 실패");
                     // 타겟을 잘못 하였기에, 다시 공격상태로 바꿔주고 타겟팅 레이 취소하기
                     attacker.Attackable = true;
@@ -326,8 +329,6 @@ public class TargetingCamera : MonoBehaviour
             }
             yield return null;
         }
-        // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
-        LR.positionCount = 0;
         GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = true);
         yield break;

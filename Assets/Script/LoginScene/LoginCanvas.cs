@@ -62,7 +62,7 @@ public class LoginCanvas : MonoBehaviour
                 (rand == 0) ?
                 Define.classType.HJ :
                 Define.classType.HZ ;
-            for (int i = 34; i < 36; i++)
+            for (int i = 39; i < 41; i++)
             {
                 // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
                 Define.cardType type = GAME.Manager.RM.PathFinder.Dic[i].type;

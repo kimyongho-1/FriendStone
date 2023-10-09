@@ -172,7 +172,8 @@ public class CardHand : CardEle, IBody
     #region 마우스 이벤트
     public void Enter(GameObject go)
     {
-        // 드래그 중일떄 취소
+        // 드래그 관련 이벤트가 발동될떄, DragCo에 실행코루틴을 참조 및 실행
+        // DragCo가 Null이 아니면, 현재 드래그관련 이벤트중이기에 확대/취소 이벤트는 강제 생략
         if (DragCo != null) { return; }
         SetOrder(originOrder * 10);
         transform.localScale = originScale * 1.5f;

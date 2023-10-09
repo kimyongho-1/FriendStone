@@ -353,8 +353,7 @@ public class CardField : CardEle,IBody
         #endregion
 
         // 공격자 자신과, 스폰영역 레이 비활성화
-        Ray = false;
-        Attackable = false;
+        Ray = Attackable = false;
 
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
         GAME.Manager.StartCoroutine(GAME.IGM.TC.MeeleTargettingCo

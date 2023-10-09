@@ -2,11 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Define 
+public class Define
 {
-    public enum ObjType { Hero , Minion, HandCard }
+    #region IBody BASE
+    // 게임내 어떤 역할의 오브젝트인지
+    public enum ObjType { Hero, Minion, HandCard }
+    #endregion
 
-    #region 카드 정보 데이터
+    #region 카드 정보 데이터 BASE
     // 카드 종류
     public enum cardType { minion, spell, weapon }
     // 직업 종류
@@ -15,7 +18,7 @@ public class Define
     public enum cardRarity { normal, rare , legend}
     #endregion
 
-    #region 카드 이벤트 데이터
+    #region 카드 이벤트 데이터 BASE
     public enum evtTargeting { Auto, Select } // 손에서 내면 자동실행건인지, 유저가 직접 선택건인지
     public enum evtWhen { onPlayed, onDead, onHand, } // 카드의 어느순간에 이벤트 실행할지 : 낼떄, 미니언죽을떄, 손에있을떄
     public enum evtArea  // 유저가 직접 선택할시엔 포스트프로세싱의 영역이 되며, 자동이나 랜덤 실행시엔 범위가 되어줄 영역
@@ -52,12 +55,13 @@ public class Define
 
     #endregion
 
-    #region 영웅 데이터
-    // 영웅의 감정표현 선택 카테고리
+    #region 영웅 데이터 BASE
+    // 영웅의 감정표현 및 특정상황별 대사 카테고리
     public enum Emotion
     { 
         Hello, WellPlayed, Thanks, Wow, Oops, Threat,
         AlreadyAttacked, NotReady, CantAttack, ThereTaunt, TimeLimitStart, TimeLess ,
+        AlreadtHeroAttacked
     }
     #endregion
 

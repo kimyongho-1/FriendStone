@@ -1,22 +1,25 @@
 {
   "IsMine": false,
+  "skillTargeting": 0,
   "classType": 0,
   "outSpeech": {
-    "Hello": "형주안녕",
-    "WellPlayed": "형주칭찬",
-    "Thanks": "형주감사",
-    "Wow": "형주감탄",
-    "Oops": "형주이런",
-    "Threat": "형주위협",
+    "Hello": "반가워 난 박형주야~",
+    "WellPlayed": "오 잘하네?",
+    "Thanks": "고마워",
+    "Wow": "이열",
+    "Oops": "아..이런",
+    "Threat": "날 화나게 하지마!",
     "AlreadyAttacked": "개는 이미 공격했어",
-    "CantAttack": "개는 공격을 못해",
+    "CantAttack": "개는 불가능해.",
     "ThereTaunt": "도발하수인이 가로막고있어",
     "TimeLimitStart": "시간이 벌써 이렇게 됬나",
     "TimeLess": "안돼 조금만 더..",
-    "NotReady": "그 하수인은 다음 차례에 준비될거야"
+    "NotReady": "그 하수인은 다음 차례에 준비될거야",
+    "AlreadtHeroAttacked": "난 이미 공격해서 불가능해!"
   },
   "skillName": "소주먹이기",
   "skillDesc": "대상을 선택해 피해를 2줍니다.",
   "skillCost": 2,
+  "skillAmount": 2,
   "SkillCo": null
 }

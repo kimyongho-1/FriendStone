@@ -6,8 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using WebSocketSharp;
-
+using TMPro;
 // to do list
 // 1. 탈진과 10장 초과시 코루틴 애니메이션 필요
 public class CustomCardHand
@@ -63,9 +62,10 @@ public class HandManager : MonoBehaviour
     public CustomCardHand PlayerHand = new CustomCardHand();
     public CustomCardHand EnemyHand = new CustomCardHand();
     public List<CardHand> AllCardHand = new List<CardHand>();
-
+    public FatigueIcon Fatigue;
     public CardHand prefab;
     public int punConsist = 1;
+    int fatigueStack = 0; // 탈진스택 : 덱에 카드가 없을떄 탈진코루틴을 실행하며 실행시 1씩 증가한 피해량을 내 영웅에게 부여하는 이벤트
     Queue<CardData> deckCards = new Queue<CardData>();
     private void Awake()
     {
@@ -96,11 +96,112 @@ public class HandManager : MonoBehaviour
 
     public int CreatePunNumber()
     { return (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000) + punConsist++; }
-    
+
+    // 핸드가 이미 10장일떄 카드를 드로우시, 해당 드로우카드 소멸 이벤트
+    public IEnumerator HandOverFlow(int cardIdNum, CardHand ch)
+    {
+        #region 소멸할 카드 이동
+        ch.transform.localScale = Vector3.one * 0.6f; // 크기 확대
+        Vector3 start = new Vector3(8.5f, -0.5f, -0.5f); 
+        Vector3 dest = new Vector3(4.5f, -0.5f, -0.5f); // 3.2f
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            ch.transform.position =
+                Vector3.Lerp(start, dest, t);
+            yield return null;
+        }
+        #endregion
+
+        #region 위치 도달시, 소멸(투명화 시작)
+        // 투명화 위해 모든 TMP와 SR을 묶기
+        List<TextMeshPro> tmpList = new List<TextMeshPro>() { ch.cardName, ch.Description, ch.Cost, ch.Stat, ch.Type };
+        List<SpriteRenderer> imageList = new List<SpriteRenderer>() { ch.cardImage, ch.cardBackGround };
+        t = 1;
+        Color tempColor = Color.white;
+        while (t > 0f)
+        {
+            // 알파값 점차 0으로 변환
+            t -= Time.deltaTime;
+            tempColor.a = t;
+            tmpList.ForEach(x => x.alpha = t);
+            imageList.ForEach(x => x.color = tempColor);
+            yield return null;
+        }
+        // 상대에게 내 오버드로우 이벤트 전달
+        GAME.IGM.Packet.SendOverDrawInfo(cardIdNum);
+        GameObject.Destroy(ch.gameObject);
+        #endregion 
+    } 
+    public IEnumerator EnemyHandOverFlow(int cardIdNum)
+    {
+        #region 적의 소멸 이벤트를 그대로 따라하기 위해, 소멸할 카드 데이터 찾기 + 적용
+        // 적의 카드소멸 이벤트를 똑같이 따라하여 동기화해주기
+        // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
+        Define.cardType type = GAME.Manager.RM.PathFinder.Dic[cardIdNum].type;
+        string jsonFile = GAME.Manager.RM.PathFinder.Dic[cardIdNum].GetJson();
+        CardData card = null;
+        // 확인된 카드타입으로, 실제 카드타입으로 클래스화
+        switch (type)
+        {
+            case Define.cardType.minion:
+                card = JsonConvert.DeserializeObject<MinionCardData>
+            (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                break;
+            case Define.cardType.spell:
+                card = JsonConvert.DeserializeObject<SpellCardData>
+            (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                break;
+            case Define.cardType.weapon:
+                card = JsonConvert.DeserializeObject<WeaponCardData>
+            (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                break;
+            default: break;
+        }
+        yield return null;
+        // 인게임 카드 프리팹 생성
+        CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
+        ch.Init(card, true);
+        #endregion
+
+        #region 소멸할 카드 이동
+        ch.transform.localScale = Vector3.one * 0.6f; // 크기 확대
+        Vector3 start = new Vector3(8.5f, 3.2f, -0.5f);
+        Vector3 dest = new Vector3(4.5f, 3.2f, -0.5f); //  적의 소멸 카드 위치는 좀더 높게
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            ch.transform.position =
+                Vector3.Lerp(start, dest, t);
+            yield return null;
+        }
+        #endregion
+
+        #region 위치 도달시, 소멸(투명화 시작)
+        // 투명화 위해 모든 TMP와 SR을 묶기
+        List<TextMeshPro> tmpList = new List<TextMeshPro>() { ch.cardName, ch.Description, ch.Cost, ch.Stat, ch.Type };
+        List<SpriteRenderer> imageList = new List<SpriteRenderer>() { ch.cardImage, ch.cardBackGround };
+        t = 1;
+        Color tempColor = Color.white;
+        while (t > 0f)
+        {
+            // 알파값 점차 0으로 변환
+            t -= Time.deltaTime;
+            tempColor.a = t;
+            tmpList.ForEach(x => x.alpha = t);
+            imageList.ForEach(x => x.color = tempColor);
+            yield return null;
+        }
+        yield return null;
+        GameObject.Destroy(ch.gameObject);
+        #endregion
+    }
+
     // 내가 덱에서 카드 뽑기
     public IEnumerator CardDrawing(int count)
     {
-
         // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
         IEnumerator DrawingCo;
         IEnumerator DeckAnimCo()
@@ -135,49 +236,70 @@ public class HandManager : MonoBehaviour
         // 덱에 카드수 남는지 확인
         for (int i = 0; i < count; i++)
         {
-            // 덱에서 뽑히는 연출 코루틴 먼저 실행
-            DrawingCo = DeckAnimCo();
-            StartCoroutine(DrawingCo);
-
-            // 덱에서 실질적으로 뽑힌 카드의 데이터
-            CardData cd = deckCards.Dequeue();
-            switch (cd.cardType)
+            // 덱에 카드가 없다면
+            if (deckCards.Count == 0)
             {
-                case Define.cardType.weapon: cd = new WeaponCardData(cd); break;
-                case Define.cardType.minion: cd = new MinionCardData(cd); break;
-                case Define.cardType.spell: cd = new SpellCardData(cd); break;
+                yield return StartCoroutine(Fatigue.DeckExhausted(true, ++fatigueStack ));
             }
 
-            // 인게임 카드 프리팹 생성
-            CardHand ch = GameObject.Instantiate(prefab, PlayerHandGO.transform);
-            // 인게임 카드 초기화
-            ch.Init(cd, true);
-
-            // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
-            ch.PunId = CreatePunNumber();
-
-            // OnHand 이벤트 존재 확인 및 실행
-            List<CardBaseEvtData> evtList = cd.evtDatas.FindAll(x => x.when == Define.evtWhen.onHand);
-            if (evtList != null)
+            // 덱에 카드가 있다면
+            else
             {
-                for (int j = 0; j < evtList.Count; j++)
+                // 덱에서 뽑히는 연출 코루틴 먼저 실행
+                DrawingCo = DeckAnimCo();
+                StartCoroutine(DrawingCo);
+
+                // 덱에서 실질적으로 뽑힌 카드의 데이터
+                CardData cd = deckCards.Dequeue();
+                switch (cd.cardType)
                 {
-                    GAME.IGM.AddAction(GAME.IGM.Battle.Evt(evtList[j], ch));
+                    case Define.cardType.weapon: cd = new WeaponCardData(cd); break;
+                    case Define.cardType.minion: cd = new MinionCardData(cd); break;
+                    case Define.cardType.spell: cd = new SpellCardData(cd); break;
+                }
+
+                // 인게임 카드 프리팹 생성
+                CardHand ch = GameObject.Instantiate(prefab, PlayerHandGO.transform);
+                // 인게임 카드 초기화
+                ch.Init(cd, true);
+
+                // 만약 손패가 이미 10장인 상태에서 드로우 상황이라면 => 현재 뽑히는 카드 삭제 이벤트 실행
+                if (PlayerHand.Count == 10)
+                {
+                    yield return new WaitUntil(() => (DrawingCo == null));
+                    yield return GAME.IGM.StartCoroutine(HandOverFlow(cd.cardIdNum, ch));
+                }
+
+                // 덱에 카드를 뽑아, 10장 미만인 핸드로 가져오는 정상적인 드로우 상황
+                else 
+                {
+                    // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
+                    ch.PunId = CreatePunNumber();
+
+                    // OnHand 이벤트 존재 확인 및 실행
+                    List<CardBaseEvtData> evtList = cd.evtDatas.FindAll(x => x.when == Define.evtWhen.onHand);
+                    if (evtList != null)
+                    {
+                        for (int j = 0; j < evtList.Count; j++)
+                        {
+                            GAME.IGM.AddAction(GAME.IGM.Battle.Evt(evtList[j], ch));
+                        }
+                    }
+                    // 상대에게 내 드로우 정보 전달
+                    GAME.IGM.Packet.SendDrawInfo(ch.PunId);
+
+                    // 나의 핸드카드에 포함시키기
+                    PlayerHand.Add(ch);
+                    yield return new WaitUntil(() => (DrawingCo == null));
+
+                    // 손패의 카드들 정렬 실행후, 나머지 드로우
+                    yield return StartCoroutine(CardAllignment(true));
                 }
             }
-
-
-            // 상대에게 내 드로우 정보 전달
-            GAME.IGM.Packet.SendDrawInfo(ch.PunId);
-
-            // 나의 핸드카드에 포함시키기
-            PlayerHand.Add(ch);
-            yield return new WaitUntil(() => (DrawingCo == null)) ;
-
-            // 손패의 카드들 정렬 실행후, 나머지 드로우
-            yield return StartCoroutine(CardAllignment(true));
+            
         }
-
+        // 드로우와 정렬 모두 끝났으면 콜라이더작용 위해 다시 활성화
+        GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Ray = true);
     }
 
     // 상대가 카드 뽑을시 실행
@@ -257,6 +379,7 @@ public class HandManager : MonoBehaviour
         // 카드 갯수에 비례하여 z축 회전 적용
         float angle = 18f * ((hand.Count - 1) / 10f);
         int max = Mathf.Max(hand.Count - 1, 1);
+
         for (int i = 0; i < hand.Count; i++)
         {
             // 0으로 나누면 안되기에
@@ -299,7 +422,6 @@ public class HandManager : MonoBehaviour
             if (euler.z > 180)
             { euler.z -= 360f; }
             
-            ch.Ray = false;
             Vector3 start = ch.transform.position;
             Vector3 startRpt = euler;
             Vector3 startScale = ch.transform.localScale;
@@ -316,12 +438,10 @@ public class HandManager : MonoBehaviour
                     Vector3.Lerp(start, ch.OriginPos, t);
                 yield return null;
             }
-            ch.Ray = true;
             // 큐 감소시키기 ( 큐 갯수 0 일시 , 모든 핸드카드 정렬 코루틴 끝났음을 암시)
             co.Dequeue();
         }
     }
 
-    // 정렬 애니메이션 코루틴
     
 }

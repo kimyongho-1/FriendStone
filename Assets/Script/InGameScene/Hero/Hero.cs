@@ -22,8 +22,9 @@ public class Hero : MonoBehaviour, IBody
     public int hp, att, dur, mp;
     public SpriteRenderer wpImg, skillImg, playerImg, AttIcon, HpIcon;
     public TextMeshPro hpTmp, weaponAttTmp, durTmp, replyTmp , mpTmp, attTmp, nickTmp;
-    public GameObject Select, Reply, Speech;
-    public bool CanAttack { get { return (weaponData != null) && Attackable == true; } }
+    public GameObject Select, Speech;
+    public ReplyBG Reply;
+    public bool CanAttack { get { return att > 0 && Attackable == true; } }
 
     #region IBODY
     [field:SerializeField] public bool Attackable { get; set; }
@@ -55,6 +56,7 @@ public class Hero : MonoBehaviour, IBody
     // 카메라의 피직스레이캐스터 필요, 객체에 Collider필요
     public void Awake()
     {
+        weaponData = null;
         OriginPos = playerMask.transform.position;
         Col = GetComponent<Collider2D>();
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
@@ -65,13 +67,16 @@ public class Hero : MonoBehaviour, IBody
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)
         {
+            // 감정표현 자연감소 시키는 코루틴, 게임 끝날떄까지 계속 실행 ( 감정표현 전송 남발사용시에, 잠시 사용을 잠그는 코루틴 실행)
+            GAME.IGM.StartCoroutine(ReduceEmoCount());
+
             // 내 닉네임 표기
             nickTmp.text = GAME.Manager.NM.playerInfo.NickName;
-            
+
             heroData = GAME.Manager.RM.GetHeroData(GAME.Manager.RM.GameDeck.ownerClass);
-            heroData.Init(playerImg , skillImg, IsMine);
+            heroData.Init(playerImg, skillImg, IsMine);
             // 영웅 이미지 초기화
-            
+
             // 영웅 스킬란 초기화 및 이미지 적용
             heroSkill.InitSkill(IsMine);
 
@@ -89,10 +94,15 @@ public class Hero : MonoBehaviour, IBody
                 GAME.Manager.UM.BindEvent(Select.transform.GetChild(i).gameObject,
                     SelectedSpeech, Define.Mouse.ClickL, Define.Sound.None);
             }
-            
             // 선택대사 나올떄, 배경클릭시 대사 즉각 종료
             GAME.Manager.UM.BindEvent(Reply.gameObject, OffReply, Mouse.ClickL, Sound.None);
-            
+
+        }
+        else
+        {
+            Select.gameObject.SetActive(false);
+            Reply.gameObject.SetActive(true);
+            Speech.gameObject.SetActive(false);
         }
         
         // 카드팝업 이벤트 연결 (마우스 엔터로 구현)
@@ -111,6 +121,37 @@ public class Hero : MonoBehaviour, IBody
         AttIcon.sortingLayerID = HpIcon.sortingLayerID = layer.id;
         attTmp.sortingLayerID = hpTmp.sortingLayerID = layer.id;
     }
+
+    #region 감정표현 관련 코루틴
+    public int EmoCount = 0; // 감정표현을 제한없이 사용하는건 문제있다 생각하여, 한계점을 만들고 사용하기
+    IEnumerator EmoFlushCo;
+
+    // 감정표현 남발시, 쌓인수만큼 랜덤한 초만큼 사용못하게 막기
+    IEnumerator CalculateEmoCount()
+    {
+        // 시작할떄의 갯수 기억
+        int currCount = EmoCount;
+        // 랜덤한 초만큼 대기후 다시 감정표현 사용할수있도록 하기
+        WaitForSeconds wait = new WaitForSeconds(EmoCount * UnityEngine.Random.Range(0.5f, 1.5f));
+        for (int i = 0; i < currCount; i++)
+        {
+            yield return wait;
+        }
+        // 참조하였떤 코루틴을 비워서, 다시 감정표현 사용가능한지 조건문에 적용
+        EmoFlushCo = null;
+    }
+
+    // 쌓이는 감정표현 카운트 수 자연감소 실행 코루틴
+    IEnumerator ReduceEmoCount()
+    {
+        while (true)
+        {
+            yield return new WaitUntil(() => (EmoCount > 0));
+            yield return new WaitForSeconds(5f);
+            EmoCount--;
+        }
+    }
+    #endregion
 
     #region EnterExit이벤트
     public void ShowWeaponIcon() // 무기아이콘에 커서를 일정시간 가져다 댈시
@@ -131,8 +172,6 @@ public class Hero : MonoBehaviour, IBody
     public void CallHeroSkillAttack(IBody target)
     {
         // 사용으로 검게 만들어주기
-        heroSkill.Attackable = false;
-        return;
         IEnumerator co = heroData.SkillCo(heroSkill, target);
         GAME.IGM.AddAction(EnemySkillUse(co));
         
@@ -174,28 +213,46 @@ public class Hero : MonoBehaviour, IBody
     // 영웅 좌클릭시 공격
     public void HeroAttack(GameObject go)
     {
+        #region 예외상황들 확인
         // 나의 턴에서만 가능한 상태
         if (GAME.IGM.Packet.isMyTurn == false) { return; }
 
-        // 만약 대화선택지 이벤트 선택 또는 실행중이었따면, 해당 이벤트 종료로 실행
-        if (Speech.gameObject.activeSelf == true )
+        // 만약 대화선택지 이벤트 선택 또는 실행중이었따면, 대화창 닫는 이벤트로 변경 실행
+        if (Speech.gameObject.activeSelf == true)
         {
             Speech.gameObject.SetActive(false);
             return;
         }
+
         // 공격 가능한 상태가 아니거나
-        // 이미 다른 객체가 타겟팅 중인데 이 객체를 클릭시 취소
+        // 다른 객체의 타겟팅 이벤트 실행중에 객체를 클릭시 취소
         if (GAME.IGM.TC.LR.gameObject.activeSelf == true || !CanAttack)
-        { return;  }
+        { return; }
 
-        // 공격자 자신과, 스폰영역 레이 비활성화
-        Ray = false;
+        // 공격력이 존재하지만, 공격 가능상태가 아니면, 이미 공격한것이므로 공격했다는 텍스트를 보여주기 실행
+        if (Attackable == false && Att > 0 )
+        {
+            // 지금 대화창이 켜져있다면,
+            // 유저 자신에게 난 이미 공격했다는 텍스트를 현재 재생중일거기에, 중복 실행 할필요없어 강제 취소
+            if (Speech.gameObject.activeSelf == true) { return; }
 
+            // 유저에게 자신의 영웅이 이미 공격했다는걸 알리는 대사창 활성화 실행
+            HeroSaying(Define.Emotion.AlreadtHeroAttacked);
+            return;
+        }
+        #endregion
+
+        #region 예외 사항 모두 통과시 타겟팅 이벤트 실행 => 적절한 타겟을 클릭시 , 공격함수 예약 실행
+
+        // 공격자 공격한것으로 변경 (이후 타겟팅 실패시, 아래 함수내부에서 다시 true로 변경예정 )
+        Ray = Attackable = false;
         // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
         GAME.Manager.StartCoroutine(GAME.IGM.TC.MeeleTargettingCo
             (this,
             (IBody a, IBody t) => { return AttackCo(a, t); }
             ));
+
+        #endregion
     }
     public IEnumerator AttackCo(IBody attacker, IBody target)
     {
@@ -210,6 +267,8 @@ public class Hero : MonoBehaviour, IBody
                 this.transform.localPosition = Vector3.Lerp(currPos, OriginPos, time);
                 yield return null;
             }
+            // 공격권 다시 복구
+            Attackable = true;
             yield break;
         }
 
@@ -264,13 +323,15 @@ public class Hero : MonoBehaviour, IBody
 
         if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
         if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
-
-        Attackable = false;
     }
 
     // 영웅 우클릭시 대화 이벤트
     public void HeroSpeech(GameObject go)
     {
+        // 감정표현이 쌓이면, EmoFlushCo가 실행되기에 , Null참조가 아니면 현재 감정표현을 남발한 상태로 강제 취소
+        if (EmoFlushCo != null)
+        { return;  }
+
         // 현재 말풍선이 켜져있으면 중복 방지로 끄기
         if (Speech.gameObject.activeSelf == true) { return; }
         
@@ -283,6 +344,7 @@ public class Hero : MonoBehaviour, IBody
     // 유저가 선택하는 말풍선중 하나를 클릭하였을떄
     public void SelectedSpeech(GameObject go)
     {
+        // 몇번쨰 선택패널 골랐는지 자식순서로 찾기
         int index = go.transform.GetSiblingIndex();
 
         // 0번은 배경 , 배경 클릭시 감정표현 이벤트 강제 종료
@@ -291,16 +353,49 @@ public class Hero : MonoBehaviour, IBody
         else
         {
             // Emotion이넘 인덱스 0부터 시작하기위해 -1한 값을 적용
-            replyTmp.text = heroData.outSpeech[(Define.Emotion)(index-1)];
+            int emoIndex = index - 1;
+            Reply.textWaitTime = 2; // 대화창 재생시간 다시 초기화
+            replyTmp.text = heroData.outSpeech[(Define.Emotion)(emoIndex)];
+            // 내 감정표현 전달
+            GAME.IGM.Packet.SendHeroEmotion(emoIndex);
+            EmoCount++;
+            Select.gameObject.SetActive(false);
+            Reply.gameObject.SetActive(true);
         }
-        Select.gameObject.SetActive(false);
-        Reply.gameObject.SetActive(true);
+
+        // 감정표현이 5개 이상이나 쌓였따면, 잠시 제한걸기 (코루틴내에서 스스로 제한 풀예정)
+        if (EmoCount > 5 && EmoFlushCo == null)
+        {
+            EmoFlushCo = CalculateEmoCount();
+            GAME.IGM.StartCoroutine(EmoFlushCo); 
+        }
         return;
     }
+
+    // 적 영웅일떄는, 전달 받은 감정표현 대사 사용
+    public void PlayEnemyEmotion(int idx)
+    {
+        // 현재 말풍선이 켜져있으면 대사재생시간 초기화 및 바뀐 대사로 진행
+        if (Speech.gameObject.activeSelf == true)
+        {
+            // 텍스트 재생시간 초기화 및 새 텍스트로 변경하여 대사 진행
+            Reply.textWaitTime = 2f;
+            replyTmp.text = heroData.outSpeech[(Define.Emotion)idx];
+        }
+        else 
+        {
+            replyTmp.text = heroData.outSpeech[(Define.Emotion)idx];
+            Speech.gameObject.SetActive(true);
+        }
+        
+    }
+    // 유저가 선택한 대사에 맞는 대화창을 한번더 클릭시 강제 종료
     public void OffReply(GameObject go)
     {
         Speech.gameObject.SetActive(false);
     }
+
+    // 단순 감정표현 외, 특정상황에 재생해야할 대사가 있다면 상황별Enum으로 찾아서 재생하기
     public void HeroSaying(Define.Emotion e)
     {
         // 이미 대사를 진행중이었다면
@@ -309,9 +404,6 @@ public class Hero : MonoBehaviour, IBody
             // 강제 종료후, 다시 세팅
             Speech.gameObject.SetActive(false);
         }
-
-        // 나의 차례가 아니면 할 필요가 X
-        if (GAME.IGM.Packet.isMyTurn == false) { return; }
 
         // 말풍선 선택 이벤트시, 선택창만 켜져있도록 Defalut상태로 변경
         Select.gameObject.SetActive(false);

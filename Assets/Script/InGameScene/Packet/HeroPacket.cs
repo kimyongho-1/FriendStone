@@ -11,11 +11,13 @@ public partial class PacketManager
     const byte UseWeapon = 41;
     const byte EnemyHeroAttack = 42;
     const byte EnemyHeroUseSkill = 43;
+    const byte EnemyEmotion = 44;
     public void InitHeroDictionary()
     {
         dic.Add(UseWeapon, ReceivedWeapon);
         dic.Add(EnemyHeroAttack, ReceivedHeroAttack);
         dic.Add(EnemyHeroUseSkill , ReceivedHeroSkill );
+        dic.Add(EnemyEmotion , ReceivedEnemyEmotion);
     }
     #region 영웅 무기 착용
     // 영웅 무기 착용 이벤트 전파
@@ -105,6 +107,19 @@ public partial class PacketManager
         int targetPun = (int)data[0];
         IBody target = GAME.IGM.allIBody.Find(x=>x.PunId == targetPun);
         GAME.IGM.Hero.Enemy.CallHeroSkillAttack(target);
+    }
+    #endregion
+
+    #region 영웅 감정표현 전달 및 받기
+    public void SendHeroEmotion(int idx)
+    {
+        PhotonNetwork.RaiseEvent(EnemyEmotion, new object[] { idx }, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedEnemyEmotion(object[] data)
+    {
+        int emoIdx = (int)data[0];
+
+        GAME.IGM.Hero.Enemy.PlayEnemyEmotion(emoIdx);
     }
     #endregion
 }

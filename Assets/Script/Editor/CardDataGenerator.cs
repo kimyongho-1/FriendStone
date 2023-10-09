@@ -578,6 +578,17 @@ public class CardDataGenerator : EditorWindow
        // heroData.skillImagePath = EditorGUILayout.TextField("스킬아이콘경로",heroData.skillImagePath);
        // heroData.heroImagePath = EditorGUILayout.TextField("영웅이미지", heroData.heroImagePath);
         heroData.skillCost = EditorGUILayout.IntField("스킬 비용 : ", heroData.skillCost);
+        string descSkillAmount = null;
+        switch (heroData.classType)
+        {
+            case classType.HJ:
+                descSkillAmount = "피해량 : "; break;
+            case classType.HZ:
+                descSkillAmount = "드로우량 : "; break;
+            default:
+                descSkillAmount = "치료량 : "; break;
+        }
+        heroData.skillAmount = EditorGUILayout.IntField(descSkillAmount, heroData.skillAmount);
         path = EditorGUILayout.TextField("Path ", path);
         #endregion
 
@@ -613,7 +624,7 @@ public class CardDataGenerator : EditorWindow
         heroData.outSpeech[Define.Emotion.ThereTaunt] = EditorGUILayout.TextField("도발 하수인 알릴떄 : ", heroData.outSpeech[Define.Emotion.ThereTaunt]);
         heroData.outSpeech[Define.Emotion.TimeLimitStart] = EditorGUILayout.TextField("시간제한 시작 : ", heroData.outSpeech[Define.Emotion.TimeLimitStart]);
         heroData.outSpeech[Define.Emotion.TimeLess] = EditorGUILayout.TextField("시간마감 임박 : ", heroData.outSpeech[Define.Emotion.TimeLess]);
-        
+        heroData.outSpeech[Define.Emotion.AlreadtHeroAttacked] = EditorGUILayout.TextField("영웅이 공격을 한 상황 : ", heroData.outSpeech[Define.Emotion.AlreadtHeroAttacked]);
     }
 
 }

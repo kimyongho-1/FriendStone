@@ -27,10 +27,11 @@ public class HeroData
         { Define.Emotion.TimeLimitStart , ""},
         { Define.Emotion.TimeLess , ""},
         { Define.Emotion.NotReady , ""},
+        { Define.Emotion.AlreadtHeroAttacked , ""},
     };
     public string skillName;
     public string skillDesc;
-    public int skillCost;
+    public int skillCost, skillAmount;
     public Func<IBody, IBody, IEnumerator> SkillCo;
     public void Init(SpriteRenderer heroImg, SpriteRenderer skillImg , bool isMine)
     {
@@ -46,7 +47,7 @@ public class HeroData
                     return HeroSkillUse(owner, target);
                     IEnumerator HeroSkillUse(IBody owner, IBody target)
                     {
-                        GAME.IGM.AddAction(Throw(owner, target, 2));
+                        yield return GAME.IGM.StartCoroutine(Throw(owner, target, skillAmount));
                         if (GAME.IGM.Packet.isMyTurn == true && IsMine == true)
                         { GAME.IGM.Packet.SendHeroSkillEvt(target.PunId); }
                         yield return null;
@@ -63,7 +64,7 @@ public class HeroData
                         // 상대방은 실행하지 않도록
                         if (GAME.IGM.Packet.isMyTurn == true && IsMine == true)
                         {
-                            GAME.IGM.AddAction(GAME.IGM.Hand.CardDrawing(1));
+                            yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardDrawing(skillAmount));
                             GAME.IGM.Packet.SendHeroSkillEvt(1000); 
                         }
                         yield return null;
@@ -77,10 +78,9 @@ public class HeroData
                     return HeroSkillUse(owner, target);
                     IEnumerator HeroSkillUse(IBody owner, IBody target)
                     {
-                        GAME.IGM.AddAction(Restore(owner, target, 3));
+                        yield return GAME.IGM.StartCoroutine(Restore(owner, target, skillAmount));
                         if (GAME.IGM.Packet.isMyTurn == true && IsMine == true)
                         { GAME.IGM.Packet.SendHeroSkillEvt(target.PunId); }
-                        yield return null;
                     }
                 };
                 break;

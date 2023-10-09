@@ -25,7 +25,10 @@ public partial class PacketManager
 
     const byte BuffEvt = 14; // 버프 이벤트 전달받을시 동기화하기
     const byte AttEvt = 15; // 공격 이벤트 전달받을시 동기화하기
-    const byte RestoreEvt = 16;
+    const byte RestoreEvt = 16; // 치료이벤트
+    const byte FatigueEvt = 17; // 상대가 덱에 카드가 없어 피해입는 탈진 이벤트
+    const byte OverDrawEvt = 18; // 상대가 카드가 10장인데 추가 드로우시, 뽑는 카드 없애는 이벤트
+   
     public void InitStateDictionary()
     {
         dic.Add(UserInfo, ReceivedUserInfo);
@@ -42,6 +45,8 @@ public partial class PacketManager
         dic.Add(BuffEvt, ReceivedBuffEvt);
         dic.Add(AttEvt, ReceivedAttEvt );
         dic.Add(RestoreEvt, ReceivedRestoreEvt );
+        dic.Add(FatigueEvt, ReceivedFatigueEvt);
+        dic.Add(OverDrawEvt, ReceivedOverDrawEvt);
     }
 
     // 내턴 시작 전송
@@ -354,4 +359,31 @@ public partial class PacketManager
         GAME.IGM.AddAction(GAME.IGM.Battle.Restore(caster, target, amount));
     }
     #endregion
+
+    #region 탈진 이벤트 전파 및 받기
+    public void SendFatigue(int dmg)
+    {
+        PhotonNetwork.RaiseEvent(FatigueEvt, new object[] { dmg }, Other, SendOptions.SendReliable);
+    }
+    public void ReceivedFatigueEvt(object[] data)
+    {
+        int dmg = (int)data[0];
+        // 적을 기준으로, 탈진피해량과 함께 이벤트 예약 실행
+        GAME.IGM.AddAction(GAME.IGM.Hand.Fatigue.DeckExhausted(false, dmg));
+    }
+    #endregion
+
+    #region 핸드가 10장일떄 추가드로우한 카드는 소멸되는 이벤트 전달&받기
+    public void SendOverDrawInfo(int cardID)
+    { PhotonNetwork.RaiseEvent(OverDrawEvt , new object[] { cardID} , Other, SendOptions.SendReliable); }
+    public void ReceivedOverDrawEvt(object[] data)
+    {
+        // 현재 소멸되는 상대 카드가 어떤 카드인지, 카드식별자로 찾기
+        int cardID = (int)data[0];
+
+        // 카드식별자 넘겨주며, 상대의 드로우카드 소멸 이벤트 예약
+        GAME.IGM.AddAction(GAME.IGM.Hand.EnemyHandOverFlow(cardID));
+    }
+    #endregion
+
 }

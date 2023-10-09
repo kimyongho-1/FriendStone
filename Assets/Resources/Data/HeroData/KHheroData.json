@@ -1,22 +1,25 @@
 {
   "IsMine": false,
+  "skillTargeting": 0,
   "classType": 2,
   "outSpeech": {
-    "Hello": "",
-    "WellPlayed": "",
-    "Thanks": "",
-    "Wow": "",
-    "Oops": "",
-    "Threat": "",
-    "AlreadyAttacked": "",
-    "CantAttack": "",
-    "ThereTaunt": "",
-    "TimeLimitStart": "",
-    "TimeLess": "",
-    "NotReady": ""
+    "Hello": "크",
+    "WellPlayed": "크",
+    "Thanks": "크",
+    "Wow": "크",
+    "Oops": "크",
+    "Threat": "크",
+    "AlreadyAttacked": "...",
+    "CantAttack": "...",
+    "ThereTaunt": "방패모양 도발 먼저.",
+    "TimeLimitStart": "크",
+    "TimeLess": "크..으크..",
+    "NotReady": "지금 소환된거라 못한다.",
+    "AlreadtHeroAttacked": "이미해서 못한다."
   },
   "skillName": "감자탕 먹이기",
   "skillDesc": "대상을 선택하면 3치료합니다.",
   "skillCost": 3,
+  "skillAmount": 3,
   "SkillCo": null
 }
