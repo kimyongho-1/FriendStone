@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 1053879012613492264}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.406, y: -0.422, z: 0}
+  m_LocalPosition: {x: -0.38, y: -0.374, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -85,6 +85,90 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1540071356713796165
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3909876419715262222}
+  - component: {fileID: 2017320276905546551}
+  m_Layer: 0
+  m_Name: Taunt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &3909876419715262222
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1540071356713796165}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.2, z: 0}
+  m_LocalScale: {x: 1.1772205, y: 1.6333934, z: 1.1772205}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5936675352183253474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &2017320276905546551
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1540071356713796165}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: -142796190, guid: 8d6bf0d352940bc4ab37aab859e8204d, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 0.98, y: 0.92}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1626833789113635872
 GameObject:
   m_ObjectHideFlags: 0
@@ -121,6 +205,7 @@ Transform:
   - {fileID: 6719945350695007797}
   - {fileID: 5395115783219854751}
   - {fileID: 1528882002725321754}
+  - {fileID: 3909876419715262222}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7083826307056750467
@@ -135,7 +220,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97b5d4326cd04c44586f350bbe75e1d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data:
+  CardEleType: 0
+  <MC>k__BackingField:
     cardName: 
     cardDescription: 
     cardIdNum: 0
@@ -143,23 +229,49 @@ MonoBehaviour:
     cardClass: 0
     cardType: 0
     cardRarity: 0
-    associatedHandler: 
     evtDatas: []
-  <PunId>k__BackingField: 0
-  <IsMine>k__BackingField: 0
-  <Col>k__BackingField: {fileID: 5976909367675379938}
-  <OriginAtt>k__BackingField: 0
-  <OriginHp>k__BackingField: 0
-  <Att>k__BackingField: 0
-  <HP>k__BackingField: 0
+    att: 0
+    hp: 0
+    isTaunt: 0
+    isCharge: 0
+  <WC>k__BackingField:
+    cardName: 
+    cardDescription: 
+    cardIdNum: 0
+    cost: 0
+    cardClass: 0
+    cardType: 0
+    cardRarity: 0
+    evtDatas: []
+    att: 0
+    durability: 0
+  <SC>k__BackingField:
+    cardName: 
+    cardDescription: 
+    cardIdNum: 0
+    cost: 0
+    cardClass: 0
+    cardType: 0
+    cardRarity: 0
+    evtDatas: []
   AttTmp: {fileID: 5318494953368564744}
   HpTmp: {fileID: 2910072322474683016}
   cardImage: {fileID: 3162696530639244512}
   attIcon: {fileID: 6706482385668342774}
   hpIcon: {fileID: 4229862931737232217}
-  attackable: 1
+  tauntIcon: {fileID: 2017320276905546551}
   sleep: {fileID: 8672430788726145713}
   mask: {fileID: 5324245463499385400}
+  currAtt: 0
+  currHp: 0
+  waitDeathRattleEnd: 0
+  <Attackable>k__BackingField: 0
+  <PunId>k__BackingField: 0
+  <IsMine>k__BackingField: 0
+  <Col>k__BackingField: {fileID: 5976909367675379938}
+  <OriginPos>k__BackingField: {x: 0, y: 0, z: 0}
+  <OriginAtt>k__BackingField: 0
+  <OriginHp>k__BackingField: 0
 --- !u!58 &5976909367675379938
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -304,7 +416,7 @@ Transform:
   m_GameObject: {fileID: 4371963498903041135}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.35400003, y: -0.45, z: 0}
+  m_LocalPosition: {x: 0.34, y: -0.379, z: 0}
   m_LocalScale: {x: 0.45, y: 0.45, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

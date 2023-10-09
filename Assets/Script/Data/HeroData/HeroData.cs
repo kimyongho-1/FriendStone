@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Sprites;
+using static Define;
+using static UnityEngine.GraphicsBuffer;
+
 [Serializable]
 public class HeroData
 {
@@ -38,19 +41,94 @@ public class HeroData
         {
             case Define.classType.HJ:
                 skillTargeting = Define.evtTargeting.Select;
-                SkillCo = (IBody owner , IBody target) => { return GAME.IGM.Battle.AttackEvt(owner, target, 2, Define.attType.Damage, false); };
+                SkillCo = (IBody owner , IBody target) => {
+                    Debug.Log($"attackerPun:{owner.PunId}, attackerTR : {owner.TR.name},{owner.Pos}");
+                    return HeroSkillUse(owner, target);
+                    IEnumerator HeroSkillUse(IBody owner, IBody target)
+                    {
+                        GAME.IGM.AddAction(Throw(owner, target, 2));
+                        if (GAME.IGM.Packet.isMyTurn == true && IsMine == true)
+                        { GAME.IGM.Packet.SendHeroSkillEvt(target.PunId); }
+                        yield return null;
+                    }
+                };
                 break;
             case Define.classType.HZ:
                 skillTargeting = Define.evtTargeting.Auto;
-                SkillCo = (IBody owner, IBody target) =>  { return GAME.IGM.Hand.CardDrawing(1); };
+                SkillCo = (IBody owner, IBody target) =>
+                {
+                    return HeroSkillUse(owner, target);
+                    IEnumerator HeroSkillUse(IBody owner, IBody target)
+                    {
+                        // 상대방은 실행하지 않도록
+                        if (GAME.IGM.Packet.isMyTurn == true && IsMine == true)
+                        {
+                            GAME.IGM.AddAction(GAME.IGM.Hand.CardDrawing(1));
+                            GAME.IGM.Packet.SendHeroSkillEvt(1000); 
+                        }
+                        yield return null;
+                    }
+                };
                 break;
             case Define.classType.KH:
                 skillTargeting = Define.evtTargeting.Select;
-                SkillCo = (IBody owner, IBody target) => { return GAME.IGM.Battle.Restore(owner, target, 2, false); };
+                SkillCo = (IBody owner, IBody target) => {
+                    Debug.Log($"attackerPun:{owner.PunId}, attackerTR : {owner.TR.name},{owner.Pos}");
+                    return HeroSkillUse(owner, target);
+                    IEnumerator HeroSkillUse(IBody owner, IBody target)
+                    {
+                        GAME.IGM.AddAction(Restore(owner, target, 3));
+                        if (GAME.IGM.Packet.isMyTurn == true && IsMine == true)
+                        { GAME.IGM.Packet.SendHeroSkillEvt(target.PunId); }
+                        yield return null;
+                    }
+                };
                 break;
             default:
                 break;
+        };
+    }
+    IEnumerator Throw(IBody attacker, IBody target, int attAmount)
+    {
+        // 투사체 호출
+        ParticleSystem pj = GAME.IGM.Battle.FX.GetPJ;
+        // 공격자의 위치에서 시작하도록 위치 초기화
+        pj.transform.position = attacker.Pos;
+        pj.gameObject.SetActive(true);
+        Vector3 start = attacker.Pos;
+        Vector3 dest = target.Pos;
+        Vector3 dir = (dest - start).normalized; // 방향벡터
+        float angle = Vector3.Angle(attacker.TR.up, dir);
+        Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
+        if (cross.y < 0) { angle *= -1; }
+
+        // 투사체 선형보간으로 타겟으로 향하며 이동
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            pj.transform.rotation =
+                Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
+            pj.transform.position =
+                Vector3.Lerp(start, dest, t);
+
+            yield return null;
+        }
+
+        // 투사체 끄기
+        pj.gameObject.SetActive(false); 
+        Debug.Log($"attacker : {attacker}[{attacker.PunId}], target : {target}[{target.PunId}]");
+        target.HP -= attAmount;
+        if (target.HP <= 0)
+        {
+            yield return GAME.IGM.StartCoroutine(target.onDead);
         }
     }
+    IEnumerator Restore(IBody caster, IBody target, int healAmount)
+    {
+        Debug.Log($"치료이벤트 실행, target : {target}[{target.PunId}]");
+        target.HP = Mathf.Clamp(target.HP + healAmount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
 
+        yield break;
+    }
 }

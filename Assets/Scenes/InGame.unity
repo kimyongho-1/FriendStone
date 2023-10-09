@@ -304,7 +304,7 @@ GameObject:
   m_Component:
   - component: {fileID: 28057554}
   - component: {fileID: 28057555}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: durImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1404,6 +1404,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Attackable>k__BackingField: 0
+  <PunId>k__BackingField: 0
+  <objType>k__BackingField: 0
+  <OriginPos>k__BackingField: {x: 0, y: 0, z: 0}
+  <OriginAtt>k__BackingField: 0
+  <OriginHp>k__BackingField: 0
+  <Att>k__BackingField: 0
+  <HP>k__BackingField: 0
 --- !u!1 &237829774
 GameObject:
   m_ObjectHideFlags: 0
@@ -1836,7 +1843,7 @@ GameObject:
   m_Component:
   - component: {fileID: 314093443}
   - component: {fileID: 314093444}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: WpImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2582,7 +2589,7 @@ GameObject:
   m_Component:
   - component: {fileID: 464339845}
   - component: {fileID: 464339846}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: CostImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2829,7 +2836,7 @@ GameObject:
   - component: {fileID: 536593215}
   - component: {fileID: 536593217}
   - component: {fileID: 536593216}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: WpMask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4926,7 +4933,7 @@ GameObject:
   m_Component:
   - component: {fileID: 840445297}
   - component: {fileID: 840445298}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: CostImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6246,7 +6253,7 @@ GameObject:
   - component: {fileID: 1039569627}
   - component: {fileID: 1039569629}
   - component: {fileID: 1039569628}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: WeaponCostTmp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6416,7 +6423,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1067120215}
   - component: {fileID: 1067120216}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: SkillImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7410,6 +7417,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heroData:
     IsMine: 0
+    skillTargeting: 0
     classType: 0
     skillName: 
     skillDesc: 
@@ -7449,6 +7457,8 @@ MonoBehaviour:
   Reply: {fileID: 1207020744}
   Speech: {fileID: 1874987598}
   <Attackable>k__BackingField: 0
+  <PunId>k__BackingField: 0
+  <OriginPos>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!114 &1295294393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8350,7 +8360,7 @@ GameObject:
   - component: {fileID: 1447001644}
   - component: {fileID: 1447001646}
   - component: {fileID: 1447001645}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: DurTmp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9212,6 +9222,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heroData:
     IsMine: 0
+    skillTargeting: 0
     classType: 0
     skillName: 
     skillDesc: 
@@ -9251,6 +9262,8 @@ MonoBehaviour:
   Reply: {fileID: 1558488776}
   Speech: {fileID: 596177823}
   <Attackable>k__BackingField: 0
+  <PunId>k__BackingField: 0
+  <OriginPos>k__BackingField: {x: 0, y: 0, z: 0}
 --- !u!1 &1531013150
 GameObject:
   m_ObjectHideFlags: 0
@@ -9394,7 +9407,7 @@ GameObject:
   - component: {fileID: 1533738549}
   - component: {fileID: 1533738548}
   - component: {fileID: 1533738547}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: SkillMask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9515,6 +9528,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Attackable>k__BackingField: 0
+  <PunId>k__BackingField: 0
+  <objType>k__BackingField: 0
+  <OriginPos>k__BackingField: {x: 0, y: 0, z: 0}
+  <OriginAtt>k__BackingField: 0
+  <OriginHp>k__BackingField: 0
+  <Att>k__BackingField: 0
+  <HP>k__BackingField: 0
 --- !u!1 &1558488776
 GameObject:
   m_ObjectHideFlags: 0
@@ -9749,7 +9769,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1668833547}
   - component: {fileID: 1668833548}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: SkillCol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11368,6 +11388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ebddc7ffd63c11499cc1f62fa723fd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FX: {fileID: 0}
 --- !u!4 &1844280470
 Transform:
   m_ObjectHideFlags: 0
@@ -11961,7 +11982,7 @@ GameObject:
   - component: {fileID: 1935244905}
   - component: {fileID: 1935244907}
   - component: {fileID: 1935244906}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: SkillCostTmp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12421,7 +12442,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1986994654}
   - component: {fileID: 1986994655}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: weaponAttImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13118,7 +13139,7 @@ GameObject:
   - component: {fileID: 2063127494}
   - component: {fileID: 2063127496}
   - component: {fileID: 2063127495}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: weaponAttTmp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13568,7 +13589,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2118649224}
   - component: {fileID: 2118649225}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: WpIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}

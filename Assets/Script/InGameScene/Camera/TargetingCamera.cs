@@ -128,9 +128,10 @@ public class TargetingCamera : MonoBehaviour
                     #region 상대에게 도발 하수인이 있는데, 현재 타겟이 도발 하수인이 맞는지 확인
                     // 먼저 도발 하수인들이 상대에게 있는지 확인
                     List<CardField> FindTauntList = GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.isTaunt == true);
-
+                    Debug.Log("적 도발수 : " + FindTauntList.Count);
+                    Debug.Log("타겟은 도발 ? : "+ FindTauntList.Contains(targetBody));
                     // 상대에게 도발하수인이 존재하며, 현재 공격하기로한 타겟이 도발하수인이 아니라면 공격 불가능 (언제나 도발 하수인 먼저 공격)
-                    if (FindTauntList != null &&
+                    if (FindTauntList.Count > 0 &&
                         FindTauntList.Contains(targetBody) == false)
                     {
                         // 라인렌더러 그리는 궤적코루틴 중지위해 라인렌더러 갯수 줄이기
@@ -274,7 +275,63 @@ public class TargetingCamera : MonoBehaviour
         LR.positionCount = 0;
         yield break;
     }
+    public IEnumerator TargettingHeroSkillCo(IBody attacker)
+    {
+        Hero player = GAME.IGM.Hero.Player;
+        // 핸드 못건드리게 잠그기
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = false);
+        attacker.Col.enabled = false;
+        GAME.IGM.Turn.Col.enabled = false;
+        // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
+        yield return new WaitForSeconds(0.15f);
 
+        // 공격 모션 그리기
+        StartCoroutine(DrawLine(attacker.OriginPos));
+
+        
+        // 카메라 위치와, 입력확인 초기화
+        Vector3 camPos = Camera.main.transform.position;
+        Func<bool> waitInput = (attacker.objType != Define.ObjType.HandCard) ?
+            () => { return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1); }
+        :
+            () => { return Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1); };
+        string[] filter = new string[] { "ally", "allyHero", "foe", "foeHero", };
+        while (true)
+        {
+            // 현재 유저의 커서포인트 월드포지션
+            Vector3 CursorPos = Camera.main.ScreenToWorldPoint
+               (new Vector3(Input.mousePosition.x, Input.mousePosition.y, -camPos.z));
+
+            // 마우스 클릭과 충돌체 확인시 성공
+            if (waitInput.Invoke()) //Input.GetMouseButtonDown(0)
+            {
+                Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
+                if (hit != null && hit.TryGetComponent<IBody>(out IBody targetFounded))
+                {
+                    attacker.Attackable = false;
+                    // 실행 코루틴 예약 실행
+                    GAME.IGM.AddAction(player.heroData.SkillCo(player.heroSkill, targetFounded));
+                    // 현재 어택커가 어떤 녀석인지 : 미니언 일반공격, 영웅웨폰공격, 영웅스킬사용 등등
+
+                    Debug.Log("충돌체 이름 : " + targetFounded.TR.name);
+                    break;
+                }
+                else
+                {
+                    Debug.Log("충돌체 찾기 실패");
+                    // 타겟을 잘못 하였기에, 다시 공격상태로 바꿔주고 타겟팅 레이 취소하기
+                    attacker.Attackable = true;
+                    break;
+                }
+            }
+            yield return null;
+        }
+        // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+        LR.positionCount = 0;
+        GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = true);
+        yield break;
+    }
     // 두 유저 인게임씬 진입 + 서로 기본정보 공유 확인시
     // 마스터 클라이언트가 게임내 트랜지션 캔버스의 알파값을 줄이면서 게임 시작 연출 코루틴
     public IEnumerator StartIntro()

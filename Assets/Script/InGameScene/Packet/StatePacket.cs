@@ -81,6 +81,7 @@ public partial class PacketManager
     // 상대로부터 기본정보 전달 받아 처리
     public void ReceivedUserInfo(object[] data)
     {
+        Debug.Log("정보 전달 받기 성공");
         string nickName = (string)data[0];
         Define.classType classType = (Define.classType)(data[1]);
 
@@ -323,7 +324,7 @@ public partial class PacketManager
         IBody attacker = (objType == Define.ObjType.Minion) ?
             GAME.IGM.allIBody.Find(x => x.PunId == attackerPunID)
             : GAME.IGM.Hero.Enemy ;
-
+        Debug.Log($"공격 이벤트 공격자:{attacker.PunId}, 타겟 : {target.PunId}");
         // 상대로부터 받은 공격이벤트 예약후 실행
         GAME.IGM.AddAction(GAME.IGM.Battle.AttackEvt(attacker, target, attAmount, attType));
     }

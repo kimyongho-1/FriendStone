@@ -18,7 +18,7 @@ public class Hero : MonoBehaviour, IBody
     public GameObject skillIcon, WpIcon;
     public SpriteMask playerMask;
     public HeroSkill heroSkill;
-    public WeaponCardData weaponData;
+    public WeaponCardData weaponData = null;
     public int hp, att, dur, mp;
     public SpriteRenderer wpImg, skillImg, playerImg, AttIcon, HpIcon;
     public TextMeshPro hpTmp, weaponAttTmp, durTmp, replyTmp , mpTmp, attTmp, nickTmp;
@@ -31,11 +31,11 @@ public class Hero : MonoBehaviour, IBody
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
     public bool IsMine { get; set; }
-    public int PunId { get; set; }
+    [field:SerializeField]public int PunId { get; set; }
     public Define.ObjType objType { get; set; }
     public Transform TR { get { return playerMask.transform; } }
 
-    public Vector3 OriginPos { get; set; }
+    [field: SerializeField] public Vector3 OriginPos { get; set; }
 
     public int OriginHp { get { return hp; } set { hp = value; } } // 원본 체력
     public int OriginAtt { get { return att; } set { att = value; } } // 원본 공격력
@@ -130,48 +130,53 @@ public class Hero : MonoBehaviour, IBody
     // 적의 영웅 능력 사용을 내 화면에서 동기화할떄, 강제 호출하여 사용
     public void CallHeroSkillAttack(IBody target)
     {
-
-        GAME.IGM.AddAction(heroData.SkillCo(heroSkill , target));
+        // 사용으로 검게 만들어주기
+        heroSkill.Attackable = false;
+        return;
+        IEnumerator co = heroData.SkillCo(heroSkill, target);
+        GAME.IGM.AddAction(EnemySkillUse(co));
+        
+        IEnumerator EnemySkillUse(IEnumerator co)
+        {
+            // 사용으로 검게 만들어주기
+            heroSkill.Attackable = false;
+            if (co != null)
+            { yield return GAME.IGM.StartCoroutine(co); }
+        }
     }
     // 영웅의 스킬 아이콘 클릭시, 스킬이벤트 시작
     public void ClickedOnSkill(GameObject go)
     {
+        // 나의 턴에서만 가능한 상태
+        if (GAME.IGM.Packet.isMyTurn == false) { return; }
+
         if (heroSkill.Attackable == false || GAME.IGM.TC.LR.gameObject.activeSelf == true)
         { 
-            return; 
+            return;
         }
 
+        // 레이 잠시끄기
+        heroSkill.Attackable = false;
         // 영웅 능력이 선택타겟팅이라면 : 타겟이 성공할떄만 사용으로 간주
         if (heroData.skillTargeting == evtTargeting.Select)
         {
             // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 공격함수 예약 실행
-            GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingCo
-                (heroSkill,
-                (IBody a, IBody t) =>
-                {
-                    // 사용하였기에, 색상을 검게 칠해 사용한것 표현
-                    skillImg.color = Color.black;
-                    heroSkill.Attackable = false;
-                    return heroData.SkillCo(a, t);
-                },
-                new string[] { "foe", "foeHero", "ally", "allyHero" }
-                ));
+            GAME.IGM.TC.StartCoroutine(GAME.IGM.TC.TargettingHeroSkillCo(heroSkill));
         }
         // 영웅 능력이 자동실행건이라면 : 자동 실행 + 영능 잠그기
         else
         {
-            // 사용하였기에, 색상을 검게 칠해 사용한것 표현
-            skillImg.color = Color.black;
-            heroSkill.Attackable = false;
             // 영웅능력 잠그기 예약 실행
             GAME.IGM.AddAction (heroData.SkillCo(heroSkill, null)) ;
-            
         }
     }
 
     // 영웅 좌클릭시 공격
     public void HeroAttack(GameObject go)
     {
+        // 나의 턴에서만 가능한 상태
+        if (GAME.IGM.Packet.isMyTurn == false) { return; }
+
         // 만약 대화선택지 이벤트 선택 또는 실행중이었따면, 해당 이벤트 종료로 실행
         if (Speech.gameObject.activeSelf == true )
         {
@@ -252,7 +257,7 @@ public class Hero : MonoBehaviour, IBody
         // 내구도 감소 및 내구도 0 도달시 무기 부서지는 애니메이션 코루틴 실행
         weaponData.durability -= 1;
         durTmp.text = weaponData.durability.ToString();
-        if (weaponData.durability <= 0)
+        if (weaponData != null && weaponData.durability <= 0)
         {
             StartCoroutine(BrokenWeaponCo());
         }
@@ -304,6 +309,9 @@ public class Hero : MonoBehaviour, IBody
             // 강제 종료후, 다시 세팅
             Speech.gameObject.SetActive(false);
         }
+
+        // 나의 차례가 아니면 할 필요가 X
+        if (GAME.IGM.Packet.isMyTurn == false) { return; }
 
         // 말풍선 선택 이벤트시, 선택창만 켜져있도록 Defalut상태로 변경
         Select.gameObject.SetActive(false);
@@ -358,17 +366,20 @@ public class Hero : MonoBehaviour, IBody
     {
         float t = 0;
         Att -= weaponData.att;
-        // 무기가 점차 작아지면서 없어지는 코루틴 실행
-        while (t < 1f)
+        Vector3 start = WpIcon.transform.localScale;
+        if (start != Vector3.zero)
         {
-            t += Time.deltaTime * 2f;
-            WpIcon.transform.localScale =
-                Vector3.Lerp(Vector3.one, Vector3.zero, t);
-            yield return null;
+            // 무기가 점차 작아지면서 없어지는 코루틴 실행
+            while (t < 1f)
+            {
+                t += Time.deltaTime * 2f;
+                WpIcon.transform.localScale =
+                    Vector3.Lerp(start, Vector3.zero, t);
+                yield return null;
+            }
         }
+       
         weaponData = null; 
-        
-        
     }
     #endregion
 

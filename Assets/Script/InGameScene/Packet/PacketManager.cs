@@ -27,7 +27,6 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
         PhotonNetwork.NetworkingClient.EventReceived -= Received;
         PhotonNetwork.NetworkingClient.EventReceived += Received;
 
-        
 
         // 서로 기본 정보 전송후, 각자 전달 받을떄까지 대기
         StartCoroutine(GameReady());
@@ -39,24 +38,22 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
 
         IEnumerator GameReady()
         {
-            // 만약 내가 호스트가 아닌 일반 클라라면
-            if (!PhotonNetwork.IsMasterClient)
-            {
-                // 호스트가 보내는 영웅정보를 받을떄까지 대기
-                yield return new WaitUntil(() => (GAME.IGM.Hero.Enemy.heroData.SkillCo != null));
-                // 그후 호스트에게 내 영웅정보 전달, 이후는 호스트가 동시전파로 이벤트 진행
-            }
+            // 상대방이 Received이벤트 연결을 못할경우 대비 0.5초 대기 (연결 못할시 이벤트 전달을 못받으니까)
+            yield return new WaitForSeconds(0.5f);
             // 서로 기본 정보 (닉네임 + 내 직업) 전송
             SendUserInfo(GAME.Manager.NM.playerInfo.NickName,
                 (int)GAME.Manager.RM.GameDeck.ownerClass);
 
-            //정보 공유가 되었따면, 적 영웅의 스킬데이타가 null이 아닐것이기에
-            yield return new WaitUntil(()=>(GAME.IGM.Hero.Enemy.heroData.SkillCo != null));
-            yield return new WaitForSeconds(0.5f);
 
             // 마스터클라이언트 동기화 목적으로 동시전파 실행
             if (PhotonNetwork.IsMasterClient)
             {
+                // 호스트가 보내는 영웅정보를 받을떄까지 대기
+                yield return new WaitUntil(() => (GAME.IGM.Hero.Enemy.heroData.SkillCo != null));
+                //정보 공유가 되었따면, 적 영웅의 스킬데이타가 null이 아닐것이기에
+                yield return new WaitUntil(() => (GAME.IGM.Hero.Enemy.heroData.SkillCo != null));
+                yield return new WaitForSeconds(0.5f);
+
                 #region 화면이 밝아지는 인트로 시작
                 // 화면이 밝아지는 인트로 시작
                 // 본격 게임 시작 진행, 검은화면 점차 밝아지기 (동시 전파)

@@ -10,7 +10,7 @@ using Unity.VisualScripting;
 public class CardField : CardEle,IBody
 {
     public TextMeshPro AttTmp, HpTmp;
-    public SpriteRenderer cardImage,attIcon, hpIcon;
+    public SpriteRenderer cardImage,attIcon, hpIcon, tauntIcon;
     public ParticleSystem sleep;
     public SpriteMask mask;
     [SerializeField] int currAtt, currHp;
@@ -61,8 +61,10 @@ public class CardField : CardEle,IBody
         SortingLayer layer = Array.Find(layers, x => x.name == ((isOn) ? "Attacker" : "None"));
         
         mask.frontSortingLayerID = layer.id;
-        cardImage.sortingLayerID = layer.id;
+        tauntIcon.sortingLayerID = cardImage.sortingLayerID = 
+        attIcon.sortingLayerID = hpIcon.sortingLayerID = layer.id;
         AttTmp.sortingLayerID = HpTmp.sortingLayerID = layer.id;
+        
     }
 
     // 소유여부로 자신과 자식 모두 레이어 통일 (포스트 프로세싱 작업위해)
@@ -74,7 +76,8 @@ public class CardField : CardEle,IBody
         attIcon.gameObject.layer =
         AttTmp.gameObject.layer =
         hpIcon.gameObject.layer =
-        HpTmp.gameObject.layer = layers;
+        HpTmp.gameObject.layer = 
+        tauntIcon.gameObject.layer =layers;
     }
     public void Init(CardData datapar, bool isMine)
     {
@@ -98,7 +101,7 @@ public class CardField : CardEle,IBody
         
         Attackable = (MC.isCharge) ? true : false;
         sleep.gameObject.SetActive((MC.isCharge) ? false : true);
-       
+        tauntIcon.gameObject.SetActive(MC.isTaunt);
         Att = OriginAtt = MC.att;
         if (IsMine)
         {
@@ -159,7 +162,7 @@ public class CardField : CardEle,IBody
                     // ����ȭ ����
                     t -= Time.deltaTime;
                     Color tempColor = new Color(1, 1, 1, t);
-                    cardImage.color = attIcon.color = hpIcon.color = tempColor;
+                    tauntIcon.color = cardImage.color = attIcon.color = hpIcon.color = tempColor;
                     AttTmp.alpha = HpTmp.alpha = t;
                     yield return null;
                 }
@@ -191,7 +194,6 @@ public class CardField : CardEle,IBody
                 GAME.IGM.Hand.AllCardHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(PunId, IsMine));
 
                 yield return StartCoroutine(GAME.IGM.Spawn.CalcSpawnPoint());
-                
             }
             // �� �ϼ��ε� �� ����
             else
@@ -323,12 +325,13 @@ public class CardField : CardEle,IBody
     public void StartAttack(GameObject go)
     {
         #region 예외사항 (공격이 정말 가능한지 확인)
+        // 나의 턴에서만 가능한 상태
+        if (GAME.IGM.Packet.isMyTurn == false) { return; }
+
         // 현재 타겟팅 카메라가 켜져있으면 현재 공격준비중인 미니언이 있기에
         // 다른 모든 미니언들의 클릭이벤트 무시
         if (GAME.IGM.TC.LR.gameObject.activeSelf == true)
-        {
-            return;
-        }
+        { return; }
 
         // 수명상태시, 현재 소환한 하수인 : 공격불가 판정
         if (sleep.gameObject.activeSelf == true)

@@ -33,14 +33,10 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 모든 핸드 위치 크기 레이 초기화
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = false);
-        // 내 턴 끝
-        GAME.IGM.Hero.Player.Attackable = GAME.IGM.Hero.Player.heroSkill.Attackable =false;
-        
         // 강제로 Exit함수로 초기화 실행
         GAME.IGM.Hand.PlayerHand.ForEach(x => x.Exit(null)) ;
         // 필드 하수인 모두 공격중지
         GAME.IGM.Spawn.playerMinions.ForEach(x => x.Attackable = false);
-
         // 내 턴 종료
         GAME.IGM.Packet.isMyTurn = false;
         // 상대에게 내 턴 종료 전파
@@ -51,6 +47,7 @@ public class TurnEndBtn : MonoBehaviour
             GAME.IGM.Spawn.enemyMinions[i].Attackable = true;
             GAME.IGM.Spawn.enemyMinions[i].sleep.gameObject.SetActive(false);
         }
+
         yield break;
     }
 
@@ -81,6 +78,17 @@ public class TurnEndBtn : MonoBehaviour
             infoTmp.color = c;
             yield return null;
         }
+
+        if (isMyTurn) // 나의턴이 시작될떄마다 영웅의 공격권과 스킬공격권 초기화
+        {
+            // 영웅의 공격상태 초기화
+            GAME.IGM.Hero.Player.heroSkill.Attackable = GAME.IGM.Hero.Player.Attackable = true;
+        }
+        else // 상대도 동일
+        {
+            // 상대의 초기화
+            GAME.IGM.Hero.Enemy.heroSkill.Attackable = true;
+        }
     }
 
     // 상대의 턴종료 이벤트 받을시, 나의 턴 시작
@@ -96,9 +104,6 @@ public class TurnEndBtn : MonoBehaviour
 
         // 내 턴 시작
         GAME.IGM.Packet.isMyTurn = true;
-        // 영웅의 공격상태 초기화
-        GAME.IGM.Hero.Player.heroSkill.Attackable =  GAME.IGM.Hero.Player.Attackable = true;
-        GAME.IGM.Hero.Player.skillImg.color = Color.white;
         
         // 상대의 화면에 내 턴 시작 띄우기 이벤트 전파
         GAME.IGM.Packet.SendMyTurnMSG();
@@ -112,7 +117,5 @@ public class TurnEndBtn : MonoBehaviour
 
         // 턴종료 버튼 누를수 있도록 레이 활성화
         Col.enabled = true;
-
-
     }
 }

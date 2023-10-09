@@ -12,7 +12,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class BattleManager : MonoBehaviour
 {
-    FXManager FX;
+    public FXManager FX;
     public Queue<IEnumerator> ActionQueue = new Queue<IEnumerator>();
     public Queue<IEnumerator> DeathRattleQueue = new Queue<IEnumerator>();  
     public IEnumerator currCo;
@@ -810,13 +810,9 @@ public class BattleManager : MonoBehaviour
     {
         #region 투사체 준비 및 투사체 이동 코루틴
         // 죽을떄 실행 이벤트라면, 공격자 피해자 모두 제자리 복귀떄까지 대기
-        if (isDeathRattle == true)
+        if (isDeathRattle == true && GAME.IGM.Packet.isMyTurn == false)
         {
-            Debug.Log($"attackerPos : {attacker.Pos}, attackerOrigin : {attacker.OriginPos}");
-            Debug.Log($"targetPos : {target.Pos}, targetOrigin : {target.OriginPos}");
-            if (GAME.IGM.Packet.isMyTurn == false)
-            { yield return new WaitForSeconds(0.75f); }
-            
+            yield return new WaitForSeconds(0.5f);
         }
         // 투사체 호출
         ParticleSystem pj = FX.GetPJ;

@@ -1,7 +1,7 @@
 {
   "att": 2,
   "hp": 2,
-  "isTaunt": false,
+  "isTaunt": true,
   "isCharge": false,
   "cardName": "배아픈 사람",
   "cardDescription": "도발, 죽을떄 : 무작위 적에게 피해를 2 줍니다.",

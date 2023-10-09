@@ -5,30 +5,45 @@ using UnityEngine;
 
 public class HeroSkill : MonoBehaviour, IBody
 {
+    bool attackable = true;
     #region IBody
-    [field : SerializeField]public bool Attackable { get; set; }
+    public bool Attackable 
+    {
+        get
+        { return attackable; }
+        set
+        {
+            attackable = value;
+            if (IsMine) { GAME.IGM.Hero.Player.skillImg.color = (attackable == true)? Color.white : Color.black; }
+            else { GAME.IGM.Hero.Enemy.skillImg.color = (attackable == true) ? Color.white : Color.black; }
+        }
+    }
     public IEnumerator onDead { get; set; }
-    public bool IsMine { get; set; }
-    public int PunId { get; set; }
+    [field: SerializeField] public bool IsMine { get; set; }
+    [field: SerializeField] public int PunId { get; set; }
 
-    public Define.ObjType objType { get; set; }
+    [field: SerializeField] public Define.ObjType objType { get; set; }
     public Transform TR { get; set; }
 
-    public Vector3 OriginPos { get; set; }
+    [field: SerializeField] public Vector3 OriginPos { get; set; }
     public Collider2D Col { get; set; }
     public bool Ray { set { Col.enabled = value; } }
-    public int OriginAtt { get; set; }
-    public int OriginHp { get; set; }
-    public int Att { get; set; }
-    public int HP { get; set; }
+    [field: SerializeField] public int OriginAtt { get; set; }
+    [field: SerializeField] public int OriginHp { get; set; }
+    [field: SerializeField] public int Att { get; set; }
+    [field: SerializeField] public int HP { get; set; }
 
     #endregion
 
     public void InitSkill(bool isMine)
     {
-        this.IsMine = IsMine;
+        IsMine = isMine;
         TR = transform;
         Col = GetComponent<CircleCollider2D>();
+        objType = Define.ObjType.Minion; // 자신의 위치에서 타겟팅을 시키기위해 미니언으로 설정
+        OriginPos = this.transform.position;
+        GAME.IGM.allIBody.Add(this);
+        gameObject.layer = LayerMask.NameToLayer("Default");
     }
 
 
