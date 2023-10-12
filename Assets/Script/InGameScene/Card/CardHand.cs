@@ -193,6 +193,9 @@ public class CardHand : CardEle, IBody
         transform.localPosition = OriginPos;
     }
     public IEnumerator DragCo = null;
+    public float xDegree, yDegree;
+    public float rotVelX, rotVelY;
+    float X, Y;
     public void StartDrag(Vector3 v)
     {
         if (CurrCost > GAME.IGM.Hero.Player.MP) { return; }
@@ -268,9 +271,8 @@ public class CardHand : CardEle, IBody
         else
         {
             // 드래그 시작 : 현재 드래깅 객체 크기,회전등 초기화
-            DragCo = Rotate();
+            DragCo = BackToOrigin();
             StartCoroutine(DragCo);
-            StartCoroutine(BackToOrigin());
 
             // 드래그 시작시, 확대와 회전등 초기화
             IEnumerator BackToOrigin()
@@ -282,29 +284,26 @@ public class CardHand : CardEle, IBody
                 // 크기등 모두 초기화
                 float t = 0;
                 Vector3 currScale = transform.localScale;
-                Vector3 currRot = transform.localRotation.eulerAngles;
+                Quaternion currRot = transform.localRotation;
                 while (t < 1f)
                 {
                     t += Time.deltaTime * 2.5F;
                     transform.localScale = Vector3.Lerp(currScale, originScale, t);
-                    transform.localRotation = Quaternion.Euler(Vector3.Lerp(currRot, Vector3.zero, t));
+                    transform.localRotation = Quaternion.Lerp(currRot , Quaternion.identity,t);
+                    yield return null;
+                } 
+                
+                // 드래그동안 회전 0값으로 돌아가려 계속 시도 (움직임에 의한 실제 회전값 적용은 Dragging함수에서 )
+                while (true)
+                {
+                    X = Mathf.SmoothDamp(X, 0, ref rotVelX, 0.3f);
+                    Y = Mathf.SmoothDamp(Y, 0, ref rotVelY, 0.3f);
+
+                    transform.rotation = Quaternion.Euler(new Vector3(X, Y, 0));
                     yield return null;
                 }
             }
 
-            // 드래그동안에 상하좌우등의 이동에 맞게 회전 코루틴 실행
-            IEnumerator Rotate()
-            {
-                while (true)
-                {
-                    // 현재 회전값이 0.1 이하일시, 강제로 1로 벨류를 고정
-                    float angle = Quaternion.Angle(transform.localRotation, Quaternion.identity);
-                    float val = (angle < 0.1f) ? 1f : 0.05f;
-                    transform.localRotation
-                    = Quaternion.Lerp(transform.localRotation, Quaternion.identity, val);
-                    yield return null;
-                }
-            }
         }
 
     }
@@ -320,22 +319,20 @@ public class CardHand : CardEle, IBody
         }
 
         Vector3 euler = transform.rotation.eulerAngles;
-        if (euler.y > 180)
-        { euler.y -= 360f; }
-        if (euler.x > 180)
-        { euler.x -= 360f; }
+        // worldPos는 현재 마우스의 WP
+        // dir :  이동 벡터
+        Vector3 dir = worldPos - this.transform.position;
 
-        if ((transform.position.x - worldPos.x) > 0.01f)
-        { euler.y = Mathf.Clamp(euler.y + 7f, -45f, 45f); }
-        else if ((transform.position.x - worldPos.x) < -0.01f)
-        { euler.y = Mathf.Clamp(euler.y - 7f, -45f, 45f); }
-        
-        if ((transform.position.y - worldPos.y) > 0.01f)
-        { euler.x = Mathf.Clamp(euler.x - 4f, -25f, 25f); }
-        else if ((transform.position.y - worldPos.y) < -0.01f)
-        { euler.x = Mathf.Clamp(euler.x + 4f, -25f, 25f); }
+        // 현재 이동을 조금이라도 했는지 여부 확인
+        if (dir.sqrMagnitude > Mathf.Epsilon)
+        {
+            // 만약 이동 확인시 이동방향으로 회전값도 적용 (제자리복귀(0도)는 StartDrag함수내부의 코루틴에서 진행중 )
+            X += dir.y * 15f;
+            X = Mathf.Clamp(X, -40f, 40f);
+            Y += -dir.x * 15f;
+            Y = Mathf.Clamp(Y, -40f, 40f);
+        }
 
-        this.transform.localRotation = Quaternion.Euler(euler.x, euler.y, euler.z);
         this.transform.localPosition = worldPos;
     }
 
@@ -477,14 +474,15 @@ public class CardHand : CardEle, IBody
             // 크기등 모두 초기화
             float t = 0;
             Vector3 currScale = transform.localScale;
-            Vector3 currRot = transform.localRotation.eulerAngles;
+            Quaternion currRot = transform.localRotation;
+            Quaternion originEuler = Quaternion.Euler(originRot);
             currRot.z = 0;
             Vector3 currPos = transform.localPosition;
             while (t < 1f)
             {
                 t += Time.deltaTime * 5f;
                 transform.localScale = Vector3.Lerp(currScale, originScale, t);
-                transform.localRotation = Quaternion.Euler(Vector3.Lerp(currRot, originRot, t));
+                transform.localRotation = Quaternion.Lerp(currRot, originEuler, t);
                 transform.localPosition = Vector3.Lerp(currPos, OriginPos, t);
                 yield return null;
             }

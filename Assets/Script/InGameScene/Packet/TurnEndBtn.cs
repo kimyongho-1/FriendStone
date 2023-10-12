@@ -10,6 +10,7 @@ public class TurnEndBtn : MonoBehaviour
     public TextMeshPro btnTmp;
     public TextMeshProUGUI infoTmp;
     public float baseTimeLimit = 10;
+    public Material blinkMat;
     private void Awake()
     {
         Col.enabled = false;
@@ -27,7 +28,7 @@ public class TurnEndBtn : MonoBehaviour
 
         Col.enabled = false;
         btnTmp.text = "상대 턴";
-
+        blinkMat.SetColor("_Color", new Color(1,0,0,1) );
         // 턴 시간 멈추기
         if (turnTimer != null)
         {
@@ -107,6 +108,7 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 내 턴 시작 알림 텍스트 시작
         StartCoroutine(ShowTurnMSG(true));
+        blinkMat.SetColor("_Color", new Color(0, 1, 0, 1));
         for (int i = 0; i < GAME.IGM.Spawn.playerMinions.Count; i++)
         {
             GAME.IGM.Spawn.playerMinions[i].Attackable = true;

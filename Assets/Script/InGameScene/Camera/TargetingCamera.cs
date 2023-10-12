@@ -256,11 +256,13 @@ public class TargetingCamera : MonoBehaviour
                 }
                 else
                 {
-                    // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
-                    LR.positionCount = 0;
+                    Debug.Log("타겟 없음");
                     // 손에서 사용하는, 주문카드의 경우 잘못된 곳을 클릭시 취소하도록 변경
                     if (attacker.objType == ObjType.HandCard)
-                    { break; }
+                    {
+                        // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                        LR.positionCount = 0; break; 
+                    }
                 }
             }
 

@@ -56,18 +56,22 @@ public class PostCamera : MonoBehaviour
             cam.cullingMask |= (1 << layer); 
         }
 
-        // 화살표도 잠시 바꿔주기
-        int arrowLayer = LayerMask.NameToLayer("ArrowPointer");
+        // 강조에 항상 포함되는것 추가 : 타겟티의 화살표 + 영웅의 말풍선 등등
+        int arrowLayer = LayerMask.NameToLayer("Always");
         cam.cullingMask |= (1 << arrowLayer);
         mainCam.cullingMask &= ~(1 << arrowLayer);
 
         this.gameObject.SetActive(true);
     }
+
+    // 포스트프로세싱 범위 초기화
     public void ExitMaskingArea()
     {
         if (this.gameObject.activeSelf == false) { return; }
+        // 메인카메라의 컬링마스크 범위 전체로 다시 초기화
         mainCam.cullingMask = 0;
         mainCam.cullingMask = ~0;
+        // 메인카메라의 후처리 효과 옵션끄기
         camData.renderPostProcessing = false;
         this.gameObject.SetActive(false);
     }
