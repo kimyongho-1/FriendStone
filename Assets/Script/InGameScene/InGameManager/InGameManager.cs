@@ -28,6 +28,7 @@ public class InGameManager : MonoBehaviour
     // 게임내 체력 상호작용을 이루는 영웅들, 미니언들을 여기에서 쉽게 찾기위해 생성
     public List<IBody> allIBody = new List<IBody>();
 
+    public HourGlass TimeLimiter;
     public int GameTurn = 0;
     public CardPopupEvtHolder cardPopup;
     public TextMeshPro cardName, Description, Stat, Type, Cost;
@@ -82,6 +83,7 @@ public class InGameManager : MonoBehaviour
         cardImage.sprite = sprite;
         cardPopup.gameObject.SetActive(true);
     }
+   
     public void ShowSpellPopup(SpellCardData data, Vector3 pos)
     {
         // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
@@ -118,7 +120,7 @@ public class InGameManager : MonoBehaviour
             }
         }
     }
-    public void ShowSpawningMinionPopup(MinionCardData data, int att, int hp, int cost)
+    public void ShowEnemyMinionPopup(MinionCardData data, int att, int hp, int cost)
     {
         // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
         cardPopup.isEnmeySpawning = true;
@@ -159,6 +161,23 @@ public class InGameManager : MonoBehaviour
             cardPopup.gameObject.SetActive(false);
         }
     }
+    public void ShowEnemyWeaponPopup(WeaponCardData data)
+    {
+        // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
+        cardPopup.isEnmeySpawning = true;
+        cardPopup.transform.position = new Vector3(3.5f, 2.8f, -0.5f);
+        cardName.text = data.cardName;
+        Description.text = data.cardDescription;
+        // 만약 글자가 25글자 이상이면 폰트크기를 약간 줄이기
+        Debug.Log("글자 길이 : " + data.cardDescription.Length);
+        Description.fontSize = (data.cardDescription.Length > 39) ? 15f : 18f;
+        Stat.text = $"<color=green>ATT {data.att} <color=red>HP {data.durability} <color=black>무기";
+        Type.text = data.cardType.ToString();
+        Cost.text = data.cost.ToString();
+        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
+        cardPopup.gameObject.SetActive(true);
+    }
+
     public void ShowCardPopup(ref WeaponCardData data, Vector3 pos)
     {
         Stat.gameObject.SetActive(true);
@@ -171,4 +190,5 @@ public class InGameManager : MonoBehaviour
         cardImage.sprite = null;
         cardPopup.gameObject.SetActive(true);
     }
+
 }

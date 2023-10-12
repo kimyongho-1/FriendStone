@@ -61,7 +61,7 @@ public class Define
     { 
         Hello, WellPlayed, Thanks, Wow, Oops, Threat,
         AlreadyAttacked, NotReady, CantAttack, ThereTaunt, TimeLimitStart, TimeLess ,
-        AlreadtHeroAttacked
+        AlreadtHeroAttacked, HandOverFlow
     }
     #endregion
 

@@ -216,6 +216,10 @@ public class BattleManager : MonoBehaviour
         #region 유저가 직접 타겟을 선택하여 지정
         if (bh.targeting == Define.evtTargeting.Select)
         {
+            // 타겟이 하나도 없다면 이벤트 생략
+            if (GAME.IGM.allIBody.FindAll(x => x.PunId != caster.PunId && x.objType != Define.ObjType.Hero).Count == 0)
+            { return null; }
+
             return Buff(caster, searchedTarget, bh);
            
         }

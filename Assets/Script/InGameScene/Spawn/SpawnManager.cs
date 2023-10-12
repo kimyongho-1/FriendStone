@@ -150,6 +150,9 @@ public partial class SpawnManager : MonoBehaviour
     // 미니언 카드 스폰 실행 함수
     public void StartSpawn(CardHand card)
     {
+        // 카드 사용 : 마나소모
+        GAME.IGM.Hero.Player.MP -= card.CurrCost;
+
         // 핸드카드도 정렬 시작
         GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(true));
         // idx에 우선 소환 및 배치만 시키고 정렬을 addAction으로?

@@ -7,13 +7,9 @@ using static Define;
 using static System.Net.WebRequestMethods;
 using System;
 
-// to do list
-// 1. 음성파일 재요구..
-// 2. 스피치 부분 이벤트함수 완성
-// 3. 영웅 능력 구현 마무리 필요
-
 public class Hero : MonoBehaviour, IBody
 {
+    AudioSource audioPlayer;
     public HeroData heroData;
     public GameObject skillIcon, WpIcon;
     public SpriteMask playerMask;
@@ -25,7 +21,15 @@ public class Hero : MonoBehaviour, IBody
     public GameObject Select, Speech;
     public ReplyBG Reply;
     public bool CanAttack { get { return att > 0 && Attackable == true; } }
-
+    public int MP 
+    {
+        get { return mp; }
+        set 
+        {
+            mp = value;
+            mpTmp.text = "X" + mp.ToString();
+        }
+    }
     #region IBODY
     [field:SerializeField] public bool Attackable { get; set; }
     public IEnumerator onDead { get; set; }
@@ -56,6 +60,7 @@ public class Hero : MonoBehaviour, IBody
     // 카메라의 피직스레이캐스터 필요, 객체에 Collider필요
     public void Awake()
     {
+        audioPlayer = GetComponent<AudioSource>();
         weaponData = null;
         OriginPos = playerMask.transform.position;
         Col = GetComponent<Collider2D>();
@@ -354,14 +359,22 @@ public class Hero : MonoBehaviour, IBody
         {
             // Emotion이넘 인덱스 0부터 시작하기위해 -1한 값을 적용
             int emoIndex = index - 1;
-            Reply.textWaitTime = 2; // 대화창 재생시간 다시 초기화
+            // 오디오 찾기
+            AudioClip clip = GAME.Manager.RM.GetClip(heroData.classType, (Define.Emotion)emoIndex);
+            Reply.textWaitTime = clip.length + 0.5f; // 대화창 재생시간 다시 초기화
+            // 음성오디오 재생
+            audioPlayer.Stop();
+            audioPlayer.clip = clip;
+            audioPlayer.Play();
             replyTmp.text = heroData.outSpeech[(Define.Emotion)(emoIndex)];
             // 내 감정표현 전달
             GAME.IGM.Packet.SendHeroEmotion(emoIndex);
             EmoCount++;
             Select.gameObject.SetActive(false);
             Reply.gameObject.SetActive(true);
+
         }
+
 
         // 감정표현이 5개 이상이나 쌓였따면, 잠시 제한걸기 (코루틴내에서 스스로 제한 풀예정)
         if (EmoCount > 5 && EmoFlushCo == null)
@@ -375,11 +388,15 @@ public class Hero : MonoBehaviour, IBody
     // 적 영웅일떄는, 전달 받은 감정표현 대사 사용
     public void PlayEnemyEmotion(int idx)
     {
+        audioPlayer.Stop();
+        audioPlayer.clip = GAME.Manager.RM.GetClip(heroData.classType, (Define.Emotion)idx);
+        audioPlayer.Play();
+
         // 현재 말풍선이 켜져있으면 대사재생시간 초기화 및 바뀐 대사로 진행
         if (Speech.gameObject.activeSelf == true)
         {
             // 텍스트 재생시간 초기화 및 새 텍스트로 변경하여 대사 진행
-            Reply.textWaitTime = 2f;
+            Reply.textWaitTime = 2.75f;
             replyTmp.text = heroData.outSpeech[(Define.Emotion)idx];
         }
         else 
@@ -427,6 +444,13 @@ public class Hero : MonoBehaviour, IBody
     }
     public IEnumerator EquipWeapon(CardHand card ,CardData data)
     {
+        // 적 영웅이 무기를 차고있다면, 팝업으로 내게 보여주기
+        if (IsMine == false)
+        {
+            GAME.IGM.ShowEnemyWeaponPopup(card.WC);
+        }
+        
+
         // 무기 데이터 초기화 및 공격 가능 설정
         weaponData = (WeaponCardData)data;
         wpImg.sprite = GAME.Manager.RM.GetImage(data.cardClass,data.cardIdNum);

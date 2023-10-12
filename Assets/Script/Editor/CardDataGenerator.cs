@@ -608,6 +608,7 @@ public class CardDataGenerator : EditorWindow
         if (heroData == null || heroJsonFile == null)
         { return; }
         GUILayout.Label("감정표현", EditorStyles.boldLabel);
+
         heroData.outSpeech[Define.Emotion.Hello] = EditorGUILayout.TextField("인사: ", heroData.outSpeech[Define.Emotion.Hello]);
         heroData.outSpeech[Define.Emotion.WellPlayed] = EditorGUILayout.TextField("칭찬: ", heroData.outSpeech[Define.Emotion.WellPlayed]);
         heroData.outSpeech[Define.Emotion.Thanks] = EditorGUILayout.TextField("감사: ", heroData.outSpeech[Define.Emotion.Thanks]);
@@ -625,6 +626,7 @@ public class CardDataGenerator : EditorWindow
         heroData.outSpeech[Define.Emotion.TimeLimitStart] = EditorGUILayout.TextField("시간제한 시작 : ", heroData.outSpeech[Define.Emotion.TimeLimitStart]);
         heroData.outSpeech[Define.Emotion.TimeLess] = EditorGUILayout.TextField("시간마감 임박 : ", heroData.outSpeech[Define.Emotion.TimeLess]);
         heroData.outSpeech[Define.Emotion.AlreadtHeroAttacked] = EditorGUILayout.TextField("영웅이 공격을 한 상황 : ", heroData.outSpeech[Define.Emotion.AlreadtHeroAttacked]);
+        heroData.outSpeech[Define.Emotion.HandOverFlow] = EditorGUILayout.TextField("10장에서 드로우시 : ", heroData.outSpeech[Define.Emotion.HandOverFlow]);
     }
 
 }

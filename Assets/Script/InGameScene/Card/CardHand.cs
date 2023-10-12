@@ -75,6 +75,8 @@ public class CardHand : CardEle, IBody
         }
     }
 
+    // 손의 핸드 제자리 위치 + 잠그기 (드로우 & 상대턴일떄 사용불가)
+    public void rewindHand() { StopAllCoroutines(); DragCo = null; Exit(null); }
     // OnHand이벤트가 존재시, 특정순간마다 이벤트를 실행 (이벤트 구독은 BattleManager.cs에서 등록)
     public Action<int,bool> HandCardChanged;
     public void DrawVar() // 벨류 변경뒤, tmp자동 변경
@@ -175,6 +177,7 @@ public class CardHand : CardEle, IBody
         // 드래그 관련 이벤트가 발동될떄, DragCo에 실행코루틴을 참조 및 실행
         // DragCo가 Null이 아니면, 현재 드래그관련 이벤트중이기에 확대/취소 이벤트는 강제 생략
         if (DragCo != null) { return; }
+        
         SetOrder(originOrder * 10);
         transform.localScale = originScale * 1.5f;
         transform.localRotation = Quaternion.identity;
@@ -189,10 +192,11 @@ public class CardHand : CardEle, IBody
         transform.localRotation = Quaternion.Euler(originRot);
         transform.localPosition = OriginPos;
     }
-
-    IEnumerator DragCo = null;
+    public IEnumerator DragCo = null;
     public void StartDrag(Vector3 v)
     {
+        if (CurrCost > GAME.IGM.Hero.Player.MP) { return; }
+
         // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
         GAME.IGM.Spawn.playerMinions.ForEach(x=>x.Ray = false);
 
@@ -264,8 +268,9 @@ public class CardHand : CardEle, IBody
         else
         {
             // 드래그 시작 : 현재 드래깅 객체 크기,회전등 초기화
-            DragCo = BackToOrigin();
+            DragCo = Rotate();
             StartCoroutine(DragCo);
+            StartCoroutine(BackToOrigin());
 
             // 드래그 시작시, 확대와 회전등 초기화
             IEnumerator BackToOrigin()
@@ -288,7 +293,6 @@ public class CardHand : CardEle, IBody
             }
 
             // 드래그동안에 상하좌우등의 이동에 맞게 회전 코루틴 실행
-            StartCoroutine(Rotate());
             IEnumerator Rotate()
             {
                 while (true)
@@ -306,6 +310,8 @@ public class CardHand : CardEle, IBody
     }
     public void Dragging(Vector3 worldPos)
     {
+        if (DragCo == null) { return; }
+
         if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select) { return; }
 
         if (MC != null)
@@ -404,6 +410,8 @@ public class CardHand : CardEle, IBody
                 if (SC.evtDatas[0].targeting != evtTargeting.Select
                      && GAME.IGM.Spawn.CheckInBox( new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
+                    // 비용 감소 및 핸드리스트에서 제거
+                    GAME.IGM.Hero.Player.MP -= this.currCost;
                     GAME.IGM.Hand.PlayerHand.Remove(this);
 
                     // 상대에게 내가 주문 카드를 사용한걸 알리기
@@ -437,6 +445,9 @@ public class CardHand : CardEle, IBody
                 if (GAME.IGM.Spawn.CheckInBox(
                  new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
+                    // 비용만큼 마나 감소
+                    GAME.IGM.Hero.Player.MP -= CurrCost;
+
                     // 현재 핸드목록에서 카드 제거
                     GAME.IGM.Hand.PlayerHand.Remove(this);
                     // a무기 착용, 모든 핸드카드 레이활성 초기화

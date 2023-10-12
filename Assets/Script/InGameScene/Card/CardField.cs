@@ -230,6 +230,7 @@ public class CardField : CardEle,IBody
             yield break;
         }
 
+        #region 예외사항 확인
         // 유저가 직접 선택하는 이벤트 존재 확인시
         // 적 미니언만이 타겟대상이지만, 적 미니언이 없는 상황 확인
         string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
@@ -240,6 +241,15 @@ public class CardField : CardEle,IBody
             MC.evtDatas.Remove(selectEvt);
             PlayEvt();
         }
+        // 아군 하수인에게만 실행하는 이벤트지만, 자신을 제외하고 없다면 생략
+        if (layers.Length == 1 && layers[0] == "ally"
+            && GAME.IGM.Spawn.playerMinions.FindAll(x => x.PunId != this.PunId).Count == 0)
+        {
+            // 그러면 선택 이벤트 삭제후, 나머지 기존처럼 순서대로 자동실행
+            MC.evtDatas.Remove(selectEvt);
+            PlayEvt();
+        }
+        #endregion
 
         // 유저가 직접 찾는 타겟팅 방식이 있다면
         else
@@ -285,6 +295,8 @@ public class CardField : CardEle,IBody
         {
             List<CardBaseEvtData> list =
                 MC.evtDatas.FindAll(x => x.when == evtWhen.onPlayed);
+            if (list.Count == 0 || list == null) { return; }
+
             for (int i = 0; i < list.Count; i++)
             {
                 GAME.IGM.AddAction(GAME.IGM.Battle.Evt(list[i], this));

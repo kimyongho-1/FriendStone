@@ -51,10 +51,13 @@ public partial class PacketManager
 
         ch.Init(card,false);
 
-        // 무기 카드를 내는 애니메이션 부터 예약
-        GAME.IGM.AddAction(weaponCardMove());
-        IEnumerator weaponCardMove()
+        // 무기 카드를 내는 애니메이션과 착용 애니메이션 예약실행
+        GAME.IGM.AddAction(weaponCardMove(ch, card));
+        IEnumerator weaponCardMove(CardHand ch, CardData card)
         {
+            // 상대의 무기카드 사용 + 마나감소
+            GAME.IGM.Hero.Enemy.MP -= card.cost;
+
             float t = 0;
             Vector3 start = ch.transform.position;
             while (t < 1f) 
@@ -64,10 +67,11 @@ public partial class PacketManager
                     Vector3.Lerp(start,dest,t);
                 yield return null;
             }
+            // 그후 무기 착용 이벤트 실행
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Hero.Enemy.EquipWeapon(ch, card));
         }
 
-        // 그후 무기 착용 이벤트 예약
-        GAME.IGM.AddAction(GAME.IGM.Hero.Enemy.EquipWeapon(ch,card));
+        
     }
     #endregion
 

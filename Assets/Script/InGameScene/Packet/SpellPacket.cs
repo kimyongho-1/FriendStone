@@ -46,7 +46,8 @@ public partial class PacketManager
         CardHand ch = GAME.IGM.Hand.EnemyHand.Find(punID);
         GAME.IGM.Hand.EnemyHand.Remove(ch);
 
-        // 어떠 주문카드인지 띄우기
+        // 어떠 주문카드인지 띄우기 + 상대의 마나 감소
+        GAME.IGM.Hero.Enemy.MP -= card.cost;
         GAME.IGM.ShowSpellPopup(card,new Vector3(3.5f, 2.8f, -0.5f) );
 
         Debug.Log($"{punID}가 현재 {ch}로 {ch.cardName}존재 확인");

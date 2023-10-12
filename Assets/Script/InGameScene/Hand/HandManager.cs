@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using TMPro;
-// to do list
-// 1. 탈진과 10장 초과시 코루틴 애니메이션 필요
 public class CustomCardHand
 {
     [field: SerializeField] private List<CardHand> cardHand = new List<CardHand>();
@@ -57,6 +55,7 @@ public class CustomCardHand
 
 public class HandManager : MonoBehaviour
 {
+    public Material dissolvMat;
     public GameObject PlayerHandGO, EnemyHandGO;
     public Transform PlayerDeck, EnemyDeck, PlayerDrawingCard, EnemyDrawingCard;
     public CustomCardHand PlayerHand = new CustomCardHand();
@@ -100,6 +99,11 @@ public class HandManager : MonoBehaviour
     // 핸드가 이미 10장일떄 카드를 드로우시, 해당 드로우카드 소멸 이벤트
     public IEnumerator HandOverFlow(int cardIdNum, CardHand ch)
     {
+        // 투명도 초기화
+        dissolvMat.SetFloat("_Alpha", 1f);
+        ch.cardImage.sharedMaterial = dissolvMat;
+        ch.cardBackGround.sharedMaterial = dissolvMat;
+        
         #region 소멸할 카드 이동
         ch.transform.localScale = Vector3.one * 0.6f; // 크기 확대
         Vector3 start = new Vector3(8.5f, -0.5f, -0.5f); 
@@ -114,23 +118,25 @@ public class HandManager : MonoBehaviour
         }
         #endregion
 
+        // 무엇이 타는지 보여주기위해 잠시 대기
+        yield return new WaitForSeconds(1f);
+        // 카드 소멸 대사 실행
+        GAME.IGM.Hero.Player.HeroSaying(Define.Emotion.HandOverFlow);
+
         #region 위치 도달시, 소멸(투명화 시작)
-        // 투명화 위해 모든 TMP와 SR을 묶기
-        List<TextMeshPro> tmpList = new List<TextMeshPro>() { ch.cardName, ch.Description, ch.Cost, ch.Stat, ch.Type };
-        List<SpriteRenderer> imageList = new List<SpriteRenderer>() { ch.cardImage, ch.cardBackGround };
         t = 1;
         Color tempColor = Color.white;
         while (t > 0f)
         {
             // 알파값 점차 0으로 변환
             t -= Time.deltaTime;
-            tempColor.a = t;
-            tmpList.ForEach(x => x.alpha = t);
-            imageList.ForEach(x => x.color = tempColor);
+            ch.cardName.alpha = ch.Description.alpha =
+                ch.Stat.alpha = ch.Type.alpha =
+                ch.Cost.alpha = Mathf.Max(0, t - 0.1F);
+            ch.cardImage.sharedMaterial.SetFloat("_Alpha", t);
+            ch.cardBackGround.sharedMaterial.SetFloat("_Alpha", t);
             yield return null;
         }
-        // 상대에게 내 오버드로우 이벤트 전달
-        GAME.IGM.Packet.SendOverDrawInfo(cardIdNum);
         GameObject.Destroy(ch.gameObject);
         #endregion 
     } 
@@ -162,6 +168,11 @@ public class HandManager : MonoBehaviour
         yield return null;
         // 인게임 카드 프리팹 생성
         CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
+        
+        // 투명도 초기화
+        dissolvMat.SetFloat("_Alpha", 1f);
+        ch.cardImage.sharedMaterial = dissolvMat;
+        ch.cardBackGround.sharedMaterial = dissolvMat;
         ch.Init(card, true);
         #endregion
 
@@ -179,19 +190,23 @@ public class HandManager : MonoBehaviour
         }
         #endregion
 
+        // 무엇이 타는지 보여주기위해 잠시 대기
+        yield return new WaitForSeconds(1f);
+        // 카드 소멸 대사 실행
+        GAME.IGM.Hero.Enemy.HeroSaying(Define.Emotion.HandOverFlow);
+
         #region 위치 도달시, 소멸(투명화 시작)
-        // 투명화 위해 모든 TMP와 SR을 묶기
-        List<TextMeshPro> tmpList = new List<TextMeshPro>() { ch.cardName, ch.Description, ch.Cost, ch.Stat, ch.Type };
-        List<SpriteRenderer> imageList = new List<SpriteRenderer>() { ch.cardImage, ch.cardBackGround };
         t = 1;
         Color tempColor = Color.white;
         while (t > 0f)
         {
             // 알파값 점차 0으로 변환
             t -= Time.deltaTime;
-            tempColor.a = t;
-            tmpList.ForEach(x => x.alpha = t);
-            imageList.ForEach(x => x.color = tempColor);
+            ch.cardName.alpha = ch.Description.alpha =
+                ch.Stat.alpha = ch.Type.alpha =
+                ch.Cost.alpha = Mathf.Max(0, t - 0.1f);
+            ch.cardImage.sharedMaterial.SetFloat("_Alpha", t);
+            ch.cardBackGround.sharedMaterial.SetFloat("_Alpha", t);
             yield return null;
         }
         yield return null;
@@ -202,6 +217,9 @@ public class HandManager : MonoBehaviour
     // 내가 덱에서 카드 뽑기
     public IEnumerator CardDrawing(int count)
     {
+        // 드로우에는 잠시 손의 영역 잠그기
+        PlayerHand.ForEach(x=>x.rewindHand());
+
         // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
         IEnumerator DrawingCo;
         IEnumerator DeckAnimCo()
@@ -264,9 +282,11 @@ public class HandManager : MonoBehaviour
                 ch.Init(cd, true);
 
                 // 만약 손패가 이미 10장인 상태에서 드로우 상황이라면 => 현재 뽑히는 카드 삭제 이벤트 실행
-                if (PlayerHand.Count == 10)
+                if (PlayerHand.Count == 5)
                 {
                     yield return new WaitUntil(() => (DrawingCo == null));
+                    // 상대에게 내 오버드로우 이벤트 전달
+                    GAME.IGM.Packet.SendOverDrawInfo(cd.cardIdNum);
                     yield return GAME.IGM.StartCoroutine(HandOverFlow(cd.cardIdNum, ch));
                 }
 
@@ -298,6 +318,7 @@ public class HandManager : MonoBehaviour
             }
             
         }
+
         // 드로우와 정렬 모두 끝났으면 콜라이더작용 위해 다시 활성화
         GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Ray = true);
     }

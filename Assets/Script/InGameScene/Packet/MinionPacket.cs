@@ -59,8 +59,11 @@ public partial class PacketManager
             MinionCardData mc = JsonConvert.DeserializeObject<MinionCardData>
                 (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 
+            // 비용감소
+            GAME.IGM.Hero.Enemy.MP -= currCost;
+
             // 상대가 소환한 미니언의 현재 데이터 표기
-            GAME.IGM.ShowSpawningMinionPopup(mc, currAtt, currHp, currCost);
+            GAME.IGM.ShowEnemyMinionPopup(mc, currAtt, currHp, currCost);
 
             // 미니언 소환전, 실제 카드데이터를 찾아 적용해주기
             GAME.IGM.Hand.EnemyHand.Find(punID).MC = mc;

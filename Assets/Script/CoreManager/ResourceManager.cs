@@ -37,6 +37,12 @@ public class ResourceManager
         }
 
     }
+
+    public AudioClip GetClip(Define.classType heroType, Define.Emotion emo)
+    {
+        return Resources.Load<AudioClip>($"Sound/HeroEmotion/{heroType.ToString()}/{emo.ToString()}");
+    }
+
     // 영웅 이미지 가져오기
     public Sprite GetHeroImage(Define.classType type)
     { return Resources.Load<Sprite>($"Texture/CardImage/heroImage/{type.ToString()}"); }

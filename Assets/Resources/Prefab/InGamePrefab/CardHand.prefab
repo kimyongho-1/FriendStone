@@ -48,7 +48,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 983f4c8dc0d39e04db2257ca6b94ec90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data:
+  CardEleType: 0
+  <MC>k__BackingField:
     cardName: 
     cardDescription: 
     cardIdNum: 0
@@ -56,19 +57,34 @@ MonoBehaviour:
     cardClass: 0
     cardType: 0
     cardRarity: 0
-    associatedHandler: 
     evtDatas: []
-  <PunId>k__BackingField: 0
-  <IsMine>k__BackingField: 0
-  <Col>k__BackingField: {fileID: 0}
-  <OriginAtt>k__BackingField: 0
-  <OriginHp>k__BackingField: 0
-  <Att>k__BackingField: 0
-  <HP>k__BackingField: 0
+    att: 0
+    hp: 0
+    isTaunt: 0
+    isCharge: 0
+  <WC>k__BackingField:
+    cardName: 
+    cardDescription: 
+    cardIdNum: 0
+    cost: 0
+    cardClass: 0
+    cardType: 0
+    cardRarity: 0
+    evtDatas: []
+    att: 0
+    durability: 0
+  <SC>k__BackingField:
+    cardName: 
+    cardDescription: 
+    cardIdNum: 0
+    cost: 0
+    cardClass: 0
+    cardType: 0
+    cardRarity: 0
+    evtDatas: []
   originRot: {x: 0, y: 0, z: 0}
   originScale: {x: 0, y: 0, z: 0}
   originOrder: 0
-  originCost: 0
   cardName: {fileID: 825180508374031612}
   Description: {fileID: 5073565830136675186}
   Stat: {fileID: 5291812240124813809}
@@ -77,6 +93,15 @@ MonoBehaviour:
   cardBackGround: {fileID: 1388872039259031023}
   cardImage: {fileID: 9056196857891520872}
   TMPgo: {fileID: 1480838265459796317}
+  currAtt: 0
+  currHp: 0
+  currCost: 0
+  <PunId>k__BackingField: 0
+  <IsMine>k__BackingField: 0
+  <Col>k__BackingField: {fileID: 0}
+  <OriginAtt>k__BackingField: 0
+  <OriginHp>k__BackingField: 0
+  <OriginCost>k__BackingField: 0
 --- !u!61 &5081389086616277871
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -402,7 +427,7 @@ SpriteRenderer:
   m_SortingLayerID: -1192652467
   m_SortingLayer: 1
   m_SortingOrder: 100
-  m_Sprite: {fileID: 21300000, guid: 015571d00a87b274aa06a7a4bf0736a2, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -410,7 +435,7 @@ SpriteRenderer:
   m_Size: {x: 3.48, y: 4.64}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &5987161994900092612
@@ -486,7 +511,7 @@ SpriteRenderer:
   m_SortingLayerID: -1192652467
   m_SortingLayer: 1
   m_SortingOrder: 99
-  m_Sprite: {fileID: 21300000, guid: cbe740afbb018064fbdf48b36cc21ba2, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -494,7 +519,7 @@ SpriteRenderer:
   m_Size: {x: 3.48, y: 4.64}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &7216630241917693505

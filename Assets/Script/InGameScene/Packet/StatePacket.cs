@@ -49,15 +49,17 @@ public partial class PacketManager
         dic.Add(OverDrawEvt, ReceivedOverDrawEvt);
     }
 
-    // 내턴 시작 전송
+    // 내 턴 시작 전송
     public void SendMyTurnMSG()
     {
-        // 상대 턴임을 알리기
+        // 상대에게 내 턴 시작한다고 알리기
         PhotonNetwork.RaiseEvent(OtherTurnStartMSG, null, Other, SendOptions.SendReliable);
     }
     // 상대의 턴 시작시, 상대의 턴 시작 메시지 출력 
     public void ShowOtherTurn(object[] data)
     {
+        // 상대 턴 시작, 상대 마나 초기화
+        GAME.IGM.Hero.Enemy.MP = Mathf.Min(10, GAME.IGM.GameTurn);
         // 상대 턴임을 알리기
         GAME.IGM.AddAction(GAME.IGM.Turn.ShowTurnMSG(false));
     }
@@ -93,7 +95,6 @@ public partial class PacketManager
         // 적 닉네임 초기화
         GAME.IGM.Hero.Enemy.nickTmp.text = nickName;
         // 적 영웅 캔버스 초기화
-        Debug.Log(GAME.Manager.RM.GetHeroData(classType));
         GAME.IGM.Hero.Enemy.heroData = GAME.Manager.RM.GetHeroData(classType);
         GAME.IGM.Hero.Enemy.heroData.Init(GAME.IGM.Hero.Enemy.playerImg, GAME.IGM.Hero.Enemy.skillImg,false);
         GAME.IGM.Hero.Enemy.heroSkill.InitSkill(false);
@@ -111,7 +112,8 @@ public partial class PacketManager
         if (result == false)
         {
             // 실제 턴종료는 아니지만, 매끄러운 진행을 위해 턴종료 실행
-            GAME.IGM.AddAction(GAME.IGM.Turn.EndMyTurn());
+            GAME.IGM.Turn.ClickedOnTurnEnd(null);
+            //GAME.IGM.AddAction(GAME.IGM.Turn.EndMyTurn());
         }
 
     }
@@ -167,7 +169,7 @@ public partial class PacketManager
         
         // 데이타는 현재 턴종료를 누르는 클라이언트의 턴에 +1을 더한 다음 턴을 전달 (integer)
         PhotonNetwork.RaiseEvent(OtherTurnEnd,
-            new object[] { GAME.IGM.GameTurn + 1 },
+            new object[] { GAME.IGM.GameTurn+1 },
             Other, SendOptions.SendReliable);
     }
 

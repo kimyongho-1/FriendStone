@@ -28,6 +28,16 @@ public class HeroData
         { Define.Emotion.TimeLess , ""},
         { Define.Emotion.NotReady , ""},
         { Define.Emotion.AlreadtHeroAttacked , ""},
+        { Define.Emotion.HandOverFlow , ""},
+    };
+    public Dictionary<Define.Emotion, string> outAudio = new Dictionary<Define.Emotion, string>() // CardDataEditor스크립트에서 해당Value 할당
+    {
+        { Define.Emotion.Hello ,""},
+        { Define.Emotion.WellPlayed , ""},
+        { Define.Emotion.Thanks ,""},
+        { Define.Emotion.Wow ,""},
+        { Define.Emotion.Oops ,""},
+        { Define.Emotion.Threat , ""},
     };
     public string skillName;
     public string skillDesc;
