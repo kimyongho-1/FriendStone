@@ -60,7 +60,8 @@ public partial class SpawnManager
         #endregion
 
         // 소환 효과음 재생
-        GAME.Manager.SM.PlaySound(Define.Sound.Summon);
+        audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Summon);
+        audioPlayer.Play();
 
         // 모든 필드 미니언들 위치 재정렬
         for (int i = 0; i < enemyMinions.Count; i++)

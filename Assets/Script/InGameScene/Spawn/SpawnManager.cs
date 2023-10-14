@@ -6,6 +6,7 @@ using UnityEngine;
 
 public partial class SpawnManager : MonoBehaviour
 {
+    AudioSource audioPlayer;
     public Transform Players, Enemies;
     public CustomList enemyMinions = new CustomList();
     public CustomList playerMinions = new CustomList();
@@ -16,6 +17,7 @@ public partial class SpawnManager : MonoBehaviour
     BoxCollider2D SpawnArea;
     private void Awake()
     {
+        audioPlayer = GetComponent<AudioSource>();
         GAME.IGM.Spawn = this;
         SpawnArea = transform.GetComponentInChildren<BoxCollider2D>();
 
@@ -175,7 +177,8 @@ public partial class SpawnManager : MonoBehaviour
             cf.Init(card.MC, true);
 
             // 소환 효과음 재생
-            GAME.Manager.SM.PlaySound(Define.Sound.Summon);
+            audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Summon);
+            audioPlayer.Play();
 
             // 필드 하수인들의 레이를 잠시 끄기
             playerMinions.ForEach(x => x.Ray = false);

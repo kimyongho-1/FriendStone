@@ -4,33 +4,40 @@ using UnityEngine;
 
 public class FXManager : MonoBehaviour
 {
-    List<ParticleSystem> pjList = new List<ParticleSystem>();
-    public GameObject PJprefab;
+
+    List<IFx> fxList = new List<IFx>();
+    public GameObject AttPrefab;
+    public GameObject HealPrefab;
+    public GameObject BuffPrefab;
     public Transform Projectile;
-    private void Awake()
+
+    public IFx GetFX(Define.fxType t)
     {
-        ParticleSystem prefab = GameObject.Instantiate(PJprefab, Projectile).GetComponent<ParticleSystem>();
-        prefab.transform.SetParent(Projectile);
-        pjList.Add(prefab);
-    }
-    public ParticleSystem GetPJ
-    {
-        get
+        // 사용간으한 프리팹 존재하는지 찾기 (동일 타입 존재여부 && 현재 사용안하는것 )
+        IFx prefab = fxList.Find(x => x.FXtype == t && x.currUsing == false) ;
+
+        // 현재 사용가능한 fx프리팹 없으면 새로생성
+        if (prefab == null)
         {
-            ParticleSystem pj = pjList.Find(x => x.gameObject.activeSelf == false);
-            if (pj == null)
+            switch (t)
             {
-                ParticleSystem prefab = GameObject.Instantiate(PJprefab, Projectile).GetComponent<ParticleSystem>();
-                prefab.transform.SetParent(Projectile);
-                pjList.Add(prefab);
-                return prefab;
+                case Define.fxType.Projectile:
+                    prefab = GameObject.Instantiate(AttPrefab, Projectile).GetComponent<IFx>();
+                    break;
+                case Define.fxType.Heal:
+                    prefab = GameObject.Instantiate(HealPrefab, Projectile).GetComponent<IFx>();
+                    break;
+                case Define.fxType.Buff:
+                    prefab = GameObject.Instantiate(BuffPrefab, Projectile).GetComponent<IFx>();
+                    break;
+                default:
+                    break;
             }
-            else
-            {
-                return pj;
-            }
-            
+            prefab.Tr.SetParent(Projectile);
+            fxList.Add(prefab);
         }
+
+        return prefab;
     }
 
 }

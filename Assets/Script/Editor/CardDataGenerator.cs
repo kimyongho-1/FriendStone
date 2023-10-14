@@ -199,7 +199,6 @@ public class CardDataGenerator : EditorWindow
                     if (bh.targeting == evtTargeting.Auto)
                     { bh.buffAutoMode = (Define.buffAutoMode)EditorGUILayout.EnumPopup("타겟팅 타입 ", bh.buffAutoMode); }
                     bh.buffType = (Define.buffType)EditorGUILayout.EnumPopup("어떤 버프 ", bh.buffType);
-                    bh.buffFX = (Define.buffFX)EditorGUILayout.EnumPopup("재생할 효과 ", bh.buffFX);
                     EditorGUI.BeginChangeCheck();
                     int len = EditorGUILayout.IntField("관련 카드 수", bh.relatedIds.Length);
                     // 배열 설정한 크기 확정시, 배열 크기 변경
@@ -232,7 +231,6 @@ public class CardDataGenerator : EditorWindow
                     }
                     #region AttackHandler 속성 그리기
                     ah.attType = (Define.attType)EditorGUILayout.EnumPopup("어떤 종류 ", ah.attType);
-                    ah.attFX = (Define.attFX)EditorGUILayout.EnumPopup("발사할 효과 ", ah.attFX);
                     ah.attAmount = EditorGUILayout.IntField("공격량", ah.attAmount);
                     #endregion
                     SetProperty(ah);

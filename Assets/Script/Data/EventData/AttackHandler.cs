@@ -6,6 +6,5 @@ using UnityEngine;
 public class AttackHandler : CardBaseEvtData
 {
     public Define.attType attType;
-    public Define.attFX attFX;
     public int attAmount;
 }

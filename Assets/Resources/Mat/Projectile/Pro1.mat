@@ -60,6 +60,6 @@ Material:
     m_Colors:
     - _ColorA: {r: 0.8712125, g: 0, b: 1, a: 0}
     - _ColorB: {r: 1, g: 0.5102249, b: 0, a: 0}
-    - _ColorEnd: {r: 0.54568005, g: 0, b: 1, a: 0}
-    - _ColorStart: {r: 0.4648342, g: 1, b: 0, a: 0}
+    - _ColorEnd: {r: 2.1827202, g: 0, b: 4, a: 0}
+    - _ColorStart: {r: 1.8593369, g: 4, b: 0, a: 0}
   m_BuildTextureStacks: []

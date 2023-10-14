@@ -736,6 +736,11 @@ public class BattleManager : MonoBehaviour
     // 실행할 버프 코루틴
     public IEnumerator Buff(IBody caster, IBody target, BuffHandler bh, int multiPly = 1)
     {
+        // 이펙트객체 호출
+        IFx fx = GAME.IGM.Battle.FX.GetFX(Define.fxType.Buff);
+
+        // 호출한 이펙트 재생
+        yield return GAME.IGM.StartCoroutine(fx.Invoke(null, target));
         // 어떠한 부여 효과인지
         switch (bh.buffType)
         {
@@ -763,7 +768,12 @@ public class BattleManager : MonoBehaviour
         yield break;
     }
     public IEnumerator ReceivedBuff(Define.buffType type, IBody target,int att, int hp )
-    {
+    {  
+        // 이펙트객체 호출
+        IFx fx = GAME.IGM.Battle.FX.GetFX(Define.fxType.Buff);
+
+        // 호출한 이펙트 재생
+        yield return GAME.IGM.StartCoroutine(fx.Invoke(null, target));
         // 어떠한 부여 효과인지
         switch (type)
         {
@@ -785,7 +795,12 @@ public class BattleManager : MonoBehaviour
 
     // 치료 코루틴
     public IEnumerator Restore(IBody caster, IBody target, int amount, bool isDeathRattle = false)
-    {
+    {  
+        // 이펙트객체 호출
+        IFx fx = GAME.IGM.Battle.FX.GetFX(Define.fxType.Heal);
+
+        // 호출한 이펙트 재생
+        yield return GAME.IGM.StartCoroutine(fx.Invoke(caster, target));
         Debug.Log($"치료이벤트 실행, target : {target}[{target.PunId}]");
         target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
 
@@ -811,40 +826,19 @@ public class BattleManager : MonoBehaviour
    
     // 공격 코루틴
     public IEnumerator AttackEvt(IBody attacker, IBody target, int attAmount, Define.attType attType , bool isDeathRattle = false )
-    {
-        #region 투사체 준비 및 투사체 이동 코루틴
+    {   
         // 죽을떄 실행 이벤트라면, 공격자 피해자 모두 제자리 복귀떄까지 대기
         if (isDeathRattle == true && GAME.IGM.Packet.isMyTurn == false)
         {
             yield return new WaitForSeconds(0.5f);
         }
-        // 투사체 호출
-        ParticleSystem pj = FX.GetPJ;
-        // 공격자의 위치에서 시작하도록 위치 초기화
-        pj.transform.position = attacker.Pos;
-        pj.gameObject.SetActive(true);
-        Vector3 start = attacker.Pos;
-        Vector3 dest = target.Pos;
-        Vector3 dir = (dest - start).normalized; // 방향벡터
-        float angle = Vector3.Angle(attacker.TR.up, dir);
-        Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
-        if (cross.y < 0) { angle *= -1; }
 
-        // 투사체 선형보간으로 타겟으로 향하며 이동
-        float t = 0;
-        while (t < 1f)
-        {
-            t += Time.deltaTime;
-            pj.transform.rotation =
-                Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
-            pj.transform.position =
-                Vector3.Lerp(start, dest, t);
+        #region 투사체 준비 및 투사체 이동 코루틴
+        // 이펙트객체 호출
+        IFx fx = FX.GetFX(Define.fxType.Projectile);
 
-            yield return null;
-        }
-
-        // 투사체 끄기
-        pj.gameObject.SetActive(false);
+        // 호출한 이펙트 재생
+        yield return GAME.IGM.StartCoroutine(fx.Invoke(attacker, target));
         #endregion
 
         // 나의 턴 + 나의 하수인 공격이벤트는 , 전파해야할 이벤트

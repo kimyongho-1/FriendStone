@@ -33,7 +33,23 @@ public class InGameManager : MonoBehaviour
     public CardPopupEvtHolder cardPopup;
     public TextMeshPro cardName, Description, Stat, Type, Cost;
     public SpriteRenderer cardImage,cardBackground;
-
+    AudioSource audioPlayer;
+    public Dictionary<Define.IGMsound, AudioClip> sceneAudio = new Dictionary<IGMsound, AudioClip>();
+    public void Awake()
+    {
+        GAME.IGM = this;
+        audioPlayer = GetComponent<AudioSource>();
+        sceneAudio.Add(Define.IGMsound.Draw , Resources.Load<AudioClip>("Sound/InGame/Managers/Draw"));
+        sceneAudio.Add(Define.IGMsound.Pick , Resources.Load<AudioClip>("Sound/InGame/Managers/Pick"));
+        sceneAudio.Add(Define.IGMsound.Popup , Resources.Load<AudioClip>("Sound/InGame/Managers/Popup"));
+        sceneAudio.Add(Define.IGMsound.Punch, Resources.Load<AudioClip>("Sound/InGame/Managers/Punch"));
+        sceneAudio.Add(Define.IGMsound.Summon , Resources.Load<AudioClip>("Sound/InGame/Managers/Summon"));
+        sceneAudio.Add(Define.IGMsound.Click, Resources.Load<AudioClip>("Sound/InGame/Managers/Click"));
+        sceneAudio.Add(Define.IGMsound.Cancel, Resources.Load<AudioClip>("Sound/InGame/Managers/Cancel"));
+        sceneAudio.Add(Define.IGMsound.ClickTurnBtn , Resources.Load<AudioClip>("Sound/InGame/Managers/ClickTurnBtn"));
+        sceneAudio.Add(Define.IGMsound.TurnStart , Resources.Load<AudioClip>("Sound/InGame/Managers/TurnStart"));
+    }
+    public AudioClip GetClip(Define.IGMsound s) { return sceneAudio[s]; }
     #region 참조
     public FindEvtHolder FindEvt { get; set; }
     public HeroManager Hero { get; set; }
@@ -44,16 +60,16 @@ public class InGameManager : MonoBehaviour
     public TurnEndBtn Turn { get; set; }
     public PacketManager Packet { get; set; }
     public PostCamera Post { get; set; }
-    private void Awake()
-    {
-        GAME.IGM = this;
-    }
+ 
     #endregion
-
 
     // BattleManager의 액션큐 빠르게 접근용도
     public void AddAction(IEnumerator co) { if (co != null) { Battle.ActionQueue.Enqueue(co); } }
     public void AddDeathAction(IEnumerator co) { if (co != null) { Battle.PlayDeathRattle(co); } }
+
+
+    #region 팝업창 알림 이벤트
+
     // 영웅 능력 팝업창 호출
     public void ShowHeroSkill(Vector3 pos, HeroData skill)
     {
@@ -84,8 +100,11 @@ public class InGameManager : MonoBehaviour
         cardPopup.gameObject.SetActive(true);
     }
    
-    public void ShowSpellPopup(SpellCardData data, Vector3 pos)
+    public void ShowEnemySpellPopup(SpellCardData data, Vector3 pos)
     {
+        // 팝업창 효과음 재생
+        audioPlayer.clip = sceneAudio[Define.IGMsound.Popup];
+        audioPlayer.Play();
         // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
         cardPopup.isEnmeySpawning = true;
 
@@ -122,6 +141,10 @@ public class InGameManager : MonoBehaviour
     }
     public void ShowEnemyMinionPopup(MinionCardData data, int att, int hp, int cost)
     {
+        // 팝업창 효과음 재생
+        audioPlayer.clip = sceneAudio[Define.IGMsound.Popup];
+        audioPlayer.Play();
+
         // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
         cardPopup.isEnmeySpawning = true;
 
@@ -163,6 +186,9 @@ public class InGameManager : MonoBehaviour
     }
     public void ShowEnemyWeaponPopup(WeaponCardData data)
     {
+        // 팝업창 효과음 재생
+        audioPlayer.clip = sceneAudio[Define.IGMsound.Popup];
+        audioPlayer.Play();
         // 현재 스폰중인카드가 있다고 설정해, 다른 카드 엔터 이벤트 방지
         cardPopup.isEnmeySpawning = true;
         cardPopup.transform.position = new Vector3(3.5f, 2.8f, -0.5f);
@@ -191,4 +217,5 @@ public class InGameManager : MonoBehaviour
         cardPopup.gameObject.SetActive(true);
     }
 
+    #endregion
 }

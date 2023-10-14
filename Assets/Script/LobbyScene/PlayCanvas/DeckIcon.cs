@@ -16,8 +16,8 @@ public class DeckIcon : MonoBehaviour
     {
         // 각종 버튼 마우스 이벤트 연결
         playCanvas = GetComponentInParent<PlayCanvas>();
-        GAME.Manager.UM.BindEvent(emptyDeck, MakeNewDeck, Define.Mouse.ClickL, Define.Sound.Click);
-        GAME.Manager.UM.BindEvent(userDeck, ClickedOnUserDeck, Define.Mouse.ClickL, Define.Sound.Click);
+        GAME.Manager.UM.BindEvent(emptyDeck, MakeNewDeck, Define.Mouse.ClickL);
+        GAME.Manager.UM.BindEvent(userDeck, ClickedOnUserDeck, Define.Mouse.ClickL);
 
         Vector3 anchor = GetComponent<RectTransform>().anchoredPosition;
         float height = (transform.GetSiblingIndex() > 3) ? -110f: 0f;

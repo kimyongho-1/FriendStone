@@ -15,6 +15,8 @@ public class CardField : CardEle,IBody
     public SpriteMask mask;
     [SerializeField] int currAtt, currHp;
     public bool waitDeathRattleEnd = false;
+    AudioSource audioPlayer;
+
     #region IBODY
     [field: SerializeField] public bool Attackable { get; set; }
     [field: SerializeField] public int PunId { get; set; }
@@ -53,6 +55,10 @@ public class CardField : CardEle,IBody
     }
     #endregion
 
+    private void Awake()
+    {
+        audioPlayer = GetComponent<AudioSource>();
+    }
     // 미니언 카드가 공격을 한다 가정시, 부딪힐떄 위치가 겹치는 순간
     // 소팅 레이어가 동일하면 이미지가 겹치거나 꺠질 위험이 있어, 공격자가 최상단에 위치하도록 레이어 변경
     public void ChangeSortingLayer(bool isOn)
@@ -106,7 +112,7 @@ public class CardField : CardEle,IBody
         if (IsMine)
         {
             // 좌클릭시 공격 타겟팅 이벤트 시작을 연결
-            GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL, Define.Sound.Ready);
+            GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL);
         }
         IEnumerator Dead(bool isMine)
         {
@@ -117,8 +123,6 @@ public class CardField : CardEle,IBody
                 // 현재 나의 턴이고 미니언이 죽었으며 죽을떄 실행할 이벤트가 있다면
                 if (GAME.IGM.Packet.isMyTurn == true)
                 {
-                  //  GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Ray =false);
-                  //  GAME.IGM.Turn.Col .enabled= false;
                     // 죽을떄 실행할 이벤트를 모두 찾아
                     // 예약이 아닌 이 자리에서 모두 실행
                     List<CardBaseEvtData> list =
@@ -134,8 +138,6 @@ public class CardField : CardEle,IBody
                     GAME.IGM.Packet.SendDeathRattleEnd(this.PunId);
                    
                      Debug.Log("죽메 전송 끝");
-                     //GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-                     //GAME.IGM.Turn.Col.enabled = true;
                 }
 
                 // 나의 턴이 아닐시, 상대방이 보내는 이벤트를 계속 받아 실행하며 끝나는 신호를 받을떄까지 대기
@@ -364,6 +366,10 @@ public class CardField : CardEle,IBody
         }
         #endregion
 
+        // 클릭 효과음 재생
+        audioPlayer.clip = GAME.IGM.GetClip(IGMsound.Click);
+        audioPlayer.Play();
+
         // 공격자 자신과, 스폰영역 레이 비활성화
         Ray = Attackable = false;
 
@@ -391,6 +397,8 @@ public class CardField : CardEle,IBody
         }
 
         GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Ray =false);
+        // 공격시 펀치소리 미리 재생준비
+        audioPlayer.clip = GAME.IGM.GetClip(IGMsound.Punch);
 
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
@@ -403,6 +411,9 @@ public class CardField : CardEle,IBody
             this.transform.position = Vector3.Lerp(start, dest, t);
             yield return null;
         }
+
+        // 공격 펀치소리 재생
+        audioPlayer.Play();
         #endregion
 
         #region 카메라 흔들기 이펙트

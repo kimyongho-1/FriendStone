@@ -100,33 +100,12 @@ public class HeroData
     }
     IEnumerator Throw(IBody attacker, IBody target, int attAmount)
     {
-        // 투사체 호출
-        ParticleSystem pj = GAME.IGM.Battle.FX.GetPJ;
-        // 공격자의 위치에서 시작하도록 위치 초기화
-        pj.transform.position = attacker.Pos;
-        pj.gameObject.SetActive(true);
-        Vector3 start = attacker.Pos;
-        Vector3 dest = target.Pos;
-        Vector3 dir = (dest - start).normalized; // 방향벡터
-        float angle = Vector3.Angle(attacker.TR.up, dir);
-        Vector3 cross = Vector3.Cross(attacker.TR.up, dir);
-        if (cross.y < 0) { angle *= -1; }
+        // 이펙트객체 호출
+        IFx fx = GAME.IGM.Battle. FX.GetFX(Define.fxType.Projectile);
 
-        // 투사체 선형보간으로 타겟으로 향하며 이동
-        float t = 0;
-        while (t < 1f)
-        {
-            t += Time.deltaTime;
-            pj.transform.rotation =
-                Quaternion.Euler(new Vector3(0, 0, 90f + Mathf.Lerp(0, angle, t)));
-            pj.transform.position =
-                Vector3.Lerp(start, dest, t);
+        // 호출한 이펙트 재생
+        yield return GAME.IGM.StartCoroutine(fx.Invoke(attacker, target));
 
-            yield return null;
-        }
-
-        // 투사체 끄기
-        pj.gameObject.SetActive(false); 
         Debug.Log($"attacker : {attacker}[{attacker.PunId}], target : {target}[{target.PunId}]");
         target.HP -= attAmount;
         if (target.HP <= 0)
@@ -135,7 +114,13 @@ public class HeroData
         }
     }
     IEnumerator Restore(IBody caster, IBody target, int healAmount)
-    {
+    {  
+        // 이펙트객체 호출
+        IFx fx = GAME.IGM.Battle.FX.GetFX(Define.fxType.Heal);
+
+        // 호출한 이펙트 재생
+        yield return GAME.IGM.StartCoroutine(fx.Invoke(caster, target));
+
         Debug.Log($"치료이벤트 실행, target : {target}[{target.PunId}]");
         target.HP = Mathf.Clamp(target.HP + healAmount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
 

@@ -46,13 +46,12 @@ public class UIManager
     }
 
     // 기타 ui요소에 마우스 작용시 이벤트 발생시키는 함수
-    public void BindEvent(GameObject go, Action<GameObject> func, Define.Mouse mouse, Define.Sound sound)
+    public void BindEvent(GameObject go, Action<GameObject> func, Define.Mouse mouse)
     {
         if (go.TryGetComponent<MouseEvtHolder>(out MouseEvtHolder meh) == false)
         {
             meh = go.AddComponent<MouseEvtHolder>();
         }
-        meh.sound = sound;
         switch (mouse) 
         {
             case Define.Mouse.ClickL:
@@ -65,16 +64,13 @@ public class UIManager
                 meh.mExit = func; break;
         }
     }
-    public void BindEvent(GameObject go, Action<Vector3> func, Define.Mouse mouse , Define.Sound sound = Define.Sound.None)
+    public void BindEvent(GameObject go, Action<Vector3> func, Define.Mouse mouse)
     {
         if (go.TryGetComponent<MouseEvtHolder>(out MouseEvtHolder meh) == false)
         {
             meh = go.AddComponent<MouseEvtHolder>();
         }
 
-        if (sound != Define.Sound.None)
-        { meh.dragSound = sound; }
-        
         switch (mouse)
         {
             case Define.Mouse.StartDrag:

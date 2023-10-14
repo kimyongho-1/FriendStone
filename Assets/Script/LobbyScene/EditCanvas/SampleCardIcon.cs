@@ -20,7 +20,7 @@ public class SampleCardIcon : MonoBehaviour
             GAME.Manager.UM.BindTMPInteraction(CancelBtn, Color.grey, Color.red,
                 (tmp) => { this.gameObject.SetActive(false); } );
             GAME.Manager.UM.BindEvent(this.gameObject ,
-                (GameObject tmp) => { this.gameObject.SetActive(false); } , Define.Mouse.ClickL, Define.Sound.None);
+                (GameObject tmp) => { this.gameObject.SetActive(false); } , Define.Mouse.ClickL);
             // 확대 카드는 초기에 꺼두기
             this.gameObject.SetActive(false);
         }
@@ -29,9 +29,9 @@ public class SampleCardIcon : MonoBehaviour
         else
         {
             // 좌클릭 : 덱에 카드삽입
-            GAME.Manager.UM.BindEvent(this.gameObject, CardLeftClicked, Define.Mouse.ClickL, Define.Sound.Click);
+            GAME.Manager.UM.BindEvent(this.gameObject, CardLeftClicked, Define.Mouse.ClickL);
             // 우클릭 : 카드 확대보기
-            GAME.Manager.UM.BindEvent(this.gameObject, CardRightClicked, Define.Mouse.ClickR, Define.Sound.Back);
+            GAME.Manager.UM.BindEvent(this.gameObject, CardRightClicked, Define.Mouse.ClickR);
 
             // 커서 닿을시 안내팝업 호출
             // 커서 가져다 댈시 기본 안내문구 안내

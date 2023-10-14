@@ -10,12 +10,8 @@ public class MouseEvtHolder : MonoBehaviour, IPointerDownHandler
 {
     public Action<GameObject> mClickL, mClickR, mEnter, mExit;
     public Action<Vector3> mStartDrag, mDrag, mEndDrag;
-    public Define.Sound sound, dragSound;
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (sound != Define.Sound.None)
-        { GAME.Manager.SM.PlaySound(sound); }
-        
         switch (eventData.button)
         {
             case PointerEventData.InputButton.Left:
@@ -29,8 +25,6 @@ public class MouseEvtHolder : MonoBehaviour, IPointerDownHandler
   
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (dragSound != Define.Sound.None)
-        { GAME.Manager.SM.PlaySound(dragSound); }
         mStartDrag?.Invoke(default);
     }
 

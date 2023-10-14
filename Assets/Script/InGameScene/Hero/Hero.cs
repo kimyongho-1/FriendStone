@@ -86,21 +86,21 @@ public class Hero : MonoBehaviour, IBody
             heroSkill.InitSkill(IsMine);
 
             // 영웅 아이콘 좌클릭 => 무기공격
-            GAME.Manager.UM.BindEvent(this.gameObject, HeroAttack, Define.Mouse.ClickL, Define.Sound.Ready);
+            GAME.Manager.UM.BindEvent(this.gameObject, HeroAttack, Define.Mouse.ClickL);
 
             // 영웅 아이콘 우클릭 => 감정표현
-            GAME.Manager.UM.BindEvent(this.gameObject, HeroSpeech, Define.Mouse.ClickR, Define.Sound.None);
+            GAME.Manager.UM.BindEvent(this.gameObject, HeroSpeech, Define.Mouse.ClickR);
             // 스킬 아이콘 클릭시, 타겟팅 이벤트 실행 연결
-            GAME.Manager.UM.BindEvent(heroSkill.Col.gameObject, ClickedOnSkill, Define.Mouse.ClickL, Define.Sound.None);
+            GAME.Manager.UM.BindEvent(heroSkill.Col.gameObject, ClickedOnSkill, Define.Mouse.ClickL);
 
             // 각각의 말풍선에 이벤트 연결
             for (int i = 0; i < Select.gameObject.transform.childCount; i++)
             {
                 GAME.Manager.UM.BindEvent(Select.transform.GetChild(i).gameObject,
-                    SelectedSpeech, Define.Mouse.ClickL, Define.Sound.None);
+                    SelectedSpeech, Define.Mouse.ClickL);
             }
             // 선택대사 나올떄, 배경클릭시 대사 즉각 종료
-            GAME.Manager.UM.BindEvent(Reply.gameObject, OffReply, Mouse.ClickL, Sound.None);
+            GAME.Manager.UM.BindEvent(Reply.gameObject, OffReply, Mouse.ClickL);
 
         }
         else
@@ -199,6 +199,10 @@ public class Hero : MonoBehaviour, IBody
             return;
         }
 
+        // 클릭음 재생
+        audioPlayer.clip= GAME.IGM.GetClip(Define.IGMsound.Click);
+        audioPlayer.Play();
+
         // 레이 잠시끄기
         heroSkill.Attackable = false;
         // 영웅 능력이 선택타겟팅이라면 : 타겟이 성공할떄만 사용으로 간주
@@ -247,6 +251,10 @@ public class Hero : MonoBehaviour, IBody
         }
         #endregion
 
+        // 클릭음 재생
+        audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Click);
+        audioPlayer.Play();
+
         #region 예외 사항 모두 통과시 타겟팅 이벤트 실행 => 적절한 타겟을 클릭시 , 공격함수 예약 실행
 
         // 공격자 공격한것으로 변경 (이후 타겟팅 실패시, 아래 함수내부에서 다시 true로 변경예정 )
@@ -277,6 +285,9 @@ public class Hero : MonoBehaviour, IBody
             yield break;
         }
 
+        // 공격시 펀치소리 미리 재생준비
+        audioPlayer.clip = GAME.IGM.GetClip(IGMsound.Punch);
+
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
         float t = 0;
@@ -288,6 +299,8 @@ public class Hero : MonoBehaviour, IBody
             playerMask.transform.position = Vector3.Lerp(start, dest, t);
             yield return null;
         }
+        // 공격 펀치소리 재생
+        audioPlayer.Play();
         #endregion
 
         #region 카메라 흔들기 이펙트

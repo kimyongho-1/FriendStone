@@ -48,7 +48,7 @@ public partial class PacketManager
 
         // 어떠 주문카드인지 띄우기 + 상대의 마나 감소
         GAME.IGM.Hero.Enemy.MP -= card.cost;
-        GAME.IGM.ShowSpellPopup(card,new Vector3(3.5f, 2.8f, -0.5f) );
+        GAME.IGM.ShowEnemySpellPopup(card,new Vector3(3.5f, 2.8f, -0.5f) );
 
         Debug.Log($"{punID}가 현재 {ch}로 {ch.cardName}존재 확인");
         ch.SC = card;

@@ -14,9 +14,9 @@ public class FindEvtHolder : MonoBehaviour
         GAME.IGM.FindEvt = this;
 
         // 발견 이벤트시, 카드 선택을 확인하는 클릭 이벤트 연결
-        GAME.Manager.UM.BindEvent(left.gameObject, ClickedCard, Define.Mouse.ClickL, Define.Sound.Click);
-        GAME.Manager.UM.BindEvent(center.gameObject, ClickedCard, Define.Mouse.ClickL, Define.Sound.Click);
-        GAME.Manager.UM.BindEvent(right.gameObject, ClickedCard, Define.Mouse.ClickL, Define.Sound.Click);
+        GAME.Manager.UM.BindEvent(left.gameObject, ClickedCard, Define.Mouse.ClickL   );
+        GAME.Manager.UM.BindEvent(center.gameObject, ClickedCard, Define.Mouse.ClickL );
+        GAME.Manager.UM.BindEvent(right.gameObject, ClickedCard, Define.Mouse.ClickL  );
 
         gameObject.SetActive(false);
     }

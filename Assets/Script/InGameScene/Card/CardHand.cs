@@ -9,6 +9,7 @@ using WebSocketSharp;
 
 public class CardHand : CardEle, IBody
 {
+    AudioSource audioPlayer;
     public Vector3  originRot, originScale;
     public int originOrder;
     public TextMeshPro cardName, Description, Stat, Type, Cost;
@@ -63,6 +64,7 @@ public class CardHand : CardEle, IBody
         }
     }
     #endregion
+
     [field: SerializeField] public int OriginCost { get; set; }
     public int CurrCost
     {
@@ -98,6 +100,7 @@ public class CardHand : CardEle, IBody
     }
     public void Init(CardData data, bool isMine = true)
     {
+        audioPlayer = GetComponent<AudioSource>();
         base.Init(data);
         IsMine = isMine;
         cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(IsMine);
@@ -140,12 +143,12 @@ public class CardHand : CardEle, IBody
             cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
 
             // 드래그 이벤트 연결
-            GAME.Manager.UM.BindEvent(this.gameObject, StartDrag, Define.Mouse.StartDrag, Define.Sound.Pick);
+            GAME.Manager.UM.BindEvent(this.gameObject, StartDrag, Define.Mouse.StartDrag);
             GAME.Manager.UM.BindEvent(this.gameObject, Dragging, Define.Mouse.Dragging);
             GAME.Manager.UM.BindEvent(this.gameObject, EndDrag, Define.Mouse.EndDrag);
             // 커서 가져다 댈시 이벤트
-            GAME.Manager.UM.BindEvent(this.gameObject, Enter, Define.Mouse.Enter, Define.Sound.None);
-            GAME.Manager.UM.BindEvent(this.gameObject, Exit, Define.Mouse.Exit, Define.Sound.None);
+            GAME.Manager.UM.BindEvent(this.gameObject, Enter, Define.Mouse.Enter);
+            GAME.Manager.UM.BindEvent(this.gameObject, Exit, Define.Mouse.Exit);
 
         }
 
@@ -198,10 +201,15 @@ public class CardHand : CardEle, IBody
     float X, Y;
     public void StartDrag(Vector3 v)
     {
+        // 비용문제로 사용 못하는 카드라면 바로 취소
         if (CurrCost > GAME.IGM.Hero.Player.MP) { return; }
 
         // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
         GAME.IGM.Spawn.playerMinions.ForEach(x=>x.Ray = false);
+
+        // 드래깅 시작 효과음 재생
+        audioPlayer.clip =  GAME.IGM.GetClip(Define.IGMsound.Pick);
+        audioPlayer.Play();
 
         // 주문카드이며 직접 타겟팅하는 경우, 카드를 움직이지않고 현재 핸드카드에서 타겟팅 화살표 실행
         if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select)
@@ -383,6 +391,7 @@ public class CardHand : CardEle, IBody
     }
     public void EndDrag(Vector3 v)
     {
+
         Ray = false; // Ray를 비활성화시 Exit가 호출되지만, DragCo를 뒤에서 null로 초기화하여서 Exit 먼저 실행을 막기
         StopAllCoroutines();
         // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
@@ -469,6 +478,10 @@ public class CardHand : CardEle, IBody
         StartCoroutine(DragCo);
         IEnumerator BackToOrigin()
         {
+            // 드래깅 끝 효과음 재생
+            audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Cancel); 
+            yield return null;
+            audioPlayer.Play();
             // SR의 오더 초기화 원래대로
             SetOrder(originOrder);
             // 크기등 모두 초기화

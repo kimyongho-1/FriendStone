@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7234761140768012414}
+  - component: {fileID: 246608288699105369}
   - component: {fileID: 1639303831341097654}
   - component: {fileID: 7960574665881887938}
   m_Layer: 3
@@ -35,6 +36,22 @@ Transform:
   - {fileID: 2765373607412934669}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &246608288699105369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545492690437184707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a2d62cb1f88e540a303759de8ec2d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tr: {fileID: 0}
+  ps: {fileID: 1639303831341097654}
+  psArm: {fileID: 5518317325515275833}
+  psAura: {fileID: 6471828807344788494}
 --- !u!198 &1639303831341097654
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -43,7 +60,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1545492690437184707}
   serializedVersion: 8
-  lengthInSec: 5
+  lengthInSec: 3.01
   simulationSpeed: 1
   stopAction: 0
   cullingMode: 0
@@ -52,7 +69,7 @@ ParticleSystem:
   emitterVelocityMode: 1
   looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -4856,8 +4873,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2763672872409358330}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.68, y: 0.6239167, z: -2.5276809}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.94, y: 0.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4871,16 +4888,16 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2763672872409358330}
   serializedVersion: 8
-  lengthInSec: 1
-  simulationSpeed: 1
+  lengthInSec: 3.01
+  simulationSpeed: 2.5
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -6156,9 +6173,9 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 0}
-        key1: {r: 0.68076324, g: 1, b: 0, a: 0.8672223}
-        key2: {r: 0.72173154, g: 1, b: 0.5585534, a: 1}
+        key0: {r: 1, g: 1, b: 1, a: 0.8672223}
+        key1: {r: 0.68076324, g: 1, b: 0, a: 1}
+        key2: {r: 0.72173154, g: 1, b: 0.5585534, a: 0}
         key3: {r: 1, g: 1, b: 1, a: 0}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
@@ -6173,8 +6190,8 @@ ParticleSystem:
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 23130
-        atime2: 48188
+        atime1: 48188
+        atime2: 65535
         atime3: 65535
         atime4: 0
         atime5: 0
@@ -6183,7 +6200,7 @@ ParticleSystem:
         m_Mode: 0
         m_ColorSpace: 0
         m_NumColorKeys: 4
-        m_NumAlphaKeys: 4
+        m_NumAlphaKeys: 3
       minGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -9645,7 +9662,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -890838907
   m_SortingLayer: 2
-  m_SortingOrder: 102
+  m_SortingOrder: 101
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -9702,8 +9719,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7329936597388659079}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.4156423, y: 0.6239167, z: -2.5276809}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9717,16 +9734,16 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7329936597388659079}
   serializedVersion: 8
-  lengthInSec: 1
-  simulationSpeed: 1
+  lengthInSec: 3.01
+  simulationSpeed: 2.5
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -11158,24 +11175,24 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 0}
-        key1: {r: 1, g: 1, b: 1, a: 0.29803923}
-        key2: {r: 1, g: 1, b: 1, a: 0}
+        key0: {r: 1, g: 1, b: 1, a: 0.8672223}
+        key1: {r: 0.68076324, g: 1, b: 0, a: 1}
+        key2: {r: 0.72173154, g: 1, b: 0.5585534, a: 0}
         key3: {r: 1, g: 1, b: 1, a: 0}
-        key4: {r: 1, g: 1, b: 1, a: 0}
+        key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
         key7: {r: 0, g: 0, b: 0, a: 0}
         ctime0: 0
-        ctime1: 65535
-        ctime2: 65535
+        ctime1: 40092
+        ctime2: 52814
         ctime3: 65535
-        ctime4: 65535
+        ctime4: 0
         ctime5: 0
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 32960
+        atime1: 48188
         atime2: 65535
         atime3: 65535
         atime4: 0
@@ -11184,7 +11201,7 @@ ParticleSystem:
         atime7: 0
         m_Mode: 0
         m_ColorSpace: 0
-        m_NumColorKeys: 2
+        m_NumColorKeys: 4
         m_NumAlphaKeys: 3
       minGradient:
         serializedVersion: 2
@@ -14647,7 +14664,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -890838907
   m_SortingLayer: 2
-  m_SortingOrder: 100
+  m_SortingOrder: 101
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0

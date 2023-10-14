@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2817902691471800281}
+  - component: {fileID: 8539785113299106800}
   - component: {fileID: 8676565038566767722}
   - component: {fileID: 6674708532952417721}
   m_Layer: 3
@@ -33,6 +34,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8539785113299106800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6735601082629984728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7adf531a88d06e744838c1d3e6096ca0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ps: {fileID: 8676565038566767722}
+  tr: {fileID: 0}
 --- !u!198 &8676565038566767722
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -41,16 +56,16 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6735601082629984728}
   serializedVersion: 8
-  lengthInSec: 1
-  simulationSpeed: 1
+  lengthInSec: 3.01
+  simulationSpeed: 2.5
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -980,7 +995,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 2
+        scalar: 3
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -1038,7 +1053,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 2
+        scalar: 4
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -1096,7 +1111,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 2
+        scalar: 3
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -4971,7 +4986,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -890838907
   m_SortingLayer: 2
-  m_SortingOrder: 100
+  m_SortingOrder: 101
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0

@@ -55,6 +55,7 @@ public class CustomCardHand
 
 public class HandManager : MonoBehaviour
 {
+    AudioSource audioPlayer;
     public Material dissolvMat;
     public GameObject PlayerHandGO, EnemyHandGO;
     public Transform PlayerDeck, EnemyDeck, PlayerDrawingCard, EnemyDrawingCard;
@@ -68,6 +69,7 @@ public class HandManager : MonoBehaviour
     Queue<CardData> deckCards = new Queue<CardData>();
     private void Awake()
     {
+        audioPlayer = GetComponent<AudioSource>();
         GAME.IGM.Hand = this;
         // 게임 시작시, 사용할 덱 모두 리스트로 풀기
         List<CardData> cards = GAME.Manager.RM.GameDeck.cards.Keys.ToList();
@@ -312,6 +314,8 @@ public class HandManager : MonoBehaviour
                     PlayerHand.Add(ch);
                     yield return new WaitUntil(() => (DrawingCo == null));
 
+                    // 마지막 카드 생각해서, 오디오클립 채우기
+                    audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Draw);
                     // 손패의 카드들 정렬 실행후, 나머지 드로우
                     yield return StartCoroutine(CardAllignment(true));
                 }
@@ -375,6 +379,8 @@ public class HandManager : MonoBehaviour
         // 적의 핸드카드에 포함시키기
         EnemyHand.Add(ch);
         yield return new WaitUntil(() => (DrawingCo == null));
+        // 마지막 카드 생각해서, 오디오클립 채우기
+        audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Draw);
         // 손패의 카드들 정렬 실행후, 나머지 드로우
         yield return StartCoroutine(CardAllignment(false));
     }
@@ -419,7 +425,13 @@ public class HandManager : MonoBehaviour
 
             // 위치로 이동시키기
             co.Enqueue(StartCoroutine(HandCardMove(hand[i])));
-           
+
+            // 현재 뽑는 카드(마지막인덱스)의 이동 코루틴 실행이라면 + 드로우 소리 재생
+            if (i == hand.Count - 1 && audioPlayer.clip != null)
+            {
+                audioPlayer.Play();
+            }
+
             if (isMine)
             {
                 // 소팅오더 정렬 시작
@@ -431,6 +443,8 @@ public class HandManager : MonoBehaviour
 
         // 정렬 코루틴 전부 수행됬는지 확인 및 대기
         yield return new WaitUntil(() => (co.Count() == 0));
+        // 졍렬 완료시 오디오클립 비우기
+        audioPlayer.clip = null;
 
         IEnumerator HandCardMove(CardHand ch)
         {

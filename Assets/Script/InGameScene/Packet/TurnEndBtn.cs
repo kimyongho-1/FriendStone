@@ -11,17 +11,23 @@ public class TurnEndBtn : MonoBehaviour
     public TextMeshProUGUI infoTmp;
     public float baseTimeLimit = 10;
     public Material blinkMat;
+    AudioSource audioPlayer;
     private void Awake()
     {
+        audioPlayer = GetComponent<AudioSource>();
         Col.enabled = false;
         btnTmp.text = "상대 턴";
         GAME.IGM.Turn = this;
-        GAME.Manager.UM.BindEvent( this.gameObject , ClickedOnTurnEnd , Define.Mouse.ClickL, Define.Sound.Click );
+        GAME.Manager.UM.BindEvent( this.gameObject , ClickedOnTurnEnd , Define.Mouse.ClickL);
     }
 
     // 턴종료 버튼 누를시 호출
     public void ClickedOnTurnEnd(GameObject go)
     {
+        // 턴 버튼 클릭음 재생
+        audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.ClickTurnBtn);
+        audioPlayer.Play();
+
         // 시간임박 타이머중이었다면 강제 끄기
         if (GAME.IGM.TimeLimiter.gameObject.activeSelf == true)
         { GAME.IGM.TimeLimiter.gameObject.SetActive(false); }
@@ -67,7 +73,7 @@ public class TurnEndBtn : MonoBehaviour
     public IEnumerator ShowTurnMSG(bool isMyTurn)
     {
         // 텍스트 표시
-        btnTmp.text = (isMyTurn) ? "나의 턴" : "상대 턴";
+         btnTmp.text = (isMyTurn) ? "나의 턴" : "상대 턴";
         infoTmp.text = (isMyTurn) ? "나의 차례" : "상대의 차례";
         infoTmp.color = new Color(1, 1, 1, 0);
         infoTmp.gameObject.SetActive(true);
@@ -82,6 +88,9 @@ public class TurnEndBtn : MonoBehaviour
             infoTmp.color = c;
             yield return null;
         }
+        // 턴 시작 효과음 재생
+        audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.TurnStart);
+        audioPlayer.Play();
         // UI 글씨 알파 감소
         while (t > 0)
         {

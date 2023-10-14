@@ -48,7 +48,6 @@ public partial class PacketManager
         Debug.Log($"미니언 소환 전달 받기 성공, punID {punID}");
         // 데이터가 존재하기에, 소환 이벤트 예약
         GAME.IGM.AddAction(MakeEnemyData(punID, fieldIdx, cardID, currAtt, currHp, currCost));
-
         IEnumerator MakeEnemyData(int punID, int fieldIdx, int cardID, int currAtt, int currHp, int currCost)
         {
             // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
@@ -89,15 +88,20 @@ public partial class PacketManager
         int attackerID = (int)data[0];
         int targetID = (int)data[1];
 
-        // 공격자와 타겟 찾기
-        IBody attacker = GAME.IGM.allIBody.Find(x => x.PunId == attackerID);
-        IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetID);
-
-        // 현재 이벤트는 미니언 공격을 기준으로 하기에 , CardField컴포넌트 찾기
-        CardField minion = attacker.TR.GetComponent<CardField>();
-
+        Debug.Log($"적 미니언 공격 이벤트 받음, attPun : {attackerID}, targetPun : {targetID}");
         // 그리고 공격 이벤트 예약
-        GAME.IGM.AddAction(minion.AttackCo(attacker, target));
+        GAME.IGM.AddAction(DelayedReceivedMinionAtt(attackerID, targetID));
+        IEnumerator DelayedReceivedMinionAtt(int attackerID, int targetID)
+        {
+            // 공격자와 타겟 찾기
+            IBody attacker = GAME.IGM.allIBody.Find(x => x.PunId == attackerID);
+            IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetID);
+
+            // 현재 이벤트는 미니언 공격을 기준으로 하기에 , CardField컴포넌트 찾기
+            CardField minion = attacker.TR.GetComponent<CardField>();
+            yield return GAME.IGM.StartCoroutine(minion.AttackCo(attacker , target)); ;
+        }
+        
     }
     #endregion
 
@@ -199,7 +203,8 @@ public partial class PacketManager
         {
             yield return null;
             IBody deadMan = GAME.IGM.allIBody.Find(x=>x.PunId == punID);
-
+            if (deadMan == null) { Debug.Log("deadMan is Null"); }
+            Debug.Log("DEAD MAN TR : "+deadMan.TR);
             // 현재 미니언만 죽을떄 이벤트 실행이 가능하기에
             deadMan.TR.GetComponent<CardField>().waitDeathRattleEnd = true;
         }

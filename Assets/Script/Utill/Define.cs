@@ -15,7 +15,7 @@ public class Define
     // 직업 종류
     public enum classType { HJ, HZ, KH, Netural }
     // 카드 희귀도
-    public enum cardRarity { normal, rare , legend}
+    public enum cardRarity { normal, rare, legend }
     #endregion
 
     #region 카드 이벤트 데이터 BASE
@@ -24,16 +24,13 @@ public class Define
     public enum evtArea  // 유저가 직접 선택할시엔 포스트프로세싱의 영역이 되며, 자동이나 랜덤 실행시엔 범위가 되어줄 영역
     { Enemy, Player, All } //None, All, enemy, enemyHero, allEnemy, player, playerHero, allPlayer, 
     public enum evtFaction // 위 이벤트범위에서 좀 더 상세한 카테고리범위 역할 : 그래서 미니언이냐 영웅이냐 등등..
-    { All, Minion, Hero,   }
-    public enum evtType { buff, attack, restore, utill , } // 어떤 이벤트인지 : 버프효과, 공격, 회복, 드로우 등
-
+    { All, Minion, Hero, }
+    public enum evtType { buff, attack, restore, utill, } // 어떤 이벤트인지 : 버프효과, 공격, 회복, 드로우 등
+    public enum fxType { None, Projectile , Heal, Buff  }
     // 위의 evtType별로 사용할 변수들
 
     #region 공격 이벤트 데이터 프로퍼티
     public enum attType { Damage, Kill } // 공격이벤트 타입 : 일반공격 , 죽이기
-    public enum attFX // 재생할 효과 프리팹
-    { None, arrow, }
-
     #endregion
 
     #region 드로우 이벤트 데이터 프로퍼티
@@ -44,7 +41,6 @@ public class Define
     #region 버프 이벤트 데이터 프로퍼티
     public enum buffAutoMode { autoOnEvtArea,  BothSide ,randomOnEvtArea ,someID } // 자동실행, 유저가 선택, 이벤트범위에서 랜덤타겟
     public enum buffType { att, hp, atthp, cost } // 어떤 버프 이벤트인지
-    public enum buffFX { None, }
     #endregion
 
     #region 회복 이벤트 데이터 프로퍼티
@@ -82,4 +78,19 @@ public class Define
     #endregion
 
     public enum Sound { None, Pick, Click, Back , Ready ,Summon}
+
+    public enum IGMsound {
+    
+        Draw , // 덱에서 뽑히는 카드
+        Pick , Cancel, // 핸드카드를 드래깅 시작, 드래깅 엔드
+        Summon,// 미니언 필드 소환
+        Click , // 기본 클릭음 + 공격 가능한 미니언 클릭시
+        Punch , // 미니언이나 영웅이 근접공격을 수행후
+        Popup, // 상대가 카드를 낼떄, 팝업창 소리음 
+        TurnStart, ClickTurnBtn // 내턴이 시작될떄마다와 턴 버튼 클릭시 효과음
+        // Enum으로 분류할 필요가 없는것들 (언제나 고정된곳에서 입력받을시 재생만 하면되는것들)
+        // 게임승리|종료시 나오는 효과음
+        // 턴종료 버튼클릭음 | 턴 시작시 효과음
+        // 선택타겟팅 대기음
+    }
 }

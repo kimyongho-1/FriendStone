@@ -12,12 +12,12 @@ public class TargetingCamera : MonoBehaviour
     public LineRenderer LR;
     public SpriteRenderer Arrow;
     public Image transitionPanel;
+    public AudioSource targetingSound;
     private void Awake()
     {
         // 타겟팅 카메라 참조
         GAME.IGM.TC = this;
         LR.positionCount = 0;
-        LR.gameObject.SetActive(false);
     }
     public float dist = 7;
     public float ShakeDuration = 2;  // ShakeDuration은 총 회전할 시간
@@ -50,6 +50,7 @@ public class TargetingCamera : MonoBehaviour
         // 라인렌더러 실행
         LR.gameObject.SetActive(true);
         LR.positionCount = 6;
+        targetingSound.Play();
         while (LR.positionCount > 0)
         {
             // 현재 유저의 커서포인트 월드포지션
@@ -81,7 +82,7 @@ public class TargetingCamera : MonoBehaviour
             Arrow.transform.localRotation = Quaternion.Euler(0, 0, angle - 90f);
             Arrow.transform.localPosition = CursorPos - oneGrid * .5f;
         }
-
+        targetingSound.Stop();
         LR.gameObject.SetActive(false);
     }
 
