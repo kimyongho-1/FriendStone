@@ -15,13 +15,13 @@ MonoBehaviour:
   active: 1
   postExposure:
     m_OverrideState: 1
-    m_Value: 0.78
+    m_Value: 0
   contrast:
     m_OverrideState: 1
-    m_Value: -10
+    m_Value: -5
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
+    m_Value: {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 1}
   hueShift:
     m_OverrideState: 0
     m_Value: 0
@@ -46,16 +46,16 @@ MonoBehaviour:
     m_Value: {r: 0, g: 0, b: 0, a: 1}
   center:
     m_OverrideState: 1
-    m_Value: {x: -0.13, y: 0.5}
+    m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   smoothness:
     m_OverrideState: 1
     m_Value: 1
   rounded:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,6 +74,54 @@ MonoBehaviour:
   - {fileID: 9123774654150242463}
   - {fileID: 4351849186023216879}
   - {fileID: 7334947381413064490}
+  - {fileID: 4236044042899629620}
+--- !u!114 &4236044042899629620
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2db86121404754db890f4c8dfe81b2, type: 3}
+  m_Name: Bloom
+  m_EditorClassIdentifier: 
+  active: 1
+  skipIterations:
+    m_OverrideState: 0
+    m_Value: 1
+  threshold:
+    m_OverrideState: 1
+    m_Value: 0.9
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.5
+  scatter:
+    m_OverrideState: 0
+    m_Value: 0.7
+  clamp:
+    m_OverrideState: 0
+    m_Value: 65472
+  tint:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 0.55344284, b: 0, a: 1}
+  highQualityFiltering:
+    m_OverrideState: 0
+    m_Value: 0
+  downscale:
+    m_OverrideState: 0
+    m_Value: 0
+  maxIterations:
+    m_OverrideState: 0
+    m_Value: 6
+  dirtTexture:
+    m_OverrideState: 0
+    m_Value: {fileID: 0}
+    dimension: 1
+  dirtIntensity:
+    m_OverrideState: 0
+    m_Value: 0
 --- !u!114 &4351849186023216879
 MonoBehaviour:
   m_ObjectHideFlags: 3

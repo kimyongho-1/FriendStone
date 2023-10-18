@@ -21,6 +21,7 @@ public class PostCamera : MonoBehaviour
     UniversalAdditionalCameraData camData;
     Vignette Vig;
     ColorAdjustments ColorAdj;
+    Bloom Blooms;
     LayerEnums layerBits;
     private void Awake()
     {
@@ -29,11 +30,14 @@ public class PostCamera : MonoBehaviour
         mainCam = Camera.main;
         Vol.profile.TryGet<Vignette>(out Vig);
         Vol.profile.TryGet<ColorAdjustments>(out ColorAdj);
+        Vol.profile.TryGet<Bloom>(out Blooms);
         layerBits = LayerEnums.ally | LayerEnums.foe;
         //cam.cullingMask = (int)layerBits;
 
         mainCam.cullingMask = ~0;
         mainCam.TryGetComponent<UniversalAdditionalCameraData>(out camData);
+        camData.renderPostProcessing = true; 
+
         camData.renderPostProcessing = false;
         this.gameObject.SetActive(false);
     }
@@ -75,6 +79,26 @@ public class PostCamera : MonoBehaviour
         camData.renderPostProcessing = false;
         this.gameObject.SetActive(false);
     }
+
+    public void ReadyOutro()
+    {
+        camData.renderPostProcessing = true;
+        Blooms.active = ColorAdj.active = false;
+        Vig.active = true;
+    }
+    public IEnumerator Outro()
+    {
+       
+        float t = 0;
+        while (t < 1f)
+        { 
+            t += Time.deltaTime * 0.3f;
+            Vig.intensity.value = Mathf.Lerp(0,0.65f,t);
+            yield return null;
+        }
+
+    }
+  
 }
 // & and
 // | or

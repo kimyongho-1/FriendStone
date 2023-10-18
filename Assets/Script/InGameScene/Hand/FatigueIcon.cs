@@ -9,17 +9,12 @@ public class FatigueIcon : MonoBehaviour
     public TextMeshPro ownerTmp, infoTmp, dmgTmp;
     public GameObject bonkPivot;
     public SpriteRenderer bonk;
-    public bool resume = true;
     AudioSource sound;
 
     private void Awake()
     {
         sound = GetComponent<AudioSource>();    
     }
-
-    // 탈진 코루틴의 이후 진행할지 여부
-    public void ChangeResume()
-    { resume = false; }
 
     // 국자가 머리에 닿을떄 카메라 흔들기
     public void HeadAche()
@@ -48,8 +43,9 @@ public class FatigueIcon : MonoBehaviour
     // 탈진 이벤트 코루틴
     public IEnumerator DeckExhausted(bool PlayerFatigue, int dmg)
     {
+        bonkAnim.Play("Idle",0);
+        yield return null;
         dmgTmp.transform.localScale = Vector3.zero;
-        resume = true;
         // 탈진 이벤트 시작
         // 탈진피해량을 tmp에 적용 
         ownerTmp.text = $"{((PlayerFatigue == true) ? "당신":"상대")}";
@@ -75,11 +71,11 @@ public class FatigueIcon : MonoBehaviour
             yield return null;
         }
 
-
-
+        
         #region 피해계산과 피해텍스트 표시
         // 애니메이터에서 재생 및 텍스트 표시
         dmgTmp.text = "-"+dmg.ToString();
+        Debug.Log($"현재 탈진 타겟은 나인가 : {PlayerFatigue}");
         if (PlayerFatigue)
         {
             dmgTmp.transform.localPosition = new Vector3(1.8f, -0.7f, 0);
@@ -90,8 +86,7 @@ public class FatigueIcon : MonoBehaviour
             dmgTmp.transform.localPosition = new Vector3(1.8f, 0.7f, 0);
             bonkAnim.Play("EnemyBonk", 0);
         }
-        // 유저에게 보여지도록 잠시 대기 (resume은 bonkPivot 애니메이터에서 true로 설정 )
-        yield return new WaitUntil(() => (resume == false));
+        yield return new WaitForSeconds(2.1f);
         // 피해 계산
         if (PlayerFatigue == true)
         {
@@ -118,7 +113,6 @@ public class FatigueIcon : MonoBehaviour
                 Vector3.Lerp(Center, Dest, t);
             yield return null;
         }
-
     }
    
 }

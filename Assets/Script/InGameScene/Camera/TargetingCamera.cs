@@ -198,7 +198,6 @@ public class TargetingCamera : MonoBehaviour
 
             yield return null;
         }
-        GAME.IGM.Post.ExitMaskingArea();
         GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
         yield break;
     }

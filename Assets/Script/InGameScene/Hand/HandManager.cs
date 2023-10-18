@@ -96,7 +96,7 @@ public class HandManager : MonoBehaviour
     }
 
     public int CreatePunNumber()
-    { return (Photon.Pun.PhotonNetwork.IsMasterClient ? 1000 : 2000) + punConsist++; }
+    { return (Photon.Pun.PhotonNetwork.IsMasterClient ? 1002 : 2002) + punConsist++; }
 
     // 핸드가 이미 10장일떄 카드를 드로우시, 해당 드로우카드 소멸 이벤트
     public IEnumerator HandOverFlow(int cardIdNum, CardHand ch)

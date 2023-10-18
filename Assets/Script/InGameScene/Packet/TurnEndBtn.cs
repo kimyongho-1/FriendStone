@@ -88,9 +88,15 @@ public class TurnEndBtn : MonoBehaviour
             infoTmp.color = c;
             yield return null;
         }
-        // 턴 시작 효과음 재생
-        audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.TurnStart);
-        audioPlayer.Play();
+
+        // 내 턴 시작이면, 내 턴 시작음 재생
+        if (isMyTurn)
+        {
+            // 턴 시작 효과음 재생
+            audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.TurnStart);
+            audioPlayer.Play();
+        }
+        
         // UI 글씨 알파 감소
         while (t > 0)
         {
@@ -117,6 +123,7 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 내 턴 시작 알림 텍스트 시작
         StartCoroutine(ShowTurnMSG(true));
+        // 턴종료 버튼 머테리얼 색상 내 턴일떄로 초기화
         blinkMat.SetColor("_Color", new Color(0, 1, 0, 1));
         for (int i = 0; i < GAME.IGM.Spawn.playerMinions.Count; i++)
         {
@@ -129,13 +136,12 @@ public class TurnEndBtn : MonoBehaviour
         // 현재 나의 턴 시작, 마나 초기화 (최대치는 10, 서로의 턴이 지날떄마다 하나씩 최대 마나 증가 like 하스스톤)
         GAME.IGM.Hero.Player.MP = Mathf.Min(10, GAME.IGM.GameTurn);
 
-
         // 나 드로우 시작
         yield return StartCoroutine(GAME.IGM.Hand.CardDrawing(1));
-        // 턴종료 버튼 누를수 있도록 레이 활성화
-        Col.enabled = true;
         // 내 턴 시작
         GAME.IGM.Packet.isMyTurn = true;
+        // 턴종료 버튼 누를수 있도록 레이 활성화
+        Col.enabled = true;
         // 턴 타이머 시작
         turnTimer = UserTurnTimer();
         StartCoroutine(turnTimer);

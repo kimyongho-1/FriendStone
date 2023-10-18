@@ -44,6 +44,7 @@ public class HeroSkill : MonoBehaviour, IBody
         OriginPos = this.transform.position;
         GAME.IGM.allIBody.Add(this);
         gameObject.layer = LayerMask.NameToLayer("Default");
+        
     }
 
 

@@ -94,11 +94,16 @@ public partial class PacketManager
         IEnumerator DelayedReceivedMinionAtt(int attackerID, int targetID)
         {
             // 공격자와 타겟 찾기
-            IBody attacker = GAME.IGM.allIBody.Find(x => x.PunId == attackerID);
+            IBody attacker = GAME.IGM.allIBody.Find(x => x.PunId == attackerID && x.objType != ObjType.Hero);
             IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetID);
-
+            
             // 현재 이벤트는 미니언 공격을 기준으로 하기에 , CardField컴포넌트 찾기
             CardField minion = attacker.TR.GetComponent<CardField>();
+            Debug.Log(attacker.TR);
+            Debug.Log(attacker.TR.name);
+            Debug.Log(attacker.TR.GetComponent<CardField>());
+            Debug.Log(attacker.objType);
+            Debug.Log($"att : {attacker.PunId}, target : {target.PunId}");
             yield return GAME.IGM.StartCoroutine(minion.AttackCo(attacker , target)); ;
         }
         

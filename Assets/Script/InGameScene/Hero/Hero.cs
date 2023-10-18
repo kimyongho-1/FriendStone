@@ -67,11 +67,14 @@ public class Hero : MonoBehaviour, IBody
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
         Attackable = true;
-        att = 0; hp = 30;
+        att = 0;// hp = 30;
+        HP = 10;
         GAME.IGM.allIBody.Add(this);
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)
         {
+            // 내 영웅이 죽을시, 게임엔딩 이벤트 시작 [ 나의 승패여부 , 내가 전파해야하는지 ]
+            onDead = GAME.IGM.EndingGame(false, true);
             // 감정표현 자연감소 시키는 코루틴, 게임 끝날떄까지 계속 실행 ( 감정표현 전송 남발사용시에, 잠시 사용을 잠그는 코루틴 실행)
             GAME.IGM.StartCoroutine(ReduceEmoCount());
 
@@ -105,6 +108,7 @@ public class Hero : MonoBehaviour, IBody
         }
         else
         {
+            onDead = GAME.IGM.EndingGame(true, true);
             Select.gameObject.SetActive(false);
             Reply.gameObject.SetActive(true);
             Speech.gameObject.SetActive(false);

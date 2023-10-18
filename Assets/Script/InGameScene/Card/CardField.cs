@@ -402,12 +402,12 @@ public class CardField : CardEle,IBody
 
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
-        float t = 0;
+        float t = Time.deltaTime;
         Vector3 start = attacker.Pos;
         Vector3 dest = target.Pos;
         while (t < 1f)
         {
-            t += Time.deltaTime * 1f;
+            t = 1.25f * t;
             this.transform.position = Vector3.Lerp(start, dest, t);
             yield return null;
         }
@@ -428,7 +428,7 @@ public class CardField : CardEle,IBody
         t = 0 ;
         while (t < 1f)
         {
-            t += Time.deltaTime * 1f;
+            t += Time.deltaTime * 2f;
             this.transform.localPosition = Vector3.Lerp( dest , OriginPos, t);
             yield return null;
         }

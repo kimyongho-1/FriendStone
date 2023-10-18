@@ -1,6 +1,8 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using static Define;
@@ -38,19 +40,70 @@ public class InGameManager : MonoBehaviour
     public void Awake()
     {
         GAME.IGM = this;
+        #region audio클립 모아두기 
+        // 인게임씬에서 자주 사용할 클립들은, 매니저내부에서 관리하여 사용하기로 결정
         audioPlayer = GetComponent<AudioSource>();
-        sceneAudio.Add(Define.IGMsound.Draw , Resources.Load<AudioClip>("Sound/InGame/Managers/Draw"));
-        sceneAudio.Add(Define.IGMsound.Pick , Resources.Load<AudioClip>("Sound/InGame/Managers/Pick"));
-        sceneAudio.Add(Define.IGMsound.Popup , Resources.Load<AudioClip>("Sound/InGame/Managers/Popup"));
+        sceneAudio.Add(Define.IGMsound.Draw, Resources.Load<AudioClip>("Sound/InGame/Managers/Draw"));
+        sceneAudio.Add(Define.IGMsound.Pick, Resources.Load<AudioClip>("Sound/InGame/Managers/Pick"));
+        sceneAudio.Add(Define.IGMsound.Popup, Resources.Load<AudioClip>("Sound/InGame/Managers/Popup"));
         sceneAudio.Add(Define.IGMsound.Punch, Resources.Load<AudioClip>("Sound/InGame/Managers/Punch"));
-        sceneAudio.Add(Define.IGMsound.Summon , Resources.Load<AudioClip>("Sound/InGame/Managers/Summon"));
+        sceneAudio.Add(Define.IGMsound.Summon, Resources.Load<AudioClip>("Sound/InGame/Managers/Summon"));
         sceneAudio.Add(Define.IGMsound.Click, Resources.Load<AudioClip>("Sound/InGame/Managers/Click"));
         sceneAudio.Add(Define.IGMsound.Cancel, Resources.Load<AudioClip>("Sound/InGame/Managers/Cancel"));
-        sceneAudio.Add(Define.IGMsound.ClickTurnBtn , Resources.Load<AudioClip>("Sound/InGame/Managers/ClickTurnBtn"));
-        sceneAudio.Add(Define.IGMsound.TurnStart , Resources.Load<AudioClip>("Sound/InGame/Managers/TurnStart"));
+        sceneAudio.Add(Define.IGMsound.ClickTurnBtn, Resources.Load<AudioClip>("Sound/InGame/Managers/ClickTurnBtn"));
+        sceneAudio.Add(Define.IGMsound.TurnStart, Resources.Load<AudioClip>("Sound/InGame/Managers/TurnStart"));
+        #endregion
+
     }
+
+    // 타 컴포넌트에서, 주로 사용할 클립소스를 사용할떄, 매니저에게서 가져와 사용하기
     public AudioClip GetClip(Define.IGMsound s) { return sceneAudio[s]; }
+
+    public IEnumerator EndingGame(bool playerWin, bool senderIsMine) // 내가 이겼는지, 내가 상대방에게 결과를 전파해야하는지
+    {
+        // 내가 먼저 게임의 결과를 본 사람이라면, 상대방에게 동일한 결과를 전파
+        if (senderIsMine)
+        {
+            // 상대방에게 결과를 전송하기
+            Packet.SendGameEnd(playerWin);
+        }
+        // 상대방에게 이벤트를 전파 받아 실행하는거라면 생략(먼저 받아 실행중일테니)
+        else
+        { yield break; }
+
+        Turn.StopAllCoroutines();
+        // 재생할 승패 클립 준비
+        GRB.ReloadClip(playerWin);
+        GRB.resultTmp.text = (playerWin) ? "당신의 승리" : "당신의 패배";
+        GRB.resultSr.sprite = Hero.Player.playerImg.sprite;
+
+        // 모든 오디오 소스를 찾아 모두 재생 중지
+        AudioSource[] sources = FindObjectsOfType<AudioSource>();
+        for (int i = 0; i < sources.Length; i++)
+        { sources[i].Stop(); }
+
+        yield return new WaitForSeconds(1f);
+
+        // 아웃트로 후처리 애니메이션 준비 및 재생
+        Post.ReadyOutro();
+        // 게임 끝낼것이기에, 예약된 큐의 코루틴들 모두 비우기
+        Battle.ActionQueue.Clear();
+        Battle.DeathRattleQueue.Clear();
+        Post.gameObject.SetActive(true);
+        StartCoroutine(Post.Outro());
+        yield return new WaitForSeconds(0.5f);
+        // 게임결과 보드판 켜주기
+        GRB.gameObject.SetActive(true);
+        GRB.Play();
+
+
+        PhotonNetwork.Disconnect();
+        Destroy(GAME.Manager.GetComponent<PhotonView>());
+        GAME.Manager.AddComponent<PhotonView>();
+    }
+
     #region 참조
+    public GameResultBoard GRB { get; set; }
     public FindEvtHolder FindEvt { get; set; }
     public HeroManager Hero { get; set; }
     public HandManager Hand { get; set; }

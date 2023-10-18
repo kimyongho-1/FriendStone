@@ -28,11 +28,11 @@ public partial class PacketManager
     const byte RestoreEvt = 16; // 치료이벤트
     const byte FatigueEvt = 17; // 상대가 덱에 카드가 없어 피해입는 탈진 이벤트
     const byte OverDrawEvt = 18; // 상대가 카드가 10장인데 추가 드로우시, 뽑는 카드 없애는 이벤트
-   
+    const byte GameEnd = 19; // 게임결과를 상대방이 먼저 볼경우, 나에게 전파하기에 받아서 동기화
     public void InitStateDictionary()
     {
         dic.Add(UserInfo, ReceivedUserInfo);
-        dic.Add(StartIntro, (object[] o)=> { GAME.IGM.AddAction(GAME.IGM.TC.StartIntro()); } );  // 양 플레이어 준비될시, 인트로 애니메이션 실행
+        dic.Add(StartIntro, (object[] o)=> { GAME.IGM.AddAction(GAME.IGM.TC.StartIntro()); }); 
         dic.Add(InitDraw, (object[] o) => { GAME.IGM.AddAction(GAME.IGM.Hand.CardDrawing(4)); });
         dic.Add(IsOffensive, ReceivedOffensiveResult);
         dic.Add( UserDraw , ReceivedOtherDraw );
@@ -47,6 +47,7 @@ public partial class PacketManager
         dic.Add(RestoreEvt, ReceivedRestoreEvt );
         dic.Add(FatigueEvt, ReceivedFatigueEvt);
         dic.Add(OverDrawEvt, ReceivedOverDrawEvt);
+        dic.Add(GameEnd, GameEndStart);
     }
 
     // 내 턴 시작 전송
@@ -388,4 +389,12 @@ public partial class PacketManager
     }
     #endregion
 
+    #region 게임엔딩 시작
+    public void SendGameEnd(bool isPlayerWin)
+    { PhotonNetwork.RaiseEvent(GameEnd, new object[] { isPlayerWin }, Other, SendOptions.SendReliable); }
+    public void GameEndStart(object[] data)
+    {
+        GAME.IGM.AddAction(GAME.IGM.EndingGame((bool)data[0], false));
+    }
+    #endregion
 }
