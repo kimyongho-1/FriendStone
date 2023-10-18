@@ -12,11 +12,13 @@ public class SelectedDeckIcon : MonoBehaviour
     public Image classIcon, transitionPanel;
     public DeckData currDeck;
     PlayCanvas playCanvas;
+    AudioSource audioPlayer;
     public RotationBar rotate;
     private void OnDisable()
     {
         this.gameObject.SetActive(false);
         cancelBtn.gameObject.SetActive(false);
+        
     }
 
     private void Awake()
@@ -28,11 +30,13 @@ public class SelectedDeckIcon : MonoBehaviour
         GAME.Manager.UM.BindTMPInteraction(playBtn, Color.green, Color.magenta, StartGame);
         GAME.Manager.UM.BindTMPInteraction(cancelBtn, Color.green, Color.magenta,CancelMatching);
         loadingPopup.gameObject.SetActive(false);
+        audioPlayer = playCanvas.audioPlayer;
     }
 
     // 유저가 자신의 덱을 클릭시, 이 팝업창을 호출 및 선택덱에 맞게 내용 모두 초기화
     public void OpenSelectedDeckIcon(DeckData data)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.HotSelect);
         int cardCount = data.cards.Values.Sum();
         // 선택한 덱정보로 초기화
         currDeck = data; 
@@ -51,6 +55,7 @@ public class SelectedDeckIcon : MonoBehaviour
     // 편집버튼 클릭시 자신의 덱을 편집 시작
     public void StartEditDeck(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
         // 편집캔버스로 전환
         GAME.Manager.LM.edit.GetComponent<EditCanvas>().StartEditMode(currDeck);
         GAME.Manager.StartCoroutine(GAME.Manager.LM.CanvasTransition(playCanvas, GAME.Manager.LM.edit));
@@ -59,6 +64,7 @@ public class SelectedDeckIcon : MonoBehaviour
     // 게임시작 누를시 랜덤매칭 시작
     public void StartGame(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.HotSelect);
         // 사용덱 확정
         GAME.Manager.RM.GameDeck =currDeck;
 
@@ -87,6 +93,7 @@ public class SelectedDeckIcon : MonoBehaviour
     }
     public void CancelMatching(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Back);
         // 만약 랜덤매칭이 잡혀버렸다면, 취소
         if (!GAME.Manager.PM.CanCancel) { return; }
         // 매칭 잡혓을시 stop변수 true로 변경되기에 취소
@@ -101,6 +108,7 @@ public class SelectedDeckIcon : MonoBehaviour
 
     public void BackBtn(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Back);
         this.gameObject.SetActive(false);
     }
 }

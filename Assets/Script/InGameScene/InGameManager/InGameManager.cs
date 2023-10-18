@@ -59,6 +59,7 @@ public class InGameManager : MonoBehaviour
     // 타 컴포넌트에서, 주로 사용할 클립소스를 사용할떄, 매니저에게서 가져와 사용하기
     public AudioClip GetClip(Define.IGMsound s) { return sceneAudio[s]; }
 
+    // 영웅의 체력이 0 이하로 떨어질시 게임종료
     public IEnumerator EndingGame(bool playerWin, bool senderIsMine) // 내가 이겼는지, 내가 상대방에게 결과를 전파해야하는지
     {
         // 내가 먼저 게임의 결과를 본 사람이라면, 상대방에게 동일한 결과를 전파

@@ -11,8 +11,10 @@ public class SampleCardIcon : MonoBehaviour
     public SampleCardIcon EnLargedCard;
     public DeckViewport deckView;
     public CardData data;
+    AudioSource audioPlayer;
     private void Awake()
     {
+        audioPlayer = deckView.audioPlayer;
         // 확대카드만 사용
         if (CancelBtn != null)
         {
@@ -92,6 +94,8 @@ public class SampleCardIcon : MonoBehaviour
             || deckView.currDeck.GetCount() == 20)
         { return; } // 덱 삽입은 강제 취소
 
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
+
         // 현재 편집중인 덱을 보여주는 덱 뷰포트에 현재 카드ID 보내기
         deckView.AddCard(data, this);
 
@@ -102,6 +106,7 @@ public class SampleCardIcon : MonoBehaviour
     // 우클릭 : 카드확대기능 => 확대용 카드 오브젝트 활성화 및 데이터 대입
     public void CardRightClicked(GameObject go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
         // 현재 덱아이콘이 참조중인 카드데이터 그대로 복붙
         EnLargedCard.cardName.text = cardName.text;
         EnLargedCard.cardDescription.text = cardDescription.text;

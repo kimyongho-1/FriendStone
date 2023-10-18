@@ -9,6 +9,7 @@ public class OptionCanvas :LobbyPopup
     public TextMeshProUGUI backBtn;
     public TMP_Dropdown td;
     public Scrollbar Vol, FX, BGM;
+    AudioSource audioPlayer;
     private void Awake()
     {
         GAME.Manager.UM.BindTMPInteraction(backBtn, Color.green, Color.red, BackBtn);
@@ -17,7 +18,7 @@ public class OptionCanvas :LobbyPopup
         Vol.onValueChanged.AddListener(GAME.Manager.SM.ChangedVol);
         FX.onValueChanged.AddListener(GAME.Manager.SM.FXVol);
         BGM.onValueChanged.AddListener(GAME.Manager.SM.BGMVol);
-        
+        audioPlayer = GetComponent<AudioSource>();
     }
     
 
@@ -29,6 +30,7 @@ public class OptionCanvas :LobbyPopup
     // 뒤로가기 누를시
     public void BackBtn(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Back);
         // 이전 팝업창으로
         GAME.Manager.StartCoroutine(GAME.Manager.LM.CanvasTransition(this));
     }

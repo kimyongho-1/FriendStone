@@ -79,6 +79,12 @@ public class Define
 
     public enum Sound { None, Pick, Click, Back , Ready ,Summon}
 
+    public enum OtherSound
+    {
+        Enter, Back,
+        Flip, Info, HotSelect
+    }
+
     public enum IGMsound {
     
         Draw , // µ¦¿¡¼­ »ÌÈ÷´Â Ä«µå

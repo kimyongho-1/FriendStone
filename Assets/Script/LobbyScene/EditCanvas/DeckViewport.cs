@@ -19,7 +19,7 @@ public class DeckViewport : MonoBehaviour
     public DeckData currDeck; // 현재 편집중인 덱데이타 참조변수1
     public List<UserCardIcon> visualList = new List<UserCardIcon>(); // 보이는 프리팹 리스트
     public SampleCardIcon EnLargedCard;
-
+    public AudioSource audioPlayer;
     private void Awake()
     {
         GAME.Manager.UM.BindUIPopup(
@@ -27,6 +27,7 @@ public class DeckViewport : MonoBehaviour
             0.3f, new Vector3(75f,170f,0),Define.PopupScale.Small, 
             "오른쪽 이름을 클릭시\n" +
             "당신의 덱이름을 바꿀수가 있습니다");
+        audioPlayer = GetComponent<AudioSource>();
     }
 
     public void OnDisable()

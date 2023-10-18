@@ -12,6 +12,7 @@ public class DeckIcon : MonoBehaviour
     public Image classIcon;
     DeckData ownDeckData;
     PlayCanvas playCanvas;
+    AudioSource audioPlayer;
     private void Awake()
     {
         // 각종 버튼 마우스 이벤트 연결
@@ -43,7 +44,8 @@ public class DeckIcon : MonoBehaviour
             GAME.Manager.UM.BindUIPopup(emptyDeck, 0.75f, new Vector3(-183f, height, 0),
             Define.PopupScale.Small, "<color=red>클릭시<color=black>\n\n캐릭터 선택창으로 이동합니다");
         }
-        
+
+        audioPlayer = playCanvas.audioPlayer;
     }
 
     // PlayCanvas가 활성화될때마다, 각각의 덱아이콘이 참조할 덱 정보를 공유
@@ -79,6 +81,7 @@ public class DeckIcon : MonoBehaviour
     // 유저가 자신의 덱을 클릭시, 게임시작할지 덱을편집할지 선택하는 팝업창 호출
     public void ClickedOnUserDeck(GameObject go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
         // 해당 덱으로 게임시작을 할지, 편집할지 선택하는 팝업창 호출
         playCanvas.selectedDeckIcon.OpenSelectedDeckIcon(ownDeckData);
     }

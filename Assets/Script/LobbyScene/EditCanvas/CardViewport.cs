@@ -18,10 +18,11 @@ public class CardViewport : MonoBehaviour
     List<CardData> HzList = new List<CardData>();
     List<CardData> KhList = new List<CardData>();
     int page;
+    AudioSource audioPlayer;
     private void Awake()
     {
         // 현재 모든 버튼 역할을 TMPUGUI글자텍스트로 진행중 + 클릭시 실행할 이벤트함수 연결
-        GAME.Manager.UM.BindTMPInteraction(LeftBtn, Color.green, Color.gray,LeftBtnClicked );
+        GAME.Manager.UM.BindTMPInteraction(LeftBtn, Color.green, Color.gray, LeftBtnClicked );
         GAME.Manager.UM.BindTMPInteraction(RightBtn, Color.green, Color.gray, RightBtnClicked);
         GAME.Manager.UM.BindTMPInteraction(classBtn, Color.green, Color.red, ShowClassCards);
         GAME.Manager.UM.BindTMPInteraction(neturalBtn, Color.green, Color.red, ShowNeutralCards);
@@ -42,6 +43,7 @@ public class CardViewport : MonoBehaviour
         GAME.Manager.UM.BindUIPopup(
             deleteBtn.gameObject, 0.25f, new Vector3(131f, -123f, 0),
             Define.PopupScale.Medium, "클릭시\n현재 덱을 <color=red>완전히 삭제합니다.");
+        audioPlayer = GetComponent<AudioSource>();
     }
     // 사용할 데이터 파일들 준비
     public void ReadyData()
@@ -114,10 +116,13 @@ public class CardViewport : MonoBehaviour
         switch (type)
         {
             case Define.classType.HJ:
+                classBtn.text = "HJ 카드";
                 classList = HjList; break;
             case Define.classType.HZ:
+                classBtn.text = "HZ 카드";
                 classList = HzList; break;
             case Define.classType.KH:
+                classBtn.text = "KH 카드";
                 classList = KhList; break;
         }
 
@@ -132,7 +137,7 @@ public class CardViewport : MonoBehaviour
     {
         // 레이가 꺼진 상태면, 현재 해당 진영카드 임을 확인
         if (go.raycastTarget == false) { return; }
-        
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
         // 현재 진영임을 알려주기위해 레이끄기
         go.raycastTarget = false;
         go.color = Color.red;
@@ -148,6 +153,7 @@ public class CardViewport : MonoBehaviour
     {
         // 레이가 꺼진 상태면, 현재 해당 진영카드 임을 확인
         if (go.raycastTarget == false) { return; }
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
         // 현재 진영임을 알려주기위해 레이끄기
         go.raycastTarget = false;
         classBtn.raycastTarget = true;
@@ -165,6 +171,7 @@ public class CardViewport : MonoBehaviour
         {
             return;
         }
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Flip);
 
         // 왼쪽을 눌렀다면 강제로 켜기
         RightBtn.gameObject.SetActive(true);
@@ -182,7 +189,7 @@ public class CardViewport : MonoBehaviour
         // 현재 선택된 진영 데이타를 페이지수로 구하기 (인덱스의 8 나누기)
         int maxPage = (classBtn.raycastTarget == false) ? CalculateMax(neturalList) : CalculateMax(classList);
         if (page >= maxPage) { return; }
-
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Flip);
         page++;
         // 오른쪽을 눌렀다면, 강제로 왼쪽 켜기
         LeftBtn.gameObject.SetActive(true);
@@ -196,6 +203,7 @@ public class CardViewport : MonoBehaviour
     // 덱제작페이지내에서 완료 버튼 클릭시 호출
     public void SaveDeckBtn(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Info);
         // 다시 이전 팝업창으로 캔버스화면 전환
         GAME.Manager.StartCoroutine(GAME.Manager.LM.CanvasTransition(GAME.Manager.LM.edit));
     }
@@ -203,6 +211,7 @@ public class CardViewport : MonoBehaviour
     // 덱 자체를 삭제 버튼을 클릭시 호출
     public void DeleteDeckBtn(TextMeshProUGUI go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Back);
         // php에서도 덱 삭제 진행
         GAME.Manager.StartCoroutine(GAME.Manager.NM.DeleteDeck(deckView.currDeck.deckName, deckView.currDeck.deckCode));
         // nm에서 관리하는 덱리스트에서도 제거

@@ -7,18 +7,15 @@ public class PlayCanvas : LobbyPopup
 {
     public TextMeshProUGUI  backBtn;
     public List<DeckIcon> userDeckIcons = new List<DeckIcon>();
-    public SelectedDeckIcon selectedDeckIcon;
+    public SelectedDeckIcon selectedDeckIcon; 
+    public AudioSource audioPlayer;
     private void Awake()
     {
         GAME.Manager.UM.BindTMPInteraction(backBtn, Color.yellow, Color.red, BackBtn);
 
         // 유저가 기존에 만들어둔 덱이 있는지 확인후 설정에 맞게 세팅.
         GAME.Manager.waitQueue.Enqueue(this.gameObject);
-
-        if (userDeckIcons.Count == 0)
-        { 
-            
-        }
+        audioPlayer = gameObject.GetComponent<AudioSource>();
     }
 
     // 활성화시마다 : 현재 유저의 덱에 맞게 프리팹 덱아이콘들 초기화
@@ -43,5 +40,8 @@ public class PlayCanvas : LobbyPopup
 
 
     public void BackBtn(TextMeshProUGUI go)
-    { StartCoroutine(GAME.Manager.LM.CanvasTransition(this )); }
+    {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Back);
+        StartCoroutine(GAME.Manager.LM.CanvasTransition(this ));
+    }
 }

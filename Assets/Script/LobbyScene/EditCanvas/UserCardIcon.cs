@@ -12,12 +12,14 @@ public class UserCardIcon : MonoBehaviour
     public CardData data;
     DeckViewport deckView;
     SampleCardIcon EnLargedCard;
+    AudioSource audioPlayer;
     private void Awake()
     {
         deckView = GetComponentInParent<DeckViewport>();
         GAME.Manager.UM.BindEvent(deleteBtn.gameObject, RemoveCard, Define.Mouse.ClickL);
         GAME.Manager.UM.BindEvent(this.gameObject, CallEnLargedCard, Define.Mouse.ClickR);
         EnLargedCard = deckView.EnLargedCard;
+        audioPlayer = deckView.audioPlayer;
     }
 
     // X버튼을 눌러 덱에서 카드 삭제
@@ -43,12 +45,14 @@ public class UserCardIcon : MonoBehaviour
             }
             deckView.cardCount.text = deckView.currDeck.GetCount().ToString() + "/20";
 
+            GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.HotSelect);
             // 마지막 삭제
             GameObject.Destroy(this.gameObject);
         }
         // 단순 갯수만 감소
         else
         {
+            GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Back);
             // 갯수 수정
             deckView.currDeck.cards[data] = count;
             deckView.cardCount.text = deckView.currDeck.GetCount().ToString()+"/20";
@@ -71,6 +75,7 @@ public class UserCardIcon : MonoBehaviour
     // 덱에 존재하는 유저 카드 아이콘 우클릭시 확대카드 실행
     public void CallEnLargedCard(GameObject go)
     {
+        GAME.Manager.LM.Play(ref audioPlayer, Define.OtherSound.Enter);
         // 현재 덱아이콘이 참조중인 카드데이터 그대로 복붙
         EnLargedCard.cardName.text = cardName.text;
         EnLargedCard.cardDescription.text = data.cardDescription;

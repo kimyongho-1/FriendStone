@@ -12,7 +12,8 @@ public class LoginCanvas : MonoBehaviour
     public Button loginBtn, accountBtn, createBtn, backBtn, acceptBtn;
     public TextMeshProUGUI WarningText;
     public System.Action CheckEnter;
-
+    public Dictionary<Define.OtherSound, AudioClip> sceneAudio = new Dictionary<Define.OtherSound, AudioClip>();
+    AudioSource audioPlayer;
     private void Awake()
     {
         GAME.Manager.LC = this;
@@ -30,7 +31,23 @@ public class LoginCanvas : MonoBehaviour
             Define.PopupScale.Medium, "<color=green>PW<color=black>\n당신이 로그인시 쓸 PW입니다.\n<color=red>공란포함 불가\n최대 12글자");
         GAME.Manager.UM.BindUIPopup(accountNickName.gameObject, 1f, new Vector3(-130f, 76f, 0),
             Define.PopupScale.Medium, "<color=green>닉네임<color=black>\n게임내에서, 상대방에게 보여질\n이름입니다.10~12글자가 최대입니다.");
-    }
+
+        #region audio클립 모아두기 
+        // 인게임씬에서 자주 사용할 클립들은, 매니저내부에서 관리하여 사용하기로 결정
+        audioPlayer = GetComponent<AudioSource>();
+        sceneAudio.Add(Define.OtherSound.Enter, Resources.Load<AudioClip>("Sound/LoginNLobby/Enter"));
+        sceneAudio.Add(Define.OtherSound.Back, Resources.Load<AudioClip>("Sound/LoginNLobby/Back"));
+        sceneAudio.Add(Define.OtherSound.Info, Resources.Load<AudioClip>("Sound/LoginNLobby/InfoSound"));
+        sceneAudio.Add(Define.OtherSound.HotSelect, Resources.Load<AudioClip>("Sound/LoginNLobby/HotSelect"));
+
+        #endregion
+    }  
+    // 타 컴포넌트에서, 주로 사용할 클립소스를 사용할떄, 매니저에게서 가져와 사용하기
+    public AudioClip GetClip(Define.OtherSound s) { return sceneAudio[s]; }
+
+    // 클립소스 참조와 재생 한번에
+    public void Play(ref AudioSource audio, Define.OtherSound s)
+    { audio.clip = GetClip(s); audio.Play(); }
     private void Update()
     {
         if (GAME.Manager.Evt == null) { return; }
@@ -42,66 +59,18 @@ public class LoginCanvas : MonoBehaviour
     // 로그인 버튼 클릭시
     public void OnClickedLogin()
     {
+        Play(ref audioPlayer, Define.OtherSound.Enter);
         // tab + enter 단축키 잠시 해제
         CheckEnter = null;
 
-        #region Temp Area
-
-        // 여기서부터 TEMP
-        StartCoroutine(Temp());
-        loginBtn.enabled = false;
-        IEnumerator Temp()
-        {
-            yield return GAME.Manager.StartCoroutine(GAME.Manager.PM.PunConnect());
-            yield return new WaitForSeconds(1f);
-            // TEST 버전 ,no php
-            GAME.Manager.NM.playerInfo = new PlayerInfo() { ID = "123", NickName = "test" };
-            GAME.Manager.RM.GameDeck = new DeckData();
-            int rand = UnityEngine.Random.Range(0, 2);
-            GAME.Manager.RM.GameDeck.ownerClass =
-                (rand == 0) ?
-                Define.classType.HJ :
-                Define.classType.HZ ;
-            for (int i = 33; i < 40; i++)
-            {
-                // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
-                Define.cardType type = GAME.Manager.RM.PathFinder.Dic[i].type;
-                string jsonFile = GAME.Manager.RM.PathFinder.Dic[i].GetJson();
-                CardData card = null;
-                // 확인된 카드타입으로, 실제 카드타입으로 클래스화
-                switch (type)
-                {
-                    case Define.cardType.minion:
-                        card = JsonConvert.DeserializeObject<MinionCardData>
-                    (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                        break;
-                    case Define.cardType.spell:
-                        card = JsonConvert.DeserializeObject<SpellCardData>
-                    (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                        break;
-                    case Define.cardType.weapon:
-                        card = JsonConvert.DeserializeObject<WeaponCardData>
-                    (jsonFile, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                        break;
-                    default: break;
-                }
-                GAME.Manager.RM.GameDeck.cards.Add(card, 1);
-
-            }
-         
-            // 랜덤매칭 시작
-            Photon.Pun.PhotonNetwork.JoinRandomRoom();
-
-        }
-
-        #endregion
         // 로그인 시도
-        // GAME.Manager.StartCoroutine(GAME.Manager.NM.TryLogin
-        //     (loginID.text, loginPW.text, this));
+        GAME.Manager.StartCoroutine(GAME.Manager.NM.TryLogin
+            (loginID.text, loginPW.text, this));
     }
     // 계정생성 버튼 클릭시
-    public void OnClickedOpenAccount() 
+    public void OnClickedOpenAccount()
     {
+        Play(ref audioPlayer, Define.OtherSound.Enter);
         // 버튼 상호작용과 패널 끄기 끄기
         accountBtn.interactable = false;
         LoginPanel.gameObject.SetActive(false);
@@ -129,6 +98,8 @@ public class LoginCanvas : MonoBehaviour
             "<color=red>ID<color=black> 또는 <color=red>PW<color=black>가\n유효하지 않습니다\n (띄어쓰기 포함불가)";
             WarningPanel.gameObject.SetActive(true);
             CheckEnter = PressKey;
+
+            Play(ref audioPlayer, Define.OtherSound.Back);
             return;
         }
 
@@ -137,11 +108,13 @@ public class LoginCanvas : MonoBehaviour
         {
             WarningText.text = "<color=red>닉네임<color=black> 입력은 필수이며\n 띄어쓰기 포함불가입니다";
             WarningPanel.gameObject.SetActive(true);
-            CheckEnter = PressKey;
+            CheckEnter = PressKey; 
+            Play(ref audioPlayer, Define.OtherSound.Back);
             return;
         }
         #endregion
 
+        Play(ref audioPlayer, Define.OtherSound.HotSelect);
         // 위 예외사항 없을시 생성 시도
         GAME.Manager.StartCoroutine(GAME.Manager.NM.TryRegisterAccount
             (accountID.text, accountPW.text, accountNickName.text, this));
@@ -150,6 +123,7 @@ public class LoginCanvas : MonoBehaviour
     // 뒤로가기 버튼 클릭시 호출
     public void OnClickedBackBtn()
     {
+        Play(ref audioPlayer, Define.OtherSound.Back);
         // 버튼 상호작용과 패널 끄기 끄기
         backBtn.interactable = false;
         AccountPanel.gameObject.SetActive(false);
@@ -163,6 +137,7 @@ public class LoginCanvas : MonoBehaviour
     // 경고팝업창에서 버튼 클릭시
     public void OnClickedAcceptBtn()
     {
+        Play(ref audioPlayer, Define.OtherSound.Info);
         WarningPanel.gameObject.SetActive(false);
     }
     // Enter와 Tab버튼 입력시 호출
@@ -171,8 +146,10 @@ public class LoginCanvas : MonoBehaviour
         // 키입력 없거나 현재 경고창 있을시 키입력은 취소
         if (!Input.anyKey || WarningPanel.gameObject.activeSelf ==true) { return; }
 
+        // 엔터키 입력
         if (Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Return))
         {
+            Play(ref audioPlayer, Define.OtherSound.Enter);
             // 현재 로그인패널 또는 계정생성패널 켜져있는 화면에 맞게 자동버튼 클릭 실행
             if (LoginPanel.gameObject.activeSelf == true)
             {
@@ -187,6 +164,7 @@ public class LoginCanvas : MonoBehaviour
             }
         }
 
+        // Tab입력
         else if (Input.GetKeyDown(KeyCode.Tab))
         {
             // 현재 아무 입력칸에도 입력클릭 없었다면
