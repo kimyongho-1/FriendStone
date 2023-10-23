@@ -6,13 +6,11 @@
   "cardClass": 1,
   "cardType": 1,
   "cardRarity": 0,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffAutoMode": 0,
+      "buffAutoMode": 2,
       "buffType": 2,
-      "buffFX": 0,
       "relatedIds": [],
       "buffAtt": 2,
       "buffHp": 2,

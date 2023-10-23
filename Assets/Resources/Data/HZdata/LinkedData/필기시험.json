@@ -6,7 +6,6 @@
   "cardClass": 1,
   "cardType": 1,
   "cardRarity": 2,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "UtillHandler, Assembly-CSharp",
@@ -16,20 +15,21 @@
       ],
       "utillAmount": 1,
       "when": 0,
+      "targeting": 0,
       "area": 1,
       "faction": 0,
       "type": 3
     },
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffTargeting": 3,
+      "buffAutoMode": 2,
       "buffType": 2,
-      "buffFX": 0,
       "relatedIds": [],
       "buffAtt": 3,
       "buffHp": 1,
       "costCount": 0,
       "when": 0,
+      "targeting": 0,
       "area": 1,
       "faction": 1,
       "type": 0

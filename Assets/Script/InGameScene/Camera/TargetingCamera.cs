@@ -209,7 +209,6 @@ public class TargetingCamera : MonoBehaviour
         GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Col.enabled = false);
         // 이벤트의 공격 범위에 맞게 , 포스트프로세싱과 제외대상을 나누어 시각적으로 강조하기
         GAME.IGM.Post.StartMaskingArea(filter);
-        Debug.Log("공격자 충돌체 여부" + attacker.Col);
         attacker.Col.enabled = false;
         GAME.IGM.Turn.Col.enabled = false;
 

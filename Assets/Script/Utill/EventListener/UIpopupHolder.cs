@@ -33,6 +33,10 @@ public class UIpopupHolder: MonoBehaviour,IPointerEnterHandler, IPointerExitHand
         pos = p;
         text = t2;
     }
+
+    public void OnDisable()
+    { StopAllCoroutines(); GAME.Manager.UM.popup.gameObject.SetActive(false); }
+
     // 대기후에 안내팝업창 호출
     IEnumerator waitCo()
     {

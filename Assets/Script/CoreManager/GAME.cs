@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Photon.Pun;
 
 public class GAME : MonoBehaviour
 {
@@ -22,13 +23,17 @@ public class GAME : MonoBehaviour
         pm = GetComponent<PunManager>();
         CurrScene = Define.Scene.Login;
         sm.PlayBGM();
-        SM.Init();
         SceneManager.sceneLoaded += OnLobbyLoad;
         Screen.SetResolution(800,480,false);
     }
 
+    private void OnApplicationQuit()
+    {
+        PhotonNetwork.Disconnect();
+    }
+
     #region ALL MANAGER
-   
+
     static GAME gmInstance;
     public static GAME Manager
     {
@@ -81,13 +86,11 @@ public class GAME : MonoBehaviour
         switch (scene.name) 
         {
             case "Lobby":
-                SM.Init();
                 // 로비씬 전환시 실행할 초기화 모두 끝날떄
                 // 로그인씬 끝내기
                 // 새씬의 이벤트시스템 삭제
                 GameObject es = GameObject.Find("EventSystem");
                 GameObject.Destroy(es);
-                CurrScene = Define.Scene.Lobby;
                 StartCoroutine(ToLobbyScene());
                 IEnumerator ToLobbyScene()
                 {
@@ -102,16 +105,34 @@ public class GAME : MonoBehaviour
                         // 로비씬이 시작될떄, 초기세팅에 맞게 꺼져야할 팝업창들은 모두 끄기
                         waitQueue.Dequeue().gameObject.SetActive(false);
                     }
-                    yield return new WaitForSeconds(2f);
-                    // 로비씬 모두 끝날시, 그때 로그인씬 해제
-                    SceneManager.UnloadSceneAsync("Login");
+                    if (CurrScene == Define.Scene.Login)
+                    {
+                        // 로비씬 모두 끝날시, 그때 로그인씬 해제
+                        SceneManager.UnloadSceneAsync("Login").completed
+                        += (AsyncOperation op) => { StartCoroutine(LM.main.GetComponent<MainCanvas>().PlayLobbyIntro()); };
+                    }
+                    else
+                    { 
+                        // 로비씬 모두 끝날시, 그때 로그인씬 해제
+                        SceneManager.UnloadSceneAsync("InGame").completed
+                        += (AsyncOperation op) => 
+                        {
+                            // 재접속
+                            // StartCoroutine(PM.PunConnect());
+                            Destroy(GAME.Manager.GetComponent<PhotonView>());
+                            GAME.Manager.AddComponent<PhotonView>();
+                            StartCoroutine(LM.main.GetComponent<MainCanvas>().PlayLobbyIntro());
+                        };
+                    }
+                    CurrScene = Define.Scene.Lobby;
+                    sm.PlayBGM();
                     GAME.Manager.Evt.gameObject.SetActive(true);
                 }
                 break;
 
             case "InGame":
-                SM.Init();
                 Debug.Log("GM에서 호출");
+                sm.PlayBGM();
 
                 break;
         }

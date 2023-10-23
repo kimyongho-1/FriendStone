@@ -21,6 +21,7 @@ public class LobbyManager : MonoBehaviour
             else { return main; }
         } 
     } 
+
     private void Awake()
     {
         GAME.Manager.LM = this;

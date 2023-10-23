@@ -10,7 +10,6 @@
   "cardClass": 1,
   "cardType": 0,
   "cardRarity": 0,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "UtillHandler, Assembly-CSharp",

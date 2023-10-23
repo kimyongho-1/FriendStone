@@ -1,6 +1,6 @@
 {
-  "att": 4,
-  "hp": 4,
+  "att": 3,
+  "hp": 6,
   "isTaunt": false,
   "isCharge": false,
   "cardName": "케인",
@@ -10,12 +10,10 @@
   "cardClass": 2,
   "cardType": 0,
   "cardRarity": 2,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",
       "attType": 0,
-      "attFX": 1,
       "attAmount": 5,
       "when": 0,
       "targeting": 0,

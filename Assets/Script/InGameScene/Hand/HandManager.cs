@@ -27,9 +27,9 @@ public class CustomCardHand
         cardHandDic.TryGetValue(punID, out CardHand FoundedCard);
         return FoundedCard;
     }
-    public CustomCardHand FindAll(System.Func<CardHand,bool> act )
+    public List<CardHand> FindAll(System.Func<CardHand,bool> act )
     {
-        CustomCardHand tempList = new CustomCardHand();
+        List<CardHand> tempList = new List<CardHand>();
         for (int i = 0; i < cardHand.Count; i++)
         {
             if (act.Invoke(cardHand[i]) == true)
@@ -46,7 +46,7 @@ public class CustomCardHand
             act.Invoke(cardHand[i]);
         }
     }
-    public List<CardHand> ToList()
+    public List<CardHand> GetList()
     { return cardHand; }
     public int IndexOf(CardHand ch)
     { return cardHand.IndexOf(ch); }
@@ -59,14 +59,15 @@ public class HandManager : MonoBehaviour
     public Material dissolvMat;
     public GameObject PlayerHandGO, EnemyHandGO;
     public Transform PlayerDeck, EnemyDeck, PlayerDrawingCard, EnemyDrawingCard;
-    public CustomCardHand PlayerHand = new CustomCardHand();
-    public CustomCardHand EnemyHand = new CustomCardHand();
+    [field:SerializeField] public CustomCardHand PlayerHand = new CustomCardHand();
+    [field: SerializeField] public CustomCardHand EnemyHand = new CustomCardHand();
     public List<CardHand> AllCardHand = new List<CardHand>();
     public FatigueIcon Fatigue;
     public CardHand prefab;
     public int punConsist = 1;
     int fatigueStack = 0; // 탈진스택 : 덱에 카드가 없을떄 탈진코루틴을 실행하며 실행시 1씩 증가한 피해량을 내 영웅에게 부여하는 이벤트
     Queue<CardData> deckCards = new Queue<CardData>();
+
     private void Awake()
     {
         audioPlayer = GetComponent<AudioSource>();
@@ -175,7 +176,7 @@ public class HandManager : MonoBehaviour
         dissolvMat.SetFloat("_Alpha", 1f);
         ch.cardImage.sharedMaterial = dissolvMat;
         ch.cardBackGround.sharedMaterial = dissolvMat;
-        ch.Init(card, true);
+        ch.Init(card, false);
         #endregion
 
         #region 소멸할 카드 이동
@@ -220,7 +221,7 @@ public class HandManager : MonoBehaviour
     public IEnumerator CardDrawing(int count)
     {
         // 드로우에는 잠시 손의 영역 잠그기
-        PlayerHand.ForEach(x=>x.rewindHand());
+        PlayerHand.ForEach(x=>x.rewindHand(true));
 
         // 씬내부의 덱 모형에서 카드 뽑히는 연출 코루틴
         IEnumerator DrawingCo;
@@ -284,7 +285,7 @@ public class HandManager : MonoBehaviour
                 ch.Init(cd, true);
 
                 // 만약 손패가 이미 10장인 상태에서 드로우 상황이라면 => 현재 뽑히는 카드 삭제 이벤트 실행
-                if (PlayerHand.Count == 5)
+                if (PlayerHand.Count == 10)
                 {
                     yield return new WaitUntil(() => (DrawingCo == null));
                     // 상대에게 내 오버드로우 이벤트 전달
@@ -292,21 +293,12 @@ public class HandManager : MonoBehaviour
                     yield return GAME.IGM.StartCoroutine(HandOverFlow(cd.cardIdNum, ch));
                 }
 
-                // 덱에 카드를 뽑아, 10장 미만인 핸드로 가져오는 정상적인 드로우 상황
+                // 10장 미만인 핸드상태라면, 정상적인 카드 드로우
                 else 
                 {
                     // 포톤 식별자 넘버링하기 + 만약 미니언카드가 소환될시 핸드카드의 펀넘버 넘겨받아 사용
                     ch.PunId = CreatePunNumber();
 
-                    // OnHand 이벤트 존재 확인 및 실행
-                    List<CardBaseEvtData> evtList = cd.evtDatas.FindAll(x => x.when == Define.evtWhen.onHand);
-                    if (evtList != null)
-                    {
-                        for (int j = 0; j < evtList.Count; j++)
-                        {
-                            GAME.IGM.AddAction(GAME.IGM.Battle.Evt(evtList[j], ch));
-                        }
-                    }
                     // 상대에게 내 드로우 정보 전달
                     GAME.IGM.Packet.SendDrawInfo(ch.PunId);
 
@@ -365,8 +357,6 @@ public class HandManager : MonoBehaviour
         DrawingCo = DeckAnimCo();
         StartCoroutine(DrawingCo);
 
-        // 덱에서 실질적으로 뽑힌 카드의 데이터
-        //CardData cd = deckCards.Dequeue();
         // 인게임 카드 프리팹 생성
         CardHand ch = GameObject.Instantiate(prefab, EnemyHandGO.transform);
         ch.transform.position = new Vector3(9.45f, 3.26f, 0);
@@ -389,7 +379,7 @@ public class HandManager : MonoBehaviour
     public IEnumerator CardAllignment(bool isMine = true)
     {
         // 현재 나 또는 적의 핸드중 무엇인지 확인
-        List<CardHand> hand = (isMine) ? PlayerHand.ToList() : EnemyHand.ToList();
+        List<CardHand> hand = (isMine) ? PlayerHand.GetList() : EnemyHand.GetList();
         // 카드가 없으면 정렬을 수행할 필요가 없으므로 바로 취소
         if (hand.Count == 0) { yield break; }
 
@@ -448,28 +438,17 @@ public class HandManager : MonoBehaviour
 
         IEnumerator HandCardMove(CardHand ch)
         {
-            Vector3 euler = transform.rotation.eulerAngles;
-
-            if (euler.y > 180)
-            { euler.y -= 360f; }
-            if (euler.x > 180)
-            { euler.x -= 360f; }
-            if (euler.z > 180)
-            { euler.z -= 360f; }
-            
             Vector3 start = ch.transform.position;
-            Vector3 startRpt = euler;
             Vector3 startScale = ch.transform.localScale;
-            //Debug.Log(ch.transform.rotation.eulerAngles);
             float t = 0;
             while (t < 1f)
             {
                 t += Time.deltaTime * 1.5f;
                 ch.transform.localScale =
                     Vector3.Lerp(startScale, ch.originScale, t);
-                ch.transform.localRotation =
-                    Quaternion.Euler(Vector3.Lerp(startRpt, ch.originRot, t));
-                ch.transform.localPosition =
+                ch.transform.rotation =
+                    Quaternion.Euler(Vector3.Lerp(Vector3.zero, ch.originRot, t));
+                ch.transform.position =
                     Vector3.Lerp(start, ch.OriginPos, t);
                 yield return null;
             }

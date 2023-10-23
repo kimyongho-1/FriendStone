@@ -88,7 +88,8 @@ public partial class SpawnManager
         }
 
         // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
-        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).ForEach(x => x.HandCardChanged.Invoke(cf.MC.cardIdNum, cf.IsMine));
+        GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).
+            ForEach(x => x.HandCardChanged.Invoke(cf.MC.cardIdNum, cf.IsMine));
 
         // 현재 소환된 카드가, 정해진 위치로 이동을 끝맞출떄까지 대기
         yield return new WaitUntil(()=>(cf.transform.position == cf.OriginPos));

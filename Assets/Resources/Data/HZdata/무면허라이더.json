@@ -10,12 +10,10 @@
   "cardClass": 1,
   "cardType": 0,
   "cardRarity": 0,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "AttackHandler, Assembly-CSharp",
       "attType": 0,
-      "attFX": 1,
       "attAmount": 2,
       "when": 0,
       "targeting": 0,

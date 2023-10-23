@@ -18,10 +18,13 @@ public class GameResultBoard : MonoBehaviour
         GAME.IGM.GRB = this;
         audioPlayer = GetComponent<AudioSource>();
         GAME.Manager.UM.BindEvent(leftBtn.gameObject,
-            (GameObject go) => { SceneManager.LoadScene("Lobby"); },
+            (GameObject go) => {
+                GAME.Manager.Evt.gameObject.SetActive(false);
+                // 유저의 기존 덱 정보 불러오기
+                SceneManager.LoadScene("Lobby", LoadSceneMode.Additive);
+            },
             Define.Mouse.ClickL );
         this.gameObject.SetActive(false);
-        
     }
     public void ReloadClip(bool isPlayerWin)
     {

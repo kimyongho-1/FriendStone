@@ -15,6 +15,16 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
     RaiseEventOptions Other = new RaiseEventOptions() { Receivers = ReceiverGroup.Others };
     RaiseEventOptions Master = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
     RaiseEventOptions Both = new RaiseEventOptions() { Receivers = ReceiverGroup.All };
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        PhotonNetwork.NetworkingClient.EventReceived += Received;
+    }
+    public override void OnDisable()
+    {
+        base.OnDisable();
+        PhotonNetwork.NetworkingClient.EventReceived -= Received;
+    }
     private void Awake()
     {
         GAME.IGM.Packet = this;
@@ -24,8 +34,7 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
         InitHeroDictionary();
         InitSpellDictionary();
 
-        PhotonNetwork.NetworkingClient.EventReceived -= Received;
-        PhotonNetwork.NetworkingClient.EventReceived += Received;
+        
 
 
         // 서로 기본 정보 전송후, 각자 전달 받을떄까지 대기
@@ -73,8 +82,6 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
                     new object[] { (firstID == 0) ? true : false },
                     Both,
                     SendOptions.SendReliable);
-
-                Debug.Log($"firstID  :  {firstID}");
                 #endregion
             }
             yield return null;
@@ -84,7 +91,6 @@ public partial class PacketManager : MonoBehaviourPunCallbacks
     // 이벤트코드를 키값으로 전달받을 이벤트 찾아 적용
     public void Received(EventData photonEvent) 
     {
-        
         byte eventCode = photonEvent.Code;
         if (dic.ContainsKey(eventCode))
         {

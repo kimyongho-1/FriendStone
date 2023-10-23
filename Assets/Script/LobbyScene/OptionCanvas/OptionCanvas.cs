@@ -19,6 +19,7 @@ public class OptionCanvas :LobbyPopup
         FX.onValueChanged.AddListener(GAME.Manager.SM.FXVol);
         BGM.onValueChanged.AddListener(GAME.Manager.SM.BGMVol);
         audioPlayer = GetComponent<AudioSource>();
+        GetComponent<Canvas>().sortingOrder = 1;
     }
     
 

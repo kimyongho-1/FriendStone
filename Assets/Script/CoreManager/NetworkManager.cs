@@ -124,6 +124,7 @@ public class NetworkManager
                 List<DeckDataPrototype> prototypeList = JsonConvert.DeserializeObject<List<DeckDataPrototype>>(json);
                 for (int i = 0; i < prototypeList.Count; i++)
                 {
+                    Debug.Log($"Deserialize : {prototypeList[i].Deserialize()}");
                     GAME.Manager.RM.userDecks.Add(prototypeList[i].Deserialize());
                     yield return null;
                 }

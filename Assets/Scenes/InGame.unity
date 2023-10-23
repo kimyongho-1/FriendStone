@@ -1906,7 +1906,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: -1
-  m_Sprite: {fileID: 21300000, guid: d416d803fe3938d4fa265c8db22c75a5, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 029ac4870391c2940b4a97ccd6996d21, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5264,7 +5264,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: -1440340384, guid: 8d6bf0d352940bc4ab37aab859e8204d, type: 3}
   m_Color: {r: 0, g: 0.590278, b: 0.9245283, a: 1}
   m_FlipX: 0
@@ -7021,7 +7021,7 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1067120214
 GameObject:
@@ -8208,7 +8208,7 @@ Transform:
   m_GameObject: {fileID: 1274679211}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.2, y: 0, z: -0.3}
+  m_LocalPosition: {x: -0.2, y: 0, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9726,7 +9726,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: -1440340384, guid: 8d6bf0d352940bc4ab37aab859e8204d, type: 3}
   m_Color: {r: 0, g: 0.590278, b: 0.9245283, a: 1}
   m_FlipX: 0
@@ -10509,7 +10509,7 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1509833865
 GameObject:
@@ -15016,7 +15016,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB2F9\uC2E0\uC758 \uB9C8\uB098"
+  m_text: "\uC0C1\uB300\uC758 \uB9C8\uB098"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9c1071fba5583dd4c929f2a5f2b8e762, type: 2}
   m_sharedMaterial: {fileID: -2226171444871307489, guid: 9c1071fba5583dd4c929f2a5f2b8e762, type: 2}
@@ -15544,7 +15544,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 155.46, y: 155.46, z: 155.46}
+  m_LocalScale: {x: 8.43184, y: 8.43184, z: 8.43184}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1274679212}
@@ -23738,9 +23738,9 @@ SceneRoots:
   - {fileID: 1974176261}
   - {fileID: 506333419}
   - {fileID: 842142584}
-  - {fileID: 366771000}
   - {fileID: 1194378270}
   - {fileID: 2104895326}
   - {fileID: 1844280470}
   - {fileID: 1803372500}
+  - {fileID: 366771000}
   - {fileID: 1743220984}

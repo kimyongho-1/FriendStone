@@ -80,9 +80,10 @@ public class FindEvtHolder : MonoBehaviour
             ch.PunId = GAME.IGM.Hand.CreatePunNumber();
             ch.SetOrder(1000);
         }
+
         // 내가 상대의 카드 상호작용 하면 안되기에 레이 끄기
         left.enabled = right.enabled = center.enabled = true;
-        this.gameObject.SetActive(true);
+
     }
 
     public void ClickedCard(GameObject go)
@@ -113,7 +114,7 @@ public class FindEvtHolder : MonoBehaviour
         list.Remove(ch);
         // 식별자 초기화
         ch.PunId = GAME.IGM.Hand.CreatePunNumber();
-
+        ch.Ray = true;
         // 정렬 위해서 유저의 핸드로 이동
         GAME.IGM.Hand.PlayerHand.Add(ch);
         ch.transform.SetParent(GAME.IGM.Hand.PlayerHandGO.transform);
@@ -149,14 +150,14 @@ public class FindEvtHolder : MonoBehaviour
         yield return null;
     }
 
-    // 상대가 발견이벤트를 선택하여 끝날떄, 내 화면에도 그 카드를 고르는 연출 코루틴
+    // 상대가 발견이벤트를 선택하여 끝날떄, 내 화면에도 그 카드를 고르는 연출 보여주는 코루틴
     public IEnumerator ShowEnemyFindEvtResult(int idx, int punID)
     {
         // 카드 찾기 + 식별자 초기화
         CardHand ch = list[idx];
         ch.PunId = punID;
         ch.IsMine = false;
-        ch.originScale = (ch.IsMine) ? Vector3.one * 0.3f : new Vector3(0.16f, 0.17f, 0.3f);
+        ch.originScale = Vector3.one * 0.3f;
         // 내 리스트에서 제거
         list.Remove(ch);
         // 정렬 위해서 적의 핸드로 이동

@@ -6,7 +6,6 @@
   "cardClass": 2,
   "cardType": 1,
   "cardRarity": 0,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "RestoreHandler, Assembly-CSharp",

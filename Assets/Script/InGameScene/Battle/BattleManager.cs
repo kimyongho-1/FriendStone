@@ -24,6 +24,7 @@ public class BattleManager : MonoBehaviour
             // 예약 이벤트 있을떄까지 대기
             yield return new WaitUntil(()=>(ActionQueue.Count > 0));
             currCo = ActionQueue.Dequeue();
+            Debug.Log($"{currCo}가 이제 시작");
             yield return StartCoroutine(currCo);
 
             // 현재 타겟팅 중이면 , 타겟팅이 끝날떄까지 대기
@@ -65,7 +66,7 @@ public class BattleManager : MonoBehaviour
     public IEnumerator Evt(CardBaseEvtData evtData, IBody attacker, IBody searchedTarget = null)
     {
         Debug.Log($"attacker[{attacker.PunId}]가 {evtData.when}이기에 {evtData.type}실행");
-        if (evtData is UtillHandler) { Debug.Log("Utill"); }
+        Debug.Log($"{attacker.objType}");
         switch (evtData.type) // 이벤트 타입별로 분류
         {
             case Define.evtType.attack:  return RegisterAttHandler((AttackHandler)evtData, attacker, searchedTarget);
@@ -123,11 +124,17 @@ public class BattleManager : MonoBehaviour
         else
         {
             IBody target = AutoExecute();
-            if (target == null) { Debug.Log($"attacker[{attacker.PunId}] 의 이벤트 타겟 존재 X"); return null; }
+            if (target == null) 
+            {
+                Debug.Log($"attacker[{attacker.PunId}] 의 이벤트 타겟 존재 X"); 
+                return null;
+            }
 
+            Debug.Log($"target[{target.PunId}]");
+            Debug.Log($"attacker[{attacker.PunId},  attackerOBJtype : {attacker.objType}]");
             // 타겟있을시 이벤트 예약
-            return AttackEvt((attacker.objType == Define.ObjType.Minion) ?
-                attacker : GAME.IGM.Hero.Player, target, ah.attAmount, ah.attType, (ah.when == Define.evtWhen.onDead));
+            return AttackEvt( ((attacker.objType == Define.ObjType.Minion) ? attacker : GAME.IGM.Hero.Player)
+                , target, ah.attAmount, ah.attType, (ah.when == Define.evtWhen.onDead));
         }
 
         #region 자동 실행건
@@ -144,20 +151,24 @@ public class BattleManager : MonoBehaviour
                     if (ah.area == Define.evtArea.All)
                     {
                         targets.AddRange(GAME.IGM.allIBody.FindAll(x=>x.PunId != attacker.PunId && x.HP > 0));
+                        // 대상 범위에서 시전자 자신은 제외시키기
+                        targets.Remove(targets.Find(x => x.PunId == attacker.PunId));
                         return targets[UnityEngine.Random.Range(0, targets.Count)];
                     }
                     else if (ah.area == Define.evtArea.Enemy)
                     {
                         targets.AddRange(GAME.IGM.allIBody.FindAll(x => x.PunId != attacker.PunId && x.HP > 0
                         && x.IsMine == ( (attacker.IsMine) ? false : true ) ));
-
+                        // 대상 범위에서 시전자 자신은 제외시키기
+                        targets.Remove(targets.Find(x => x.PunId == attacker.PunId));
                         return targets[UnityEngine.Random.Range(0, targets.Count)];
                     }
                     else
                     {
                         targets.AddRange(GAME.IGM.allIBody.FindAll(x => x.PunId != attacker.PunId && x.HP > 0
                         && x.IsMine == ((attacker.IsMine) ? true : false )));
-
+                        // 대상 범위에서 시전자 자신은 제외시키기
+                        targets.Remove(targets.Find(x => x.PunId == attacker.PunId));
                         return targets[UnityEngine.Random.Range(0, targets.Count)];
                     }
                 case Define.evtFaction.Minion:
@@ -180,11 +191,10 @@ public class BattleManager : MonoBehaviour
                             GAME.IGM.Spawn.enemyMinions : GAME.IGM.Spawn.playerMinions);
                     }
                     // 대상 범위에서 시전자 자신은 제외시키기
-                    attacker = targets.Find(x => x.PunId == attacker.PunId);
-                    if (attacker != null)
-                    { targets.Remove(attacker); }
-                    return targets[UnityEngine.Random.Range(0, targets.Count)];
-                    
+                    targets.Remove(targets.Find(x => x.PunId == attacker.PunId));
+                    if (targets.Count == 0) { return null; }
+                    else { return targets[UnityEngine.Random.Range(0, targets.Count)]; }
+                     
                 case Define.evtFaction.Hero:
                     // 두영웅이 타겟 범위라면
                     if (ah.area == Define.evtArea.All)
@@ -266,17 +276,15 @@ public class BattleManager : MonoBehaviour
                     {
                         list.Add(minonList[idx - 1]);
                         Debug.Log($"양옆 하수인, 왼쪽에게 실행 타겟 {minonList[idx - 1]}[{minonList[idx - 1].PunId}]");
-                        //ActionQueue.Enqueue(Buff(caster, minonList[idx - 1], bh));
                     }
                     // 시전자 하수인의 오른쪽 존재하는지 찾기
                     if (idx + 1 < minonList.Count && minonList[idx + 1].PunId != caster.PunId)
                     {
                         list.Add(minonList[idx + 1]);
                         Debug.Log($"양옆 하수인, 오른쪽에게 실행 타겟 {minonList[idx + 1]}[{minonList[idx+1].PunId}]");
-                        //ActionQueue.Enqueue(Buff(caster, minonList[idx + 1], bh));
                     }
                     if (list.Count == 0) { return null; }
-                    return MoBuff(list);
+                    else { return MoBuff(list); }
                 #endregion
 
                 #region 특정 카드ID의 하수인 수 만큼, 하수인에게 시전
@@ -303,9 +311,31 @@ public class BattleManager : MonoBehaviour
                         // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
                         if (bh.relatedIds.Length > 0)
                         {
-                            for (int i = 0; i < bh.relatedIds.Length; i++)
+                            int[] relatedID = bh.relatedIds;
+                            switch (bh.area)
                             {
-                                count += GAME.IGM.allIBody.FindAll(x => x.PunId == bh.relatedIds[i] && x.HP > 0).Count();
+                                case Define.evtArea.Enemy:
+                                    for (int i = 0; i < relatedID.Length; i++)
+                                    {
+                                        count += GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count();
+                                        Debug.Log($"타겟넘버 : {relatedID[i]}, 총  Count : " + count);
+                                    }
+                                    Debug.Log($"Enemy Count : {count}"); break;
+                                case Define.evtArea.Player:
+                                    for (int i = 0; i < relatedID.Length; i++)
+                                    {
+                                        count += GAME.IGM.Spawn.playerMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count();
+                                        Debug.Log($"타겟넘버 : {relatedID[i]}, 총  Count : " + count);
+                                    }
+                                    Debug.Log($"Player Count : {count}"); break;
+                                case Define.evtArea.All:
+                                    for (int i = 0; i < relatedID.Length; i++)
+                                    {
+                                        count += GAME.IGM.Spawn.playerMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count()
+                                            + GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count();
+                                        Debug.Log($"타겟넘버 : {relatedID[i]}, 총  Count : " + count);
+                                    }
+                                    Debug.Log($"All Count : {count}"); break;
                             }
                         }
 
@@ -407,6 +437,7 @@ public class BattleManager : MonoBehaviour
                     return (int id, bool IsMine) =>
                     {
                         int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        Debug.Log($"실행자:{ownerPunID}, count : {count}");
                         target.Att = target.Att + bh.buffAtt * count;
                     };
 
@@ -414,6 +445,7 @@ public class BattleManager : MonoBehaviour
                     return (int id, bool IsMine) =>
                     {
                         int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        Debug.Log($"실행자:{ownerPunID}, count : {count}");
                         target.HP = target.HP + bh.buffHp * count;
                     };
 
@@ -421,6 +453,7 @@ public class BattleManager : MonoBehaviour
                     return (int id, bool IsMine) =>
                     {
                         int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
+                        Debug.Log($"실행자:{ownerPunID}, count : {count}");
                         target.Att = target.Att + bh.buffAtt * count;
                         target.HP = target.HP + bh.buffHp * count;
                     };
@@ -429,7 +462,8 @@ public class BattleManager : MonoBehaviour
                     return (int id, bool IsMine) =>
                     {
                         int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
-                        target.CurrCost = target.OriginCost - bh.costCount * count;
+                        Debug.Log($"실행자:{ownerPunID}, count : {count}");
+                        target.CurrCost = Mathf.Max(target.OriginCost - bh.costCount * count,0);
                     };
 
                 default: return null;
@@ -439,35 +473,58 @@ public class BattleManager : MonoBehaviour
         // 손에 있을떄 실행할 버프이벤트 분류함수
         int SortHandEvt(ref bool IsMine, ref BuffHandler bh, ref CardHand target, ref int id)
         {
-            if (IsMine == true && bh.area == Define.evtArea.Enemy) { return 0; }
-            if (IsMine == false && bh.area == Define.evtArea.Player) { return 0; }
+        //    if (IsMine == true && bh.area == Define.evtArea.Enemy) { Debug.Log("IsMine == true && bh.area == Define.evtArea.Enemy : 0"); return 0; }
+        //    if (IsMine == false && bh.area == Define.evtArea.Player) { Debug.Log("IsMine == false && bh.area == Define.evtArea.Player : 0"); return 0; }
             int origin = target.OriginAtt;
             int[] relatedID = bh.relatedIds;
-
-            // 미니언카드 소환이지만 명확한 카드타겟 범위가 아니라면 이벤트 실행 취소
-            if (bh.relatedIds.Length > 0 && !relatedID.Contains(id)) { return 0; }
 
             int count = 0;
             // 연관 카드넘버가 있으면, 필드의 동일 넘버 하수인당 벨류 곱해주기
             if (bh.relatedIds.Length > 0)
             {
-                for (int i = 0; i < relatedID.Length; i++)
+                switch (bh.area)
                 {
-                    count += GAME.IGM.allIBody.FindAll(x => x.PunId == relatedID[i]).Count();
+                    case Define.evtArea.Enemy:
+                        for (int i = 0; i < relatedID.Length; i++)
+                        {
+                            count += GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count(); 
+                            Debug.Log($"타겟넘버 : {relatedID[i]}, 총  Count : " + count);
+                        }
+                        Debug.Log($"Enemy Count : {count}"); break;
+                    case Define.evtArea.Player:
+                        for (int i = 0; i < relatedID.Length; i++)
+                        {
+                            count += GAME.IGM.Spawn.playerMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count();
+                            Debug.Log($"타겟넘버 : {relatedID[i]}, 총  Count : " + count);
+                        }
+                        Debug.Log($"Player Count : {count}"); break;
+                    case Define.evtArea.All:
+                        for (int i = 0; i < relatedID.Length; i++)
+                        {
+                            count += GAME.IGM.Spawn.playerMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count()
+                                + GAME.IGM.Spawn.enemyMinions.FindAll(x => x.MC.cardIdNum == relatedID[i]).Count();
+                            Debug.Log($"타겟넘버 : {relatedID[i]}, 총  Count : " + count);
+                        }
+                        Debug.Log($"All Count : {count}"); break;
                 }
             }
 
             // count 가 0 이면, 이벤트 범위의 모든 하수인으로 함축
             else
             {
+                Debug.Log("총  Count : "+GAME.IGM.allIBody.Count);
+                // 전체 갯수를 구하는데 -요소는 영웅스킬 아이콘(미니언타입)때문에
                 switch (bh.area)
                 {
                     case Define.evtArea.Enemy:
-                        count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false && x.HP > 0).Count() - 1; break;
+                        count = GAME.IGM.allIBody.FindAll(x => x.IsMine == false && x.objType == Define.ObjType.Minion).Count()-1;
+                        Debug.Log($"Enemy Count : {count}"); break;
                     case Define.evtArea.Player:
-                        count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true && x.HP > 0).Count() - 1; break;
+                        count = GAME.IGM.allIBody.FindAll(x => x.IsMine == true && x.objType == Define.ObjType.Minion).Count() - 1;
+                        Debug.Log($"Player Count : {count}"); break;
                     case Define.evtArea.All:
-                        count = GAME.IGM.allIBody.FindAll(x=> x.HP > 0).Count() - 2; break;
+                        count = GAME.IGM.allIBody.FindAll(x=> x.objType == Define.ObjType.Minion).Count() - 2;
+                        Debug.Log($"All Count : {count}"); break;
                 }
             }
             return count;
@@ -479,6 +536,7 @@ public class BattleManager : MonoBehaviour
         switch (uh.utillType) // 편의성 기타 이벤트는 유저 직접선택 없이 자동실행건들
         {
             case Define.utillType.draw: // 드로우 이벤트
+                Debug.Log("드로우 이벤트");
                 return DrawEvt(uh);
             case Define.utillType.find: // 발견 이벤트
                 Debug.Log("발견 이벤트");
@@ -505,7 +563,9 @@ public class BattleManager : MonoBehaviour
                 case Define.evtArea.Player:
                     return playerDraw();
                     IEnumerator playerDraw()
-                    { yield return null; GAME.IGM.Hand.CardDrawing(uh.utillAmount); }
+                    { 
+                        yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardDrawing(uh.utillAmount)); 
+                    }
                 #endregion
 
                 #region 상대와 나 모두 드로우 하는 이벤트
@@ -529,9 +589,10 @@ public class BattleManager : MonoBehaviour
 
             // 발견 이벤트 준비 및 시작 (코루틴은 오브젝트가 꺼져있을떄 실행이 안되어, 함수로 먼저 데이터 준비 후 코루틴 실행)
             GAME.IGM.FindEvt.ReadyFindEvt(uh.relatedCards);
-
-            // 발견 코루틴 끝날떄까지 (유저가 발견카드들중 하나를 선택할떄까지 대기)
-            yield return new WaitUntil(() => (GAME.IGM.FindEvt.CurrSelected == true));
+            yield return new WaitForSeconds(0.5f);
+            GAME.IGM.FindEvt.gameObject.SetActive(true);
+           // 발견 코루틴 끝날떄까지 (유저가 발견카드들중 하나를 선택할떄까지 대기)
+           yield return new WaitUntil(() => (GAME.IGM.FindEvt.CurrSelected == true));
         }
         
         // 획득 이벤트
@@ -545,6 +606,7 @@ public class BattleManager : MonoBehaviour
             int casterPunID = caster.PunId;
             int[] sendArray = new int[count];
             int[] punArray = new int[count];
+
             // 관련카드들 생성
             for (int i = 0; i < count; i++)
             {
@@ -585,12 +647,14 @@ public class BattleManager : MonoBehaviour
                 ch.transform.localPosition = caster.TR.position;
                 
                 GAME.IGM.Hand.PlayerHand.Add(ch);
+                ch.Ray = true;
                 yield return null;
             }
 
             // 상대에게 나의 획득이벤트를 전파하기
             GAME.IGM.Packet.SendAcquisition(caster.objType , casterPunID, sendArray, punArray);
 
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(true));
         }
     }
 
@@ -841,6 +905,7 @@ public class BattleManager : MonoBehaviour
         yield return GAME.IGM.StartCoroutine(fx.Invoke(attacker, target));
         #endregion
 
+        Debug.Log($"공격자[{attacker.PunId}, 현재 나의턴? : {GAME.IGM.Packet.isMyTurn}]");
         // 나의 턴 + 나의 하수인 공격이벤트는 , 전파해야할 이벤트
         if (GAME.IGM.Packet.isMyTurn == true )
         {

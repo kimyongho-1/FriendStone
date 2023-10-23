@@ -293,7 +293,6 @@ MonoBehaviour:
     cardClass: 0
     cardType: 0
     cardRarity: 0
-    associatedHandler: 
     evtDatas: []
 --- !u!114 &884528054144900789
 MonoBehaviour:
@@ -817,7 +816,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.08439636, g: 0, b: 1, a: 1}
+  m_Color: {r: 0.3254717, g: 0.59012336, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

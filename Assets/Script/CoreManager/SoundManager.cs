@@ -17,45 +17,8 @@ public class SoundManager
         BGM = b;
         FX = f;
         Speech = s;
-        soundDic.Add(Define.Sound.Click, Resources.Load<AudioClip>("Sound/UI/BtnLeft"));
-        soundDic.Add(Define.Sound.Back, Resources.Load<AudioClip>("Sound/UI/BtnRight"));
-        soundDic.Add(Define.Sound.Pick, Resources.Load<AudioClip>("Sound/FX/Pick"));
-        soundDic.Add(Define.Sound.Ready, Resources.Load<AudioClip>("Sound/FX/Ready"));
-        soundDic.Add(Define.Sound.Summon , Resources.Load<AudioClip>("Sound/FX/Summon"));
     }
 
-    public void Init()
-    {
-     //  switch (GAME.Manager.CurrScene)
-     //  {
-     //      case Define.Scene.Lobby:
-     //          soundDic.Add(Define.Sound.Click, Resources.Load<AudioClip>("Sound/UI/BtnLeft"));
-     //          soundDic.Add(Define.Sound.Back, Resources.Load<AudioClip>("Sound/UI/BtnRight"));
-     //          break;
-     //      case Define.Scene.Login:
-     //          break;
-     //      case Define.Scene.InGame:
-     //          soundDic.Add(Define.Sound.Pick, Resources.Load<AudioClip>("Sound/FX/Pick"));
-     //          soundDic.Add(Define.Sound.Ready, Resources.Load<AudioClip>("Sound/FX/Ready"));
-     //          break;
-     //  }
-
-    }
-
-    // 클릭시 효과음재생
-    public void PlaySound(Define.Sound sound)
-    {
-        if (soundDic.ContainsKey(sound))
-        {
-            FX.clip = soundDic[sound];
-            Debug.Log("소리존재");
-            FX.Play();
-        }
-        else
-        {
-            Debug.Log("소리없음");
-        }
-    }
 
 
     // 씬별 배경음 재생
@@ -79,7 +42,7 @@ public class SoundManager
 
     #region 로비씬의 옵션팝업창내 볼륨조절
     public float masterVolumeRate = 1.0f;  // 전체 볼륨 조절률
-    float bgmVol = 0.2f;
+    float bgmVol = 0.1f;
     float fxVol = 1f;
     public void ChangedVol(float rate)
     {

@@ -193,9 +193,8 @@ public partial class SpawnManager : MonoBehaviour
             yield return StartCoroutine(CalcSpawnPoint());
 
             // 하수인들이 소환될떄마다, 손에서 실행해야할 이벤트가 있는 카드들은 현재 소환된 하수인의 넘버를 인자로 이벤트 실행
-            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null).
+            GAME.IGM.Hand.PlayerHand.FindAll(x => x.HandCardChanged != null && x.PunId != cf.PunId).
                 ForEach(x => x.HandCardChanged.Invoke(cf.MC.cardIdNum, cf.IsMine));
-
             int idx = playerMinions.IndexOf(cf);
             Debug.Log("spawnIDX : " + idx);
             // 상대에게 내 미니언 소환 이벤트 전파 [카드객체 식별자, 몇번쨰 필드에 소환인지, 실제 카드 데이터 , 원본이 아닌 현재 공체비용]

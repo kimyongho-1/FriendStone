@@ -54,6 +54,7 @@ public class HourGlass : MonoBehaviour
 
             yield return null;
         }
+
         // 끝났을경우, 알파값을 0으로 주어 파티클 안보이게 설정
         gradient.alphaKeys = new GradientAlphaKey[]
             { new GradientAlphaKey(0.0f, 0.0f), new GradientAlphaKey(0.0f, 0f) };
@@ -63,6 +64,14 @@ public class HourGlass : MonoBehaviour
         // 턴종료 버튼이 아직 눌리지 않았다면
         if (GAME.IGM.Turn.Col.enabled == true)
         {
+            // 턴 제한인데도, 발견이벤트 진행중이었다면
+            if (GAME.IGM.FindEvt.enabled == true)
+            {
+                Debug.Log("시간제한으로, 발견이벤트 강제 선택");
+                // 강제로 왼쪽 설정
+                GAME.IGM.FindEvt.ClickedCard(GAME.IGM.FindEvt.left.gameObject);
+            }
+
             // 강제로 턴 종료 실행 및 전파
             GAME.IGM.Turn.ClickedOnTurnEnd(null);
         }

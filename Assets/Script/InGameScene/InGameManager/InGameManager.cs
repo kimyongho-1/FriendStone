@@ -37,6 +37,7 @@ public class InGameManager : MonoBehaviour
     public SpriteRenderer cardImage,cardBackground;
     AudioSource audioPlayer;
     public Dictionary<Define.IGMsound, AudioClip> sceneAudio = new Dictionary<IGMsound, AudioClip>();
+
     public void Awake()
     {
         GAME.IGM = this;
@@ -62,16 +63,15 @@ public class InGameManager : MonoBehaviour
     // 영웅의 체력이 0 이하로 떨어질시 게임종료
     public IEnumerator EndingGame(bool playerWin, bool senderIsMine) // 내가 이겼는지, 내가 상대방에게 결과를 전파해야하는지
     {
+        if (!GAME.IGM.Packet.isMyTurn && senderIsMine == true) { yield break; }
+
         // 내가 먼저 게임의 결과를 본 사람이라면, 상대방에게 동일한 결과를 전파
         if (senderIsMine)
         {
             // 상대방에게 결과를 전송하기
-            Packet.SendGameEnd(playerWin);
+            Packet.SendGameEnd(!playerWin);
         }
-        // 상대방에게 이벤트를 전파 받아 실행하는거라면 생략(먼저 받아 실행중일테니)
-        else
-        { yield break; }
-
+        Debug.Log($"승패결과 : {playerWin}");
         Turn.StopAllCoroutines();
         // 재생할 승패 클립 준비
         GRB.ReloadClip(playerWin);
@@ -98,10 +98,11 @@ public class InGameManager : MonoBehaviour
         GRB.Play();
 
 
-        PhotonNetwork.Disconnect();
-        Destroy(GAME.Manager.GetComponent<PhotonView>());
-        GAME.Manager.AddComponent<PhotonView>();
+        PhotonNetwork.LeaveRoom();
     }
+
+    // 현재 나의턴이며 턴종료 누르지 않았다면, 플레이가 가능한 상태임을 반환
+    public bool IsPlayable { get { return (Packet.isMyTurn && Turn.Col.enabled) ; } }
 
     #region 참조
     public GameResultBoard GRB { get; set; }
@@ -118,7 +119,10 @@ public class InGameManager : MonoBehaviour
     #endregion
 
     // BattleManager의 액션큐 빠르게 접근용도
-    public void AddAction(IEnumerator co) { if (co != null) { Battle.ActionQueue.Enqueue(co); } }
+    public void AddAction(IEnumerator co) 
+    {
+        if (co != null) { Battle.ActionQueue.Enqueue(co); }
+    }
     public void AddDeathAction(IEnumerator co) { if (co != null) { Battle.PlayDeathRattle(co); } }
 
 
@@ -136,8 +140,7 @@ public class InGameManager : MonoBehaviour
         cardImage.sprite = (skill.IsMine) ? GAME.IGM.Hero.Player.skillImg.sprite : GAME.IGM.Hero.Enemy.skillImg.sprite;
         cardPopup.gameObject.SetActive(true);
     }
-
-    // 카드팝업 호출
+    // 필드의 미니언 커서 포인터엔터 이벤트 (상대와 나의것 구분하여 위치변경)
     public void ShowMinionPopup(MinionCardData data, Vector3 pos, Sprite sprite)
     {
         Stat.gameObject.SetActive(true);
@@ -153,9 +156,26 @@ public class InGameManager : MonoBehaviour
         cardImage.sprite = sprite;
         cardPopup.gameObject.SetActive(true);
     }
-   
+    // 무기카드 팝업이벤트
+    public void ShowCardPopup(ref WeaponCardData data, Vector3 pos)
+    {
+        Stat.gameObject.SetActive(true);
+        cardPopup.transform.position = pos;
+        cardName.text = data.cardName;
+        Description.text = data.cardDescription;
+        // 만약 글자가 25글자 이상이면 폰트크기를 약간 줄이기
+        Debug.Log("글자 길이 : " + data.cardDescription.Length);
+        Description.fontSize = (data.cardDescription.Length > 39) ? 15f : 18f;
+        Type.text = data.cardType.ToString();
+        Cost.text = data.cost.ToString();
+        cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
+        cardPopup.gameObject.SetActive(true);
+    }
+
+    #region 카드사용시, 강조 팝업
     public void ShowEnemySpellPopup(SpellCardData data, Vector3 pos)
     {
+        StopAllCoroutines();
         // 팝업창 효과음 재생
         audioPlayer.clip = sceneAudio[Define.IGMsound.Popup];
         audioPlayer.Play();
@@ -191,10 +211,14 @@ public class InGameManager : MonoBehaviour
                 imageList.ForEach(x => x.color = tempColor);
                 yield return null;
             }
+            yield return new WaitForSeconds(1.5f);
+            cardPopup.isEnmeySpawning = false;
+            cardPopup.gameObject.SetActive(false);
         }
     }
     public void ShowEnemyMinionPopup(MinionCardData data, int att, int hp, int cost)
     {
+        StopAllCoroutines();
         // 팝업창 효과음 재생
         audioPlayer.clip = sceneAudio[Define.IGMsound.Popup];
         audioPlayer.Play();
@@ -231,15 +255,14 @@ public class InGameManager : MonoBehaviour
                 imageList.ForEach(x => x.color = tempColor);
                 yield return null;
             }
-
             yield return new WaitForSeconds(1.5f);
-
             cardPopup.isEnmeySpawning = false;
             cardPopup.gameObject.SetActive(false);
         }
     }
     public void ShowEnemyWeaponPopup(WeaponCardData data)
     {
+        StopAllCoroutines();
         // 팝업창 효과음 재생
         audioPlayer.clip = sceneAudio[Define.IGMsound.Popup];
         audioPlayer.Play();
@@ -255,21 +278,36 @@ public class InGameManager : MonoBehaviour
         Type.text = data.cardType.ToString();
         Cost.text = data.cost.ToString();
         cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
-        cardPopup.gameObject.SetActive(true);
-    }
+        StartCoroutine(FadeIn());
+        IEnumerator FadeIn()
+        {
+            float t = 0;
+            // 투명화 위해 모든 TMP와 SR을 묶기
+            List<TextMeshPro> tmpList = new List<TextMeshPro>() { cardName, Description, Cost, Stat, Type };
+            List<SpriteRenderer> imageList = new List<SpriteRenderer>() { cardImage, cardBackground };
 
-    public void ShowCardPopup(ref WeaponCardData data, Vector3 pos)
-    {
-        Stat.gameObject.SetActive(true);
-        cardPopup.transform.position = pos;
-        cardName.text = data.cardName;
-        Description.text = data.cardDescription;
-        Stat.text = "";
-        Type.text = data.cardType.ToString();
-        Cost.text = data.cost.ToString();
-        cardImage.sprite = null;
-        cardPopup.gameObject.SetActive(true);
+            tmpList.ForEach(x => x.alpha = 0);
+            imageList.ForEach(x => x.color = new Color(1, 1, 1, 0));
+            cardPopup.gameObject.SetActive(true);
+
+            Color tempColor = Color.white;
+            while (t < 1f)
+            {
+                // 알파값 점차 1으로 변환
+                t += Time.deltaTime;
+                tempColor.a = t;
+                tmpList.ForEach(x => x.alpha = t);
+                imageList.ForEach(x => x.color = tempColor);
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.5f);
+            cardPopup.isEnmeySpawning = false;
+            cardPopup.gameObject.SetActive(false);
+        }
     }
+    #endregion
+
 
     #endregion
 }

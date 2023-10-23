@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using static Define;
 using WebSocketSharp;
+using System.Runtime.CompilerServices;
 
 public class CardHand : CardEle, IBody
 {
@@ -78,7 +79,7 @@ public class CardHand : CardEle, IBody
     }
 
     // 손의 핸드 제자리 위치 + 잠그기 (드로우 & 상대턴일떄 사용불가)
-    public void rewindHand() { StopAllCoroutines(); DragCo = null; Exit(null); }
+    public void rewindHand(bool lockingRay = false) { StopAllCoroutines(); DragCo = null; Exit(null); Ray = !lockingRay; }
     // OnHand이벤트가 존재시, 특정순간마다 이벤트를 실행 (이벤트 구독은 BattleManager.cs에서 등록)
     public Action<int,bool> HandCardChanged;
     public void DrawVar() // 벨류 변경뒤, tmp자동 변경
@@ -139,7 +140,7 @@ public class CardHand : CardEle, IBody
                     break;
             }
 
-            CurrCost = OriginCost = data.cost;
+            CurrCost = Mathf.Max(OriginCost = data.cost,0);
             cardImage.sprite = GAME.Manager.RM.GetImage(data.cardClass, data.cardIdNum);
 
             // 드래그 이벤트 연결
@@ -150,6 +151,15 @@ public class CardHand : CardEle, IBody
             GAME.Manager.UM.BindEvent(this.gameObject, Enter, Define.Mouse.Enter);
             GAME.Manager.UM.BindEvent(this.gameObject, Exit, Define.Mouse.Exit);
 
+            // OnHand 이벤트 존재 확인 및 실행
+            List<CardBaseEvtData> evtList = data.evtDatas.FindAll(x => x.when == Define.evtWhen.onHand);
+            if (evtList != null)
+            {
+                for (int j = 0; j < evtList.Count; j++)
+                {
+                    GAME.IGM.AddAction(GAME.IGM.Battle.Evt(evtList[j], this));
+                }
+            }
         }
 
         // 상대 카드라면 꺼두기
@@ -204,8 +214,14 @@ public class CardHand : CardEle, IBody
         // 비용문제로 사용 못하는 카드라면 바로 취소
         if (CurrCost > GAME.IGM.Hero.Player.MP) { return; }
 
+        // 내 턴이며, 턴 종료를 누르지 않아야만 플레이 가능한 상태로 인정
+        // 추가로 근접공격중이면, 주문 카드 잠시 사용못하게 막기
+        if (!GAME.IGM.IsPlayable) { return; }
+
         // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
         GAME.IGM.Spawn.playerMinions.ForEach(x=>x.Ray = false);
+        // 다른 핸드카드와 겹침 방지
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = false);
 
         // 드래깅 시작 효과음 재생
         audioPlayer.clip =  GAME.IGM.GetClip(Define.IGMsound.Pick);
@@ -241,33 +257,35 @@ public class CardHand : CardEle, IBody
             // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
             IEnumerator evt(IBody a, IBody t)
             {
+                // 이미 없거나 죽은 대상을 선택시, 사용 취소
+                if (t == null || t.HP <= 0)
+                { yield break; }
                 //  evt 코루틴이 실행된 의미는 , 유저가 적합한 타겟팅을 선택하였기에 이벤트 실행 및 주문카드 사용으로 간주
                 // 현재 핸드목록에서 사용할 주문 카드 제거
                 GAME.IGM.Hand.PlayerHand.Remove(this);
 
                 // 완전 삭제가 아닌 투명화만 진행
-                GAME.IGM.AddAction(FadeOutCo(true, false));
+                yield return GAME.IGM.StartCoroutine(FadeOutCo(true, false)); //AddAction
 
+                GAME.IGM.Hero.Player.MP -= currCost;
                 // 상대에게 내가 주문 카드를 사용한걸 알리기
-                GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum);
+                GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum, currCost);
 
                 for (int i = 0; i < SC.evtDatas.Count; i++)
                 {
-                   GAME.IGM.AddAction(GAME.IGM.Battle.Evt(SC.evtDatas[i], this, t));
-                    yield return null;
+                    yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.Evt(SC.evtDatas[i], this , t));  // AddAction
+                    //yield return null;
                 }
 
-                // 나머지 핸드 레이 풀어주기
-                GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-
                 // 상대에게 내 주문카드 사용 끝을 알리기
-                GAME.IGM.AddAction(EndSpell());
+                yield return GAME.IGM.StartCoroutine(EndSpell());
                 IEnumerator EndSpell()
                 {
                     //핸드매니저에서 핸드카드들 재정렬 시작
                     yield return  GAME.IGM.Hand.CardAllignment(this.IsMine);
                     // 주문카드 사용 끝을 전달
                     GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
+                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
                     // 주문카드 완전 사용하였기에 삭제 진행
                     GAME.IGM.Hand.AllCardHand.Remove(this);
                     GameObject.Destroy(this.gameObject);
@@ -318,6 +336,8 @@ public class CardHand : CardEle, IBody
     public void Dragging(Vector3 worldPos)
     {
         if (DragCo == null) { return; }
+        // 내 턴이며, 턴 종료를 누르지 않아야만 플레이 가능한 상태로 인정
+        if (!GAME.IGM.IsPlayable ) { return; }
 
         if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select) { return; }
 
@@ -391,6 +411,8 @@ public class CardHand : CardEle, IBody
     }
     public void EndDrag(Vector3 v)
     {
+        // 내 턴이며, 턴 종료를 누르지 않아야만 플레이 가능한 상태로 인정
+        if (!GAME.IGM.IsPlayable) { return; }
 
         Ray = false; // Ray를 비활성화시 Exit가 호출되지만, DragCo를 뒤에서 null로 초기화하여서 Exit 먼저 실행을 막기
         StopAllCoroutines();
@@ -412,7 +434,7 @@ public class CardHand : CardEle, IBody
                     return;
                 }
                 break;
-            case Define.cardType.spell:
+            case Define.cardType.spell: // 직접 타겟팅하는 주문은 StartDrag에서, 이외 자동실행 주문은 여기 if문으로 실행
                 if (SC.evtDatas[0].targeting != evtTargeting.Select
                      && GAME.IGM.Spawn.CheckInBox( new Vector2(this.transform.localPosition.x, this.transform.localPosition.y)))
                 {
@@ -420,29 +442,30 @@ public class CardHand : CardEle, IBody
                     GAME.IGM.Hero.Player.MP -= this.currCost;
                     GAME.IGM.Hand.PlayerHand.Remove(this);
 
+                    // 주문카드 사용시 투명화만 우선 진행 , 완전 삭제는 마지막에
+                    GAME.IGM.AddAction(FadeOutCo(IsMine, false));
                     // 상대에게 내가 주문 카드를 사용한걸 알리기
-                    GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum);
+                    GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum,currCost);
                     // 이벤트 실행
                     for (int i = 0; i < SC.evtDatas.Count; i++)
                     {
-                        GAME.IGM.AddAction(GAME.IGM.Battle.Evt(SC.evtDatas[i], this)) ;
+                        GAME.IGM.AddAction(GAME.IGM.Battle.Evt(SC.evtDatas[i], this, null)) ; 
                     }
 
-                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-
                     // 상대에게 내 주문카드 사용 끝을 알리기
-                    GAME.IGM.AddAction(EndSpell());
-                    IEnumerator EndSpell()
+                    GAME.IGM.AddAction(EndSpell(this));
+                    IEnumerator EndSpell(CardHand ch)
                     {
+                        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
+                        Debug.Log($"{this.SC.cardName}[pun:{PunId}]Spell카드 삭제 시작");
                         yield return null;
                         GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
                         //핸드매니저에서 핸드카드들 재정렬 시작
                         GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
-                        // 주문카드 사용 완료시, 모든 핸드카드 레이활성 초기화
-                        GAME.IGM.AddAction(FadeOutCo(IsMine));
+                        // 투명화만 처리하였던걸 완전히 삭제
+                        GAME.IGM.Hand.AllCardHand.Remove(ch);
+                        GameObject.Destroy(this.gameObject);
                     }
-
-
                     return;
                 }
                 else
@@ -461,10 +484,6 @@ public class CardHand : CardEle, IBody
 
                     //핸드매니저에서 핸드카드들 재정렬 시작
                     GAME.IGM.AddAction(GAME.IGM.Hand.CardAllignment(this.IsMine));
-
-                    // 상대에게 내 무기 착용 이벤트 전파
-                    GAME.IGM.Packet.SendWeapon(PunId, WC.cardIdNum, this.transform.position.x
-                        , this.transform.position.y, this.transform.position.z);
 
                     // 영웅 무기 착용 시작 ( 카드 소멸 애니메이션 코루틴은 함수 내부에서 실행)
                     GAME.IGM.AddAction(GAME.IGM.Hero.Player.EquipWeapon(this));

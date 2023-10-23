@@ -47,6 +47,7 @@ public class attFX : MonoBehaviour, IFx
         }
 
         #endregion
+
         currUsing = false;
     }
   

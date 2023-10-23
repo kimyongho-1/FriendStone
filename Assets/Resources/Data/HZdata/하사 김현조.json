@@ -10,13 +10,11 @@
   "cardClass": 1,
   "cardType": 0,
   "cardRarity": 0,
-  "associatedHandler": null,
   "evtDatas": [
     {
       "$type": "BuffHandler, Assembly-CSharp",
-      "buffAutoMode": 0,
+      "buffAutoMode": 3,
       "buffType": 3,
-      "buffFX": 0,
       "relatedIds": [
         17
       ],

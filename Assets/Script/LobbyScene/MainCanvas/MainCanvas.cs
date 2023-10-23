@@ -8,6 +8,7 @@ public class MainCanvas : LobbyPopup
 {
     public TextMeshProUGUI Play, Option,Exit;
     AudioSource audioPlayer;
+    public CanvasGroup introCanvas;
     private void Awake()
     {
         // tmp텍스트 버튼들에 이벤트 연결
@@ -16,6 +17,17 @@ public class MainCanvas : LobbyPopup
         GAME.Manager.UM.BindTMPInteraction(Exit, Color.green, Color.red, ExitGame);
         audioPlayer = gameObject.GetComponent<AudioSource>();
     }
+    public IEnumerator PlayLobbyIntro() 
+    {
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            introCanvas.alpha = t;
+            yield return null;
+        }
+    }
+
     public void EnterPlayCanvas(TextMeshProUGUI go)
     {
         GAME.Manager.LM.Play(ref audioPlayer , Define.OtherSound.Enter);

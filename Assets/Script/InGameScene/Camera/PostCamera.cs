@@ -85,6 +85,8 @@ public class PostCamera : MonoBehaviour
         camData.renderPostProcessing = true;
         Blooms.active = ColorAdj.active = false;
         Vig.active = true;
+        // 미니언 꺼버리기
+        GAME.IGM.Hand.PlayerHandGO.SetActive(false);    
     }
     public IEnumerator Outro()
     {

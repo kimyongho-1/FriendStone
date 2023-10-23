@@ -17,8 +17,8 @@ public class SelectedDeckIcon : MonoBehaviour
     private void OnDisable()
     {
         this.gameObject.SetActive(false);
-        cancelBtn.gameObject.SetActive(false);
-        
+        cancelBtn.gameObject.SetActive(false); 
+        matchingState.text = "<color=green>상대를 찾고 있는중";
     }
 
     private void Awake()
@@ -41,7 +41,7 @@ public class SelectedDeckIcon : MonoBehaviour
         // 선택한 덱정보로 초기화
         currDeck = data; 
         deckName.text = data.deckName;
-        deckCount.text = $"{cardCount}/20 {((cardCount == 20) ? "<color=blue> 게임 가능" : $" <color=red>{20-cardCount}장 부족!")}";
+        deckCount.text = $"{cardCount}/20 {((cardCount == 20) ? "<color=blue>\n게임 가능" : $" <color=red>\n{20-cardCount}장 부족!")}";
         classType.text = $"{data.ownerClass}";
         classIcon.sprite = GAME.Manager.RM.GetHeroImage(data.ownerClass);
 
@@ -97,7 +97,7 @@ public class SelectedDeckIcon : MonoBehaviour
         // 만약 랜덤매칭이 잡혀버렸다면, 취소
         if (!GAME.Manager.PM.CanCancel) { return; }
         // 매칭 잡혓을시 stop변수 true로 변경되기에 취소
-        if (RotationBar.stop == true) { return; }
+        if (rotate.stop == true) { return; }
 
         StopAllCoroutines();
         // 애니메이션 진행되는동안 이벤트 클릭방지

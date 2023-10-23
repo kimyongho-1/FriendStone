@@ -60,7 +60,7 @@ public partial class PacketManager
     public void ShowOtherTurn(object[] data)
     {
         // 상대 턴 시작, 상대 마나 초기화
-        GAME.IGM.Hero.Enemy.MP = Mathf.Min(10, GAME.IGM.GameTurn);
+        GAME.IGM.Hero.Enemy.MP = Mathf.Min(10, GAME.IGM.GameTurn+1);
         // 상대 턴임을 알리기
         GAME.IGM.AddAction(GAME.IGM.Turn.ShowTurnMSG(false));
     }
@@ -280,6 +280,7 @@ public partial class PacketManager
                 yield return null;
             }
 
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(false));
         }
     }
 
@@ -326,15 +327,21 @@ public partial class PacketManager
         int attAmount = (int)data[3];
         Define.ObjType objType = (Define.ObjType)data[4];
 
-        IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetPunID);
-        // 공격 이벤트를 받을시, 공격자의 obj타입이 미니언이라면 미니언을 찾고
-        // 그외에는 적 영웅을 공격자로 지정 (공격 이펙트의 시작위치가 적 영웅에서 시작하길 원하기에)
-        IBody attacker = (objType == Define.ObjType.Minion) ?
-            GAME.IGM.allIBody.Find(x => x.PunId == attackerPunID)
-            : GAME.IGM.Hero.Enemy ;
-        Debug.Log($"공격 이벤트 공격자:{attacker.PunId}, 타겟 : {target.PunId}");
-        // 상대로부터 받은 공격이벤트 예약후 실행
-        GAME.IGM.AddAction(GAME.IGM.Battle.AttackEvt(attacker, target, attAmount, attType));
+        GAME.IGM.AddAction(MakeAttEvt(attackerPunID, targetPunID, attType, attAmount, objType));
+
+        IEnumerator MakeAttEvt(int attackerPunID, int targetPunID, Define.attType attType, int attAmount, Define.ObjType objType)
+        {
+            IBody target = GAME.IGM.allIBody.Find(x => x.PunId == targetPunID);
+            // 공격 이벤트를 받을시, 공격자의 obj타입이 미니언이라면 미니언을 찾고
+            // 그외에는 적 영웅을 공격자로 지정 (공격 이펙트의 시작위치가 적 영웅에서 시작하길 원하기에)
+            IBody attacker = (objType == Define.ObjType.Minion) ?
+                GAME.IGM.allIBody.Find(x => x.PunId == attackerPunID)
+                : GAME.IGM.Hero.Enemy;
+            Debug.Log($"공격 이벤트 공격자:{attacker.PunId}, 타겟 : {target.PunId}");
+            // 상대로부터 받은 공격이벤트 예약후 실행
+            yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.AttackEvt(attacker, target, attAmount, attType));
+        }
+       
     }
 
     #endregion

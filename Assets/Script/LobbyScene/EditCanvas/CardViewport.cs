@@ -33,10 +33,10 @@ public class CardViewport : MonoBehaviour
         // 각종 안내팝업창 호출 이벤트 연결
         GAME.Manager.UM.BindUIPopup(
             classBtn.gameObject, 0.75f, new Vector3(-225f,60f,0), Define.PopupScale.Small,
-            $"{((classBtn.gameObject.activeSelf == true) ? "현재 당신의 직업카드를\n보고 있습니다\n중립카드를 누르면\n중립카드로 바꿉니다": "현재 중립카드를\n보고 있습니다\n직업카드를 누르면\n직업카드로 바꿉니다")}");
+            "현재 중립카드를\n보고 있습니다\n직업카드를 누르면\n직업카드로 바꿉니다");
         GAME.Manager.UM.BindUIPopup(
-            neturalBtn.gameObject, 0.75f, new Vector3(-75f,60f,0), Define.PopupScale.Small,
-            $"{((classBtn.gameObject.activeSelf == true) ? "현재 당신의 직업카드를\n보고 있습니다\n중립카드를 누르면\n중립카드로 바꿉니다" : "현재 중립카드를\n보고 있습니다\n직업카드를 누르면\n직업카드로 바꿉니다")}");
+            neturalBtn.gameObject, 0.75f, new Vector3(-75f,60f,0), Define.PopupScale.Small, 
+            $"현재 당신의 직업카드를\n보고 있습니다\n중립카드를 누르면\n중립카드로 바꿉니다");
         GAME.Manager.UM.BindUIPopup(
             acceptBtn.gameObject, 0.25f, new Vector3(-322f, -123f,0),
             Define.PopupScale.Small, "편집을 중단하지만\n20장 미만의 덱은\n게임에 사용할수가 없습니다");
@@ -49,10 +49,10 @@ public class CardViewport : MonoBehaviour
     public void ReadyData()
     {
         // 각진영별 카드 데이터들을 로딩
-        neturalList.AddRange(LoadCards("Assets/Resources/Data/Neturaldata"));
-        HjList.AddRange(LoadCards("Assets/Resources/Data/HJdata"));
-        HzList.AddRange(LoadCards("Assets/Resources/Data/HZdata"));
-        KhList.AddRange(LoadCards("Assets/Resources/Data/Khdata"));
+        neturalList.AddRange(LoadCards("Data/Neturaldata"));
+        HjList.AddRange(LoadCards("Data/HJdata"));
+        HzList.AddRange(LoadCards("Data/HZdata"));
+        KhList.AddRange(LoadCards("Data/Khdata"));
 
         // 준비완료 신호 보내기
         GAME.Manager.waitQueue.Enqueue(GAME.Manager.LM.edit.gameObject);
@@ -61,41 +61,43 @@ public class CardViewport : MonoBehaviour
     // 제이슨파일 가져오기
     public List<CardData> LoadCards(string folder)
     {
-        // json확장자만 가져오기
-        string[] filePath = Directory.GetFiles(folder, "*.json");
+        TextAsset[] textAssets = Resources.LoadAll<TextAsset>(folder);
         List<CardData> allCards = new List<CardData>();
 
-        for (int i = 0; i < filePath.Length; i++)
+        foreach (TextAsset textAsset in textAssets)
         {
-            string content = File.ReadAllText(filePath[i]);
+            // JSON 파싱 로직
             // 여기서 카드 타입을 확인
             CardData c = JsonConvert.DeserializeObject<CardData>
-                (content, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-
-
-            CardData card = null;
-            // 확인된 카드타입으로, 실제 카드타입으로 클래스화
-            switch (c.cardType)
+                (textAsset.ToString() , new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+            if (c.cardIdNum > 100) { continue; }
+            else
             {
-                case Define.cardType.minion:
-                    card = JsonConvert.DeserializeObject<MinionCardData>
-                (content, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                    break;
-                case Define.cardType.spell:
-                    card = JsonConvert.DeserializeObject<SpellCardData>
-                (content, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                    break;
-                case Define.cardType.weapon:
-                    card = JsonConvert.DeserializeObject<WeaponCardData>
-                (content, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-                    break;
-                default: break;
-            }
+                CardData card = null;
+                // 확인된 카드타입으로, 실제 카드타입으로 클래스화
+                switch (c.cardType)
+                {
+                    case Define.cardType.minion:
+                        card = JsonConvert.DeserializeObject<MinionCardData>
+                    (textAsset.ToString(), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                        break;
+                    case Define.cardType.spell:
+                        card = JsonConvert.DeserializeObject<SpellCardData>
+                    (textAsset.ToString(), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                        break;
+                    case Define.cardType.weapon:
+                        card = JsonConvert.DeserializeObject<WeaponCardData>
+                    (textAsset.ToString(), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+                        break;
+                    default: break;
+                }
 
-            Debug.Log(card);
-            allCards.Add(card);
+                Debug.Log(card);
+                allCards.Add(card);
+            }
         }
 
+    
         // 비용순으로 재정렬
         allCards = allCards.OrderBy(x => x.cost).ToList();
 

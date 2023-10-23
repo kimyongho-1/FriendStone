@@ -20,7 +20,8 @@ public class TurnEndBtn : MonoBehaviour
         GAME.IGM.Turn = this;
         GAME.Manager.UM.BindEvent( this.gameObject , ClickedOnTurnEnd , Define.Mouse.ClickL);
     }
-
+    public void StopAllCoroutine()
+    { StopAllCoroutine(); }
     // 턴종료 버튼 누를시 호출
     public void ClickedOnTurnEnd(GameObject go)
     {
@@ -55,16 +56,17 @@ public class TurnEndBtn : MonoBehaviour
     {
         // 필드 하수인 모두 공격중지
         GAME.IGM.Spawn.playerMinions.ForEach(x => x.Attackable = false);
-        // 내 턴 종료
-        GAME.IGM.Packet.isMyTurn = false;
-        // 상대에게 내 턴 종료 전파
-        GAME.IGM.Packet.SendTurnEnd();
 
         for (int i = 0; i < GAME.IGM.Spawn.enemyMinions.Count; i++)
         {
             GAME.IGM.Spawn.enemyMinions[i].Attackable = true;
             GAME.IGM.Spawn.enemyMinions[i].sleep.gameObject.SetActive(false);
-        }
+        } 
+
+        // 내 턴 종료
+        GAME.IGM.Packet.isMyTurn = false;
+        // 상대에게 내 턴 종료 전파
+        GAME.IGM.Packet.SendTurnEnd();
 
         yield break;
     }
@@ -73,7 +75,7 @@ public class TurnEndBtn : MonoBehaviour
     public IEnumerator ShowTurnMSG(bool isMyTurn)
     {
         // 텍스트 표시
-         btnTmp.text = (isMyTurn) ? "나의 턴" : "상대 턴";
+        btnTmp.text = (isMyTurn) ? "나의 턴" : "상대 턴";
         infoTmp.text = (isMyTurn) ? "나의 차례" : "상대의 차례";
         infoTmp.color = new Color(1, 1, 1, 0);
         infoTmp.gameObject.SetActive(true);

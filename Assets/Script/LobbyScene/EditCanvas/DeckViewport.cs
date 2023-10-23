@@ -47,7 +47,7 @@ public class DeckViewport : MonoBehaviour
     public void EnterUserDeck(DeckData data)
     {
         currDeck = data;
-        deckNameInputField.text = $"货肺款 {data.ownerClass}郸";
+        deckNameInputField.text = data.deckName.ToString(); // $"货肺款 {data.ownerClass}郸";
         cardCount.text = $"{data.cards.Values.Sum()}/20";
         classIcon.sprite = GAME.Manager.RM.GetHeroImage(data.ownerClass);
 

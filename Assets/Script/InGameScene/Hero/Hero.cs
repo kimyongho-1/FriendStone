@@ -27,6 +27,7 @@ public class Hero : MonoBehaviour, IBody
         set 
         {
             mp = value;
+            mp = Mathf.Max(0,mp);
             mpTmp.text = "X" + mp.ToString();
         }
     }
@@ -57,7 +58,6 @@ public class Hero : MonoBehaviour, IBody
     }
     #endregion
 
-    // 카메라의 피직스레이캐스터 필요, 객체에 Collider필요
     public void Awake()
     {
         audioPlayer = GetComponent<AudioSource>();
@@ -67,8 +67,7 @@ public class Hero : MonoBehaviour, IBody
         IsMine = (this.gameObject.name.Contains("Player")) ? true : false;
         gameObject.layer = LayerMask.NameToLayer((IsMine == true) ? "allyHero" : "foeHero");
         Attackable = true;
-        att = 0;// hp = 30;
-        HP = 10;
+        att = 0; hp = 30;
         GAME.IGM.allIBody.Add(this);
         // 내 영웅만 필요한 클릭 이벤트들 
         if (IsMine == true)
@@ -178,13 +177,11 @@ public class Hero : MonoBehaviour, IBody
     #region 영웅 이벤트
 
     // 적의 영웅 능력 사용을 내 화면에서 동기화할떄, 강제 호출하여 사용
-    public void CallHeroSkillAttack(IBody target)
+    public IEnumerator CallHeroSkillAttack(IBody target)
     {
         // 사용으로 검게 만들어주기
         IEnumerator co = heroData.SkillCo(heroSkill, target);
-        GAME.IGM.AddAction(EnemySkillUse(co));
-        
-        IEnumerator EnemySkillUse(IEnumerator co)
+        if (co != null)
         {
             // 사용으로 검게 만들어주기
             heroSkill.Attackable = false;
@@ -227,8 +224,8 @@ public class Hero : MonoBehaviour, IBody
     public void HeroAttack(GameObject go)
     {
         #region 예외상황들 확인
-        // 나의 턴에서만 가능한 상태
-        if (GAME.IGM.Packet.isMyTurn == false) { return; }
+        // 내 턴이며, 턴 종료를 누르지 않아야만 플레이 가능한 상태로 인정
+        if (!GAME.IGM.IsPlayable) { return; }
 
         // 만약 대화선택지 이벤트 선택 또는 실행중이었따면, 대화창 닫는 이벤트로 변경 실행
         if (Speech.gameObject.activeSelf == true)
@@ -288,18 +285,19 @@ public class Hero : MonoBehaviour, IBody
             Attackable = true;
             yield break;
         }
-
+        // 근접공격중임으로 변경 (잘못된 주문카드 사용방지)
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = false);
         // 공격시 펀치소리 미리 재생준비
         audioPlayer.clip = GAME.IGM.GetClip(IGMsound.Punch);
 
         #region 공격 코루틴 : 상대에게 박치기
         ChangeSortingLayer(true); // 공격자 소팅레이어로 옮겨 최상단에 위치하기
-        float t = 0;
+        float t = Time.deltaTime;
         Vector3 start = playerMask.transform.position;
         Vector3 dest = target.Pos;
         while (t < 1f)
         {
-            t += Time.deltaTime * 1f;
+            t = 1.15f * t;
             playerMask.transform.position = Vector3.Lerp(start, dest, t);
             yield return null;
         }
@@ -345,6 +343,7 @@ public class Hero : MonoBehaviour, IBody
 
         if (target.HP <= 0) { yield return StartCoroutine(target.onDead); }
         if (attacker.HP <= 0) { yield return StartCoroutine(attacker.onDead); }
+        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
     }
 
     // 영웅 우클릭시 대화 이벤트
@@ -456,8 +455,14 @@ public class Hero : MonoBehaviour, IBody
         Att += weaponData.att;
         durTmp.text = weaponData.durability.ToString();
         weaponAttTmp.text  = weaponData.att.ToString();
+
+        // 상대에게 내 무기 착용 이벤트 전파
+        GAME.IGM.Packet.SendWeapon(card.PunId, card.WC.cardIdNum, card.transform.position.x
+            , card.transform.position.y, card.transform.position.z);
+
         // 무기 착용 애니메이션 시작
         yield return StartCoroutine(WearingCo(card));
+
     }
     public IEnumerator EquipWeapon(CardHand card ,CardData data)
     {
