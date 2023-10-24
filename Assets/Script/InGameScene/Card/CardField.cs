@@ -114,6 +114,10 @@ public class CardField : CardEle,IBody
             // 좌클릭시 공격 타겟팅 이벤트 시작을 연결
             GAME.Manager.UM.BindEvent(this.gameObject, StartAttack, Define.Mouse.ClickL);
         }
+        else
+        {
+            HP = OriginHp = MC.hp;
+        }
         IEnumerator Dead(bool isMine)
         {
             #region 죽는 하수인이 죽을떄 실행할 이벤트 있는지 확인 및 실행

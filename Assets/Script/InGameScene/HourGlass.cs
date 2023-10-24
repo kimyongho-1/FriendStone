@@ -65,7 +65,7 @@ public class HourGlass : MonoBehaviour
         if (GAME.IGM.Turn.Col.enabled == true)
         {
             // 턴 제한인데도, 발견이벤트 진행중이었다면
-            if (GAME.IGM.FindEvt.enabled == true)
+            if (GAME.IGM.FindEvt.gameObject.activeSelf == true)
             {
                 Debug.Log("시간제한으로, 발견이벤트 강제 선택");
                 // 강제로 왼쪽 설정
@@ -73,9 +73,12 @@ public class HourGlass : MonoBehaviour
             }
 
             // 강제로 턴 종료 실행 및 전파
+            GAME.IGM.TC.emergencyStop = true;
+            yield return new WaitUntil(()=>(GAME.IGM.TC.LR.gameObject.activeSelf == false));
+            yield return new WaitForSeconds(1f);
             GAME.IGM.Turn.ClickedOnTurnEnd(null);
         }
-        
-        this.gameObject.SetActive(false);
+        else
+        { this.gameObject.SetActive(false); }
     }
 }

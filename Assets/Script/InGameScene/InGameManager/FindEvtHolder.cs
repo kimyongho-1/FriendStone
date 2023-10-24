@@ -48,8 +48,6 @@ public class FindEvtHolder : MonoBehaviour
             list[i].cardImage.gameObject.SetActive(true);
             list[i].TMPgo.gameObject.SetActive(true);
             list[i].cardBackGround.sprite = GAME.Manager.RM.GetCardSprite(true);
-            Debug.Log($"스케일 : {list[i].transform.localScale}");
-            Debug.Log($"위치 : {list[i].transform.localPosition}");
             // 리소스 매니저의 경로를 반환 받는 딕셔너리 통해 카드타입과 카드데이터 찾기
             Define.cardType type = GAME.Manager.RM.PathFinder.Dic[puns[i]].type;
             string jsonFile = GAME.Manager.RM.PathFinder.Dic[puns[i]].GetJson();
@@ -83,7 +81,7 @@ public class FindEvtHolder : MonoBehaviour
 
         // 내가 상대의 카드 상호작용 하면 안되기에 레이 끄기
         left.enabled = right.enabled = center.enabled = true;
-
+        gameObject.SetActive(true);
     }
 
     public void ClickedCard(GameObject go)

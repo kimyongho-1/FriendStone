@@ -192,9 +192,9 @@ public class CardHand : CardEle, IBody
         if (DragCo != null) { return; }
         
         SetOrder(originOrder * 10);
-        transform.localScale = originScale * 1.5f;
+        transform.localScale = originScale * 1.75f;
         transform.localRotation = Quaternion.identity;
-        transform.localPosition = new Vector3(transform.localPosition.x, -1.65f,-0.5f);
+        transform.localPosition = new Vector3(transform.localPosition.x, -1.48f,-0.5f);
     }
     public void Exit(GameObject go)
     { 
@@ -214,88 +214,94 @@ public class CardHand : CardEle, IBody
         // 비용문제로 사용 못하는 카드라면 바로 취소
         if (CurrCost > GAME.IGM.Hero.Player.MP) { return; }
 
+        Debug.Log($"GAME.IGM.IsPlayable : {GAME.IGM.IsPlayable}");
         // 내 턴이며, 턴 종료를 누르지 않아야만 플레이 가능한 상태로 인정
         // 추가로 근접공격중이면, 주문 카드 잠시 사용못하게 막기
         if (!GAME.IGM.IsPlayable) { return; }
 
-        // 핸드카드 드래그시, 필드의 하수인과 겹치면 안되기에 잠시끄기
-        GAME.IGM.Spawn.playerMinions.ForEach(x=>x.Ray = false);
-        // 다른 핸드카드와 겹침 방지
-        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = false);
-
-        // 드래깅 시작 효과음 재생
-        audioPlayer.clip =  GAME.IGM.GetClip(Define.IGMsound.Pick);
-        audioPlayer.Play();
-
-        // 주문카드이며 직접 타겟팅하는 경우, 카드를 움직이지않고 현재 핸드카드에서 타겟팅 화살표 실행
-        if (CardEleType == cardType.spell && SC.evtDatas[0].targeting == evtTargeting.Select)
+        switch (CardEleType)
         {
-            // 이벤트중에 선택 이벤트 찾기
-            CardBaseEvtData selectEvt = SC.evtDatas[0];
+            case cardType.minion:
+                if (GAME.IGM.Spawn.playerMinions.Count < 7) { PlayPickSound(); Dragging(); } break;
+            case cardType.spell:
+                PlayPickSound(); SpellDragging(); break;
+            default: PlayPickSound(); Dragging(); break;
+        }
 
-            // 만약 직접 타겟팅을 하는 주문이지만
-            // 대상이 적 미니언 뿐이고, 적 미니언이 없으면
-            // 강제로 드로우 끝 함수를 호출하여 사용 강제취소
-            string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
-            if (layers.Length == 1 && layers[0] == "foe"
-                && GAME.IGM.Spawn.enemyMinions.Count == 0)
-            { EndDrag(default); return; }
-
-            // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 실행함수 예약 실행
-            GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
-                (this,
-
-                (IBody a, IBody t) =>
-                {
-                    return evt(a, t);
-                },
-
-                GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
-               
-                ));
-            
-            // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
-            IEnumerator evt(IBody a, IBody t)
+        void SpellDragging()
+        {
+            // 주문카드이며 직접 타겟팅하는 경우, 카드를 움직이지않고 현재 핸드카드에서 타겟팅 화살표 실행
+            if (SC.evtDatas[0].targeting == evtTargeting.Select)
             {
-                // 이미 없거나 죽은 대상을 선택시, 사용 취소
-                if (t == null || t.HP <= 0)
-                { yield break; }
-                //  evt 코루틴이 실행된 의미는 , 유저가 적합한 타겟팅을 선택하였기에 이벤트 실행 및 주문카드 사용으로 간주
-                // 현재 핸드목록에서 사용할 주문 카드 제거
-                GAME.IGM.Hand.PlayerHand.Remove(this);
+                Debug.Log($"주문카드PUN : {PunId}, col : {Col.enabled}");
+                // 이벤트중에 선택 이벤트 찾기
+                CardBaseEvtData selectEvt = SC.evtDatas[0];
 
-                // 완전 삭제가 아닌 투명화만 진행
-                yield return GAME.IGM.StartCoroutine(FadeOutCo(true, false)); //AddAction
+                // 만약 직접 타겟팅을 하는 주문이지만
+                // 대상이 적 미니언 뿐이고, 적 미니언이 없으면
+                // 강제로 드로우 끝 함수를 호출하여 사용 강제취소
+                string[] layers = GAME.IGM.Battle.FindLayer(selectEvt);
+                if (layers.Length == 1 && layers[0] == "foe"
+                    && GAME.IGM.Spawn.enemyMinions.Count == 0)
+                { EndDrag(default); return; }
 
-                GAME.IGM.Hero.Player.MP -= currCost;
-                // 상대에게 내가 주문 카드를 사용한걸 알리기
-                GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum, currCost);
+                // 타겟팅 카메라 실행 + 만약 타겟팅 성공시 실행함수 예약 실행
+                GAME.Manager.StartCoroutine(GAME.IGM.TC.TargettingCo
+                    (this,
 
-                for (int i = 0; i < SC.evtDatas.Count; i++)
+                    (IBody a, IBody t) =>
+                    {
+                        Ray = false;
+                        return evt(a, t);
+                    },
+
+                    GAME.IGM.Battle.FindLayer(selectEvt) // 현재 선택 타겟 이벤트의 레이어 설정에 맞게 변경
+
+                    ));
+
+                Debug.Log($"주문카드PUN : {PunId}, col : {Col.enabled}");
+                // 유저가 타겟을 고르면 해당 이벤트 먼저 실행후, 나머지 기타 이벤트 순서대로 실행
+                IEnumerator evt(IBody a, IBody t)
                 {
-                    yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.Evt(SC.evtDatas[i], this , t));  // AddAction
-                    //yield return null;
-                }
+                    // 이미 없거나 죽은 대상을 선택시, 사용 취소
+                    if (t == null || t.HP <= 0)
+                    { yield break; }
+                    //  evt 코루틴이 실행된 의미는 , 유저가 적합한 타겟팅을 선택하였기에 이벤트 실행 및 주문카드 사용으로 간주
+                    // 현재 핸드목록에서 사용할 주문 카드 제거
+                    GAME.IGM.Hand.PlayerHand.Remove(this);
 
-                // 상대에게 내 주문카드 사용 끝을 알리기
-                yield return GAME.IGM.StartCoroutine(EndSpell());
-                IEnumerator EndSpell()
-                {
-                    //핸드매니저에서 핸드카드들 재정렬 시작
-                    yield return  GAME.IGM.Hand.CardAllignment(this.IsMine);
-                    // 주문카드 사용 끝을 전달
-                    GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
-                    GAME.IGM.Hand.PlayerHand.ForEach(x => x.Ray = true);
-                    // 주문카드 완전 사용하였기에 삭제 진행
-                    GAME.IGM.Hand.AllCardHand.Remove(this);
-                    GameObject.Destroy(this.gameObject);
+                    // 완전 삭제가 아닌 투명화만 진행
+                    yield return GAME.IGM.StartCoroutine(FadeOutCo(true, false)); //AddAction
+
+                    GAME.IGM.Hero.Player.MP -= currCost;
+                    // 상대에게 내가 주문 카드를 사용한걸 알리기
+                    GAME.IGM.Packet.SendUseSpellCard(this.PunId, SC.cardIdNum, currCost);
+
+                    for (int i = 0; i < SC.evtDatas.Count; i++)
+                    {
+                        yield return GAME.IGM.StartCoroutine(GAME.IGM.Battle.Evt(SC.evtDatas[i], this, t));
+                    }
+
+                    // 상대에게 내 주문카드 사용 끝을 알리기
+                    yield return GAME.IGM.StartCoroutine(EndSpell());
+                    IEnumerator EndSpell()
+                    {
+                        //핸드매니저에서 핸드카드들 재정렬 시작
+                        yield return GAME.IGM.Hand.CardAllignment(this.IsMine);
+                        // 주문카드 사용 끝을 전달
+                        GAME.IGM.Packet.SendEndingSpellCard(this.PunId);
+                        // 주문카드 완전 사용하였기에 삭제 진행
+                        GAME.IGM.Hand.AllCardHand.Remove(this);
+                        GameObject.Destroy(this.gameObject);
+                    }
                 }
             }
+            else { Dragging(); }
         }
 
         // 그외 모든 카드들은 필드에 드래그를 하여 놓아야 사용하는것으로 판정
-        else
-        {
+        void Dragging()
+        { 
             // 드래그 시작 : 현재 드래깅 객체 크기,회전등 초기화
             DragCo = BackToOrigin();
             StartCoroutine(DragCo);
@@ -315,10 +321,10 @@ public class CardHand : CardEle, IBody
                 {
                     t += Time.deltaTime * 2.5F;
                     transform.localScale = Vector3.Lerp(currScale, originScale, t);
-                    transform.localRotation = Quaternion.Lerp(currRot , Quaternion.identity,t);
+                    transform.localRotation = Quaternion.Lerp(currRot, Quaternion.identity, t);
                     yield return null;
-                } 
-                
+                }
+
                 // 드래그동안 회전 0값으로 돌아가려 계속 시도 (움직임에 의한 실제 회전값 적용은 Dragging함수에서 )
                 while (true)
                 {
@@ -329,9 +335,13 @@ public class CardHand : CardEle, IBody
                     yield return null;
                 }
             }
-
         }
-
+        void PlayPickSound()
+        {
+            // 드래깅 시작 효과음 재생
+            audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.Pick);
+            audioPlayer.Play();
+        }
     }
     public void Dragging(Vector3 worldPos)
     {

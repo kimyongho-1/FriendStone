@@ -66,7 +66,6 @@ public class UIpopupHolder: MonoBehaviour,IPointerEnterHandler, IPointerExitHand
     // 클릭입력시 안내창은 강제 종료 (대기코루틴또한 강제종료)
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log("Downw");
         OnPointerExit(eventData);
     }
 }

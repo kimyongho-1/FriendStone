@@ -25,6 +25,7 @@ public class PostCamera : MonoBehaviour
     LayerEnums layerBits;
     private void Awake()
     {
+        Camera.main.aspect = 16f / 9f;
         GAME.IGM.Post = this;
         cam = GetComponent<Camera>();
         mainCam = Camera.main;

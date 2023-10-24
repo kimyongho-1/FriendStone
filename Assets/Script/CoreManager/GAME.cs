@@ -24,7 +24,7 @@ public class GAME : MonoBehaviour
         CurrScene = Define.Scene.Login;
         sm.PlayBGM();
         SceneManager.sceneLoaded += OnLobbyLoad;
-        Screen.SetResolution(800,480,false);
+        Screen.SetResolution(600,400,false);
     }
 
     private void OnApplicationQuit()
@@ -86,6 +86,7 @@ public class GAME : MonoBehaviour
         switch (scene.name) 
         {
             case "Lobby":
+                Camera.main.aspect = 16f / 9f;
                 // 로비씬 전환시 실행할 초기화 모두 끝날떄
                 // 로그인씬 끝내기
                 // 새씬의 이벤트시스템 삭제
@@ -124,6 +125,7 @@ public class GAME : MonoBehaviour
                             StartCoroutine(LM.main.GetComponent<MainCanvas>().PlayLobbyIntro());
                         };
                     }
+                    Camera.main.aspect = 16f / 9f;
                     CurrScene = Define.Scene.Lobby;
                     sm.PlayBGM();
                     GAME.Manager.Evt.gameObject.SetActive(true);
@@ -131,6 +133,7 @@ public class GAME : MonoBehaviour
                 break;
 
             case "InGame":
+                Camera.main.aspect = 16f / 9f;
                 Debug.Log("GM에서 호출");
                 sm.PlayBGM();
 

@@ -18,6 +18,7 @@ public class TargetingCamera : MonoBehaviour
         // 타겟팅 카메라 참조
         GAME.IGM.TC = this;
         LR.positionCount = 0;
+        Camera.main.aspect = 16f / 9f;
     }
     public float dist = 7;
     public float ShakeDuration = 2;  // ShakeDuration은 총 회전할 시간
@@ -25,6 +26,7 @@ public class TargetingCamera : MonoBehaviour
     // 재생 속도
     public float playTime = 2f; // ShakeDuration동안 몇번을 반복할지
 
+    public bool emergencyStop = false; // 턴종료로, 현재 진행중인것들 중지시킬지 여부
     // 공격등이 실행될떄, 카메라 한들기 코루틴
     public IEnumerator ShakeCo()
     {
@@ -89,7 +91,6 @@ public class TargetingCamera : MonoBehaviour
     // 미니언과 영웅의 근접공격에 사용
     public IEnumerator MeeleTargettingCo(IBody attacker, Func<IBody, IBody, IEnumerator> RegisterCo )
     {
-        GAME.IGM.Turn.Col.enabled = false;
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
         yield return new WaitForSeconds(0.15f);
 
@@ -121,6 +122,8 @@ public class TargetingCamera : MonoBehaviour
             if (waitInput.Invoke())
             {
                 Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); 
+
+                // emergenctStop : 턴종료로 급하게 종료해야되는지 여부 추가
                 if (hit != null)
                 {
                     // 근접 공격 타겟팅은 미니언과 영웅들만이 타겟범위
@@ -196,21 +199,38 @@ public class TargetingCamera : MonoBehaviour
                 }
             }
 
+            // 시간초과로, 타겟팅 강제종료
+            if (emergencyStop == true)
+            {
+                // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                LR.positionCount = 0;
+                // 잘못된 곳에 클릭시 공격 취소 및 제자리 복귀 애니메이션
+                Debug.Log("시간초과로 생략");
+                t = 0;
+                Vector3 start = attacker.Pos;
+                dest = attacker.OriginPos;
+                while (t < 1f)
+                {
+                    t += Time.deltaTime * 2.5f;
+                    attacker.TR.position = Vector3.Lerp(start, dest, t);
+                    yield return null;
+                }
+                // 공격을 안하였기에 attackable을 다시 복구
+                attacker.Attackable = true;
+                break;
+            }
             yield return null;
         }
-        GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
+        attacker.Col.enabled = true;
         yield break;
     }
 
     // 주문카드, 미니언의 이벤트 타겟팅 등에 사용
     public IEnumerator TargettingCo(IBody attacker, Func<IBody, IBody, IEnumerator> RegisterCo, string[] filter )
     {
-        // 핸드 못건드리게 잠그기
-        GAME.IGM.Hand.PlayerHand.ForEach(x=>x.Col.enabled = false);
         // 이벤트의 공격 범위에 맞게 , 포스트프로세싱과 제외대상을 나누어 시각적으로 강조하기
         GAME.IGM.Post.StartMaskingArea(filter);
         attacker.Col.enabled = false;
-        GAME.IGM.Turn.Col.enabled = false;
 
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
         yield return new WaitForSeconds(0.15f);
@@ -241,11 +261,13 @@ public class TargetingCamera : MonoBehaviour
                (new Vector3(Input.mousePosition.x, Input.mousePosition.y, -camPos.z));
 
             // 마우스 클릭과 충돌체 확인시 성공
-            if (waitInput.Invoke()) //Input.GetMouseButtonDown(0)
+            // emergenctStop : 턴종료로 급하게 종료해야되는지 여부 추가
+            if (waitInput.Invoke())
             {
-                Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
-                if (hit != null)
+                Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter));
+                if (hit != null )
                 {
+                    attacker.Col.enabled = (attacker.objType == ObjType.HandCard) ? false : true;
                     // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
                     LR.positionCount = 0;
                     // 실행 코루틴 예약 실행
@@ -257,11 +279,28 @@ public class TargetingCamera : MonoBehaviour
                 {
                     Debug.Log("타겟 없음");
                     // 손에서 사용하는, 주문카드의 경우 잘못된 곳을 클릭시 취소하도록 변경
-                    if (attacker.objType == ObjType.HandCard)
+                    // 미니언의 경우, 턴종료로 급하게 종료해야되는 경우 이벤트 실행 생략
+                    if (attacker.objType == ObjType.HandCard || emergencyStop == true)
                     {
                         // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
-                        LR.positionCount = 0; break; 
+                        LR.positionCount = 0;
+                        attacker.Col.enabled = true;
+                        break;
                     }
+                }
+            }
+            // 시간초과로, 타겟팅 강제종료
+            if (emergencyStop == true)
+            {
+                Debug.Log("시간 초과로 강제종료");
+                // 손에서 사용하는, 주문카드의 경우 잘못된 곳을 클릭시 취소하도록 변경
+                // 미니언의 경우, 턴종료로 급하게 종료해야되는 경우 이벤트 실행 생략
+                if (attacker.objType == ObjType.HandCard || emergencyStop == true)
+                {
+                    // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                    LR.positionCount = 0;
+                    attacker.Col.enabled = true;
+                    break;
                 }
             }
 
@@ -269,19 +308,13 @@ public class TargetingCamera : MonoBehaviour
         }
 
         GAME.IGM.Post.ExitMaskingArea();
-        // 레이 모두 다시 활성화
-        attacker.Ray = true;
-        GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
-        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = true);
+        
         yield break;
     }
     public IEnumerator TargettingHeroSkillCo(IBody attacker)
     {
         Hero player = GAME.IGM.Hero.Player;
-        // 핸드 못건드리게 잠그기
-        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = false);
         attacker.Col.enabled = false;
-        GAME.IGM.Turn.Col.enabled = false;
         // 약간의 딜레이를 주어서 바로 다음 구문 실행 방지
         yield return new WaitForSeconds(0.15f);
 
@@ -303,7 +336,7 @@ public class TargetingCamera : MonoBehaviour
                (new Vector3(Input.mousePosition.x, Input.mousePosition.y, -camPos.z));
 
             // 마우스 클릭과 충돌체 확인시 성공
-            if (waitInput.Invoke()) //Input.GetMouseButtonDown(0)
+            if (waitInput.Invoke())
             {
                 Collider2D hit = Physics2D.OverlapPoint(CursorPos, LayerMask.GetMask(filter)); ;
                 if (hit != null && hit.TryGetComponent<IBody>(out IBody targetFounded))
@@ -328,10 +361,19 @@ public class TargetingCamera : MonoBehaviour
                     break;
                 }
             }
+            // 시간초과로, 타겟팅 강제종료
+            if (emergencyStop == true)
+            {
+                // 라인궤적 그리는 코루틴 종료위해 갯수 초기화
+                LR.positionCount = 0;
+                Debug.Log("시간초과로 생략");
+                // 타겟을 잘못 하였기에, 다시 공격상태로 바꿔주고 타겟팅 레이 취소하기
+                attacker.Attackable = true;
+                break;
+            }
             yield return null;
         }
-        GAME.IGM.Turn.Col.enabled = attacker.Col.enabled = true;
-        GAME.IGM.Hand.PlayerHand.ForEach(x => x.Col.enabled = true);
+        attacker.Col.enabled = true;
         yield break;
     }
     // 두 유저 인게임씬 진입 + 서로 기본정보 공유 확인시

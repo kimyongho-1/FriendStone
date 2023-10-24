@@ -3,12 +3,11 @@ using Photon.Realtime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.GraphicsBuffer;
+using System.IO;
+using Photon.Pun;
+using Unity.VisualScripting;
 
 public class BattleManager : MonoBehaviour
 {
@@ -16,6 +15,7 @@ public class BattleManager : MonoBehaviour
     public Queue<IEnumerator> ActionQueue = new Queue<IEnumerator>();
     public Queue<IEnumerator> DeathRattleQueue = new Queue<IEnumerator>();  
     public IEnumerator currCo;
+
     // 예약되는 이벤트를 순차적으로 실행
     public IEnumerator ProcessigCo()
     {
@@ -439,6 +439,7 @@ public class BattleManager : MonoBehaviour
                         int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
                         Debug.Log($"실행자:{ownerPunID}, count : {count}");
                         target.Att = target.Att + bh.buffAtt * count;
+                        target.OriginAtt = target.OriginAtt + bh.buffHp * count;
                     };
 
                 case Define.buffType.hp:
@@ -447,6 +448,7 @@ public class BattleManager : MonoBehaviour
                         int count = SortHandEvt(ref IsMine, ref bh, ref target, ref id);
                         Debug.Log($"실행자:{ownerPunID}, count : {count}");
                         target.HP = target.HP + bh.buffHp * count;
+                        target.OriginHp = target.OriginHp + bh.buffHp * count;
                     };
 
                 case Define.buffType.atthp:
@@ -456,6 +458,8 @@ public class BattleManager : MonoBehaviour
                         Debug.Log($"실행자:{ownerPunID}, count : {count}");
                         target.Att = target.Att + bh.buffAtt * count;
                         target.HP = target.HP + bh.buffHp * count;
+                        target.OriginAtt = target.OriginAtt + bh.buffHp * count;
+                        target.OriginHp = target.OriginHp + bh.buffHp * count;
                     };
 
                 case Define.buffType.cost:
@@ -584,15 +588,16 @@ public class BattleManager : MonoBehaviour
             // 이미 10장이면, 카드를 얻을수 없기에 강제 취소
             if (GAME.IGM.Hand.PlayerHand.Count == 10) { yield break; }
 
-            // 발견 이벤트 실행시, 상대방에게 나의 발견이벤트 시작을 동기화하여 보여주기
-            GAME.IGM.Packet.SendFindEvt();
-
             // 발견 이벤트 준비 및 시작 (코루틴은 오브젝트가 꺼져있을떄 실행이 안되어, 함수로 먼저 데이터 준비 후 코루틴 실행)
             GAME.IGM.FindEvt.ReadyFindEvt(uh.relatedCards);
+            GAME.Manager.Evt.enabled = false;
+            // 발견 이벤트 실행시, 상대방에게 나의 발견이벤트 시작을 동기화하여 보여주기
+            GAME.IGM.Packet.SendFindEvt();
+            
             yield return new WaitForSeconds(0.5f);
-            GAME.IGM.FindEvt.gameObject.SetActive(true);
-           // 발견 코루틴 끝날떄까지 (유저가 발견카드들중 하나를 선택할떄까지 대기)
-           yield return new WaitUntil(() => (GAME.IGM.FindEvt.CurrSelected == true));
+            GAME.Manager.Evt.enabled = true;
+            // 발견 코루틴 끝날떄까지 (유저가 발견카드들중 하나를 선택할떄까지 대기)
+            yield return new WaitUntil(() => (GAME.IGM.FindEvt.CurrSelected == true));
         }
         
         // 획득 이벤트
@@ -607,6 +612,7 @@ public class BattleManager : MonoBehaviour
             int[] sendArray = new int[count];
             int[] punArray = new int[count];
 
+            List<CardHand> afterRay = new List<CardHand>();
             // 관련카드들 생성
             for (int i = 0; i < count; i++)
             {
@@ -647,7 +653,7 @@ public class BattleManager : MonoBehaviour
                 ch.transform.localPosition = caster.TR.position;
                 
                 GAME.IGM.Hand.PlayerHand.Add(ch);
-                ch.Ray = true;
+                afterRay.Add(ch);
                 yield return null;
             }
 
@@ -655,6 +661,9 @@ public class BattleManager : MonoBehaviour
             GAME.IGM.Packet.SendAcquisition(caster.objType , casterPunID, sendArray, punArray);
 
             yield return GAME.IGM.StartCoroutine(GAME.IGM.Hand.CardAllignment(true));
+            // 위의 카드정렬만할떄는, 레이활성화를 안해서 여기서 개별적으로 진행 (핸드매니저에서, 드로우 수행 => 위 정렬함수 실행 => 그후 전체 레이를 활성화하기 때문)
+            afterRay.ForEach(x => x.Ray = true);
+            afterRay.Clear();
         }
     }
 
@@ -810,13 +819,16 @@ public class BattleManager : MonoBehaviour
         {
             case Define.buffType.att:
                 target.Att += bh.buffAtt* multiPly;
+                if ((target.objType == Define.ObjType.Minion)) { target.OriginAtt = target.OriginAtt + bh.buffHp * multiPly; }
                 break;
             case Define.buffType.hp:
                 target.HP += bh.buffHp * multiPly;
+                if ((target.objType == Define.ObjType.Minion)) { target.OriginHp = target.OriginHp + bh.buffHp*multiPly; }
                 break;
             case Define.buffType.atthp:
                 target.Att += bh.buffAtt * multiPly;
                 target.HP += bh.buffHp * multiPly;
+                if ((target.objType == Define.ObjType.Minion)) { target.OriginAtt = target.OriginAtt + bh.buffHp * multiPly; target.OriginHp = target.OriginHp + bh.buffHp * multiPly; }
                 break;
             case Define.buffType.cost:
                 break;
@@ -825,31 +837,40 @@ public class BattleManager : MonoBehaviour
 
         // 버프 이벤트 동기화를 위해 전달 (죽을떄 실행인지, 일반 실행인지 구분해서 실행)
         if (bh.when == Define.evtWhen.onDead)
-        { GAME.IGM.Packet.SendDeathBuffEvt(target.PunId, bh.buffType, bh.buffAtt * multiPly, bh.buffHp * multiPly); }
+        { GAME.IGM.Packet.SendDeathBuffEvt(target.PunId, bh.buffType, bh.buffAtt , bh.buffHp , multiPly); }
         else
-        { GAME.IGM.Packet.SendBuffEvt(target.PunId, bh.buffType, bh.buffAtt * multiPly, bh.buffHp * multiPly); }
+        { GAME.IGM.Packet.SendBuffEvt(target.PunId, bh.buffType, bh.buffAtt , bh.buffHp , multiPly); }
         
         yield break;
     }
-    public IEnumerator ReceivedBuff(Define.buffType type, IBody target,int att, int hp )
+    public IEnumerator ReceivedBuff(Define.buffType type, IBody target,int att, int hp, int multiply)
     {  
         // 이펙트객체 호출
         IFx fx = GAME.IGM.Battle.FX.GetFX(Define.fxType.Buff);
 
         // 호출한 이펙트 재생
         yield return GAME.IGM.StartCoroutine(fx.Invoke(null, target));
+
+        Debug.Log($"버프받기 성공, type : {type}, att : {att}, hp : {hp}, mul : {multiply}");
         // 어떠한 부여 효과인지
         switch (type)
         {
             case Define.buffType.att:
-                target.Att += att;
+                target.Att += att * multiply;
+                if ((target.objType == Define.ObjType.Minion)) { target.OriginAtt = target.OriginAtt + att * multiply; }
                 break;
             case Define.buffType.hp:
-                target.HP += hp;
+                target.HP += hp * multiply;
+                if ((target.objType == Define.ObjType.Minion)) { target.OriginHp = target.OriginHp + att * multiply; }
                 break;
             case Define.buffType.atthp:
-                target.Att += att;
-                target.HP += hp;
+                target.Att += att * multiply;
+                target.HP += hp * multiply;
+                if ((target.objType == Define.ObjType.Minion)) 
+                {
+                    target.OriginAtt = target.OriginAtt + att * multiply; 
+                    target.OriginHp = target.OriginHp + att * multiply; 
+                }
                 break;
             case Define.buffType.cost:
                 break;
@@ -866,8 +887,10 @@ public class BattleManager : MonoBehaviour
         // 호출한 이펙트 재생
         yield return GAME.IGM.StartCoroutine(fx.Invoke(caster, target));
         Debug.Log($"치료이벤트 실행, target : {target}[{target.PunId}]");
+        Debug.Log($"(target.objType == Define.ObjType.Minion) ? target.OriginHp : 30 => {((target.objType == Define.ObjType.Minion) ? target.OriginHp : 30)}");
+        Debug.Log($"target.HP : {target.HP}, AMOUNT : {amount}, result : {target.HP + amount}");
         target.HP = Mathf.Clamp(target.HP + amount, 0, (target.objType == Define.ObjType.Minion) ? target.OriginHp : 30);
-
+        Debug.Log($"target.HP =  {target.HP}");
         // 내턴이며 시전자가 내가 낸 하수인일떄만 상대에게 이벤트 전파
         if (GAME.IGM.Packet.isMyTurn)
         {

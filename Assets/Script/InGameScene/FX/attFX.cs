@@ -33,6 +33,7 @@ public class attFX : MonoBehaviour, IFx
         Vector3 cross = Vector3.Cross(start, dir);
         if (cross.y < 0) { angle *= -1; }
 
+        tail1.enabled =tail2 .enabled =true;
         // 투사체 선형보간으로 타겟으로 향하며 이동
         float t = 0;
         while (t < 1.5f)
@@ -48,7 +49,7 @@ public class attFX : MonoBehaviour, IFx
 
         #endregion
 
-        currUsing = false;
+        currUsing = false; tail1.enabled = tail2.enabled = false;
     }
   
 }

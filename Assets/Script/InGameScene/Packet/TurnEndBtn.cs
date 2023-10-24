@@ -22,9 +22,13 @@ public class TurnEndBtn : MonoBehaviour
     }
     public void StopAllCoroutine()
     { StopAllCoroutine(); }
+
     // 턴종료 버튼 누를시 호출
     public void ClickedOnTurnEnd(GameObject go)
     {
+        // 타겟팅이 가능한 상태에서 타겟팅중에는 턴버튼 클릭 방지
+        if (GAME.IGM.TC.emergencyStop == false && GAME.IGM.TC.LR.gameObject.activeSelf == true) { return ;}
+
         // 턴 버튼 클릭음 재생
         audioPlayer.clip = GAME.IGM.GetClip(Define.IGMsound.ClickTurnBtn);
         audioPlayer.Play();
@@ -144,6 +148,8 @@ public class TurnEndBtn : MonoBehaviour
         GAME.IGM.Packet.isMyTurn = true;
         // 턴종료 버튼 누를수 있도록 레이 활성화
         Col.enabled = true;
+        // 턴을 시작하기에, 턴종료로 인한 긴급타겟팅 중지 다시 가능한상태로 초기화
+        GAME.IGM.TC.emergencyStop = false;
         // 턴 타이머 시작
         turnTimer = UserTurnTimer();
         StartCoroutine(turnTimer);

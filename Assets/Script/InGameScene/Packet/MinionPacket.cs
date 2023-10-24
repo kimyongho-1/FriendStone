@@ -111,9 +111,9 @@ public partial class PacketManager
     #endregion
 
     #region 미니언이 죽을떄 실행할 버프 이벤트 전달 및 받기
-    public void SendDeathBuffEvt(int targetPunID, Define.buffType type, int att, int hp)
+    public void SendDeathBuffEvt(int targetPunID, Define.buffType type, int att, int hp, int multiply)
     {
-        object[] data = new object[] { targetPunID, (int)type, att, hp };
+        object[] data = new object[] { targetPunID, (int)type, att, hp, multiply };
         // 전파 실행
         PhotonNetwork.RaiseEvent(DeathRattleBuffEvt, data, Other, SendOptions.SendReliable);
     }
@@ -123,16 +123,16 @@ public partial class PacketManager
         Define.buffType type = (Define.buffType)data[1];
         int att = (int)data[2];
         int hp = (int)data[3];
-
-        GAME.IGM.AddDeathAction(DelayedBuff(targetPunID, att, hp, type));
-        IEnumerator DelayedBuff(int targetPunID, int att, int hp, Define.buffType type)
+        int multiply = (int)data[4];    
+        GAME.IGM.AddDeathAction(DelayedBuff(targetPunID, att, hp, type, multiply));
+        IEnumerator DelayedBuff(int targetPunID, int att, int hp, Define.buffType type, int multiply)
         {
             CardField cf1 = GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID);
             CardHand cf2 = GAME.IGM.Hand.EnemyHand.Find(targetPunID);
             Debug.Log($"cardField : {cf1}, cardHand : {cf2}");
             yield return GAME.IGM.StartCoroutine(
                 GAME.IGM.Battle.ReceivedBuff(type, GAME.IGM.Spawn.enemyMinions.Find(x => x.PunId == targetPunID)
-                , att, hp));
+                , att, hp, multiply));
         }
     }
     #endregion
