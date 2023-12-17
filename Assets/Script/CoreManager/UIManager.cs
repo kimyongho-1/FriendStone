@@ -40,9 +40,10 @@ public class UIManager
     }
 
     // TMP TEXT를 버튼으로 사용하고, 이벤트함수 호출도 동시에 처리하려 만든 함수
-    public void BindTMPInteraction(TextMeshProUGUI tmp , Color enter, Color pressed, Action<TextMeshProUGUI> func)
-    {
-        tmp.AddComponent<TextButtonHolder>().Init(ref tmp,enter,pressed ,func) ;
+    public void BindTMPInteraction(TextMeshProUGUI tmp , 
+        Color enter, Color pressed, Action<TextMeshProUGUI> func)
+    {   
+        tmp.AddComponent<TextButtonHolder>().Init(ref tmp,enter,pressed ,func);
     }
 
     // 기타 ui요소에 마우스 작용시 이벤트 발생시키는 함수

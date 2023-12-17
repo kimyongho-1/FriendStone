@@ -14,7 +14,6 @@ public class GAME : MonoBehaviour
     public AudioSource BGM, FX, Speech;
     private void Awake()
     {
-        Debug.Log("DataPath : "+Application.dataPath);
         DontDestroyOnLoad(this);
         ui = new UIManager(GameObject.Find("@UI_Popup").GetComponent<RectTransform>(),
             GameObject.Find("UIText").GetComponent<TextMeshProUGUI>());
@@ -25,6 +24,7 @@ public class GAME : MonoBehaviour
         sm.PlayBGM();
         SceneManager.sceneLoaded += OnLobbyLoad;
         Screen.SetResolution(600,400,false);
+        Debug.Log("DataPath : " + Application.dataPath);
     }
 
     private void OnApplicationQuit()

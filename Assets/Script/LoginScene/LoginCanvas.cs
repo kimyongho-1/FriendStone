@@ -14,6 +14,7 @@ public class LoginCanvas : MonoBehaviour
     public System.Action CheckEnter;
     public Dictionary<Define.OtherSound, AudioClip> sceneAudio = new Dictionary<Define.OtherSound, AudioClip>();
     AudioSource audioPlayer;
+
     private void Awake()
     {
         GAME.Manager.LC = this;

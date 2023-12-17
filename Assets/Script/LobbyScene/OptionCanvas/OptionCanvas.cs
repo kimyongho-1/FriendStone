@@ -12,9 +12,12 @@ public class OptionCanvas :LobbyPopup
     AudioSource audioPlayer;
     private void Awake()
     {
+        // 커서를 가져다 댈시 글자의 색상 변화
         GAME.Manager.UM.BindTMPInteraction(backBtn, Color.green, Color.red, BackBtn);
+        // 드랍다운(프레임변경)창에 이벤트 함수 연결
         td.onValueChanged.AddListener(ChangedFrame);
         this.gameObject.SetActive(false);
+        // 각종 볼륨 오디오소스에 이벤트연결
         Vol.onValueChanged.AddListener(GAME.Manager.SM.ChangedVol);
         FX.onValueChanged.AddListener(GAME.Manager.SM.FXVol);
         BGM.onValueChanged.AddListener(GAME.Manager.SM.BGMVol);
